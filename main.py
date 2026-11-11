@@ -5,12 +5,15 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# Supabase configuration with environment variables and defaults
+SUPABASE_URL = os.getenv("SUPABASE_URL", "https://rzdrqgwmmfliyksuiknx.supabase.co")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY", "sb_publishable_LPVQ_Mzxl8AK8c_JLhMNAw_CoumpNyK")
+
 app = FastAPI(title="Hackathon O1 Project")
 
 @app.get("/", response_class=HTMLResponse)
 def home():
-    supabase_url = os.getenv("SUPABASE_URL")
-    supabase_configured = bool(supabase_url and len(supabase_url.strip()) > 0)
+    supabase_configured = bool(SUPABASE_URL and len(SUPABASE_URL.strip()) > 0)
     return f"""
     <!DOCTYPE html>
     <html lang="en">
