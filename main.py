@@ -45,12 +45,12 @@ def home():
             <div class="grid grid-cols-2 gap-4 text-left pt-2">
                 <div class="p-4 rounded-2xl bg-slate-800/60 border border-slate-700/50">
                     <div class="text-xs text-slate-400 uppercase font-semibold">Backend</div>
-                    <div class="text-base font-bold text-slate-200 mt-1">Python FastAPI 🚀</div>
+                    <div class="text-base font-bold text-slate-200 mt-1">Python FastAPI</div>
                 </div>
                 <div class="p-4 rounded-2xl bg-slate-800/60 border border-slate-700/50">
                     <div class="text-xs text-slate-400 uppercase font-semibold">Database</div>
                     <div class="text-base font-bold text-emerald-400 mt-1">
-                        {"Supabase Connected ✅" if supabase_configured else "Supabase Pending ⏳"}
+                        {"Supabase Connected" if supabase_configured else "Supabase Pending"}
                     </div>
                 </div>
             </div>
