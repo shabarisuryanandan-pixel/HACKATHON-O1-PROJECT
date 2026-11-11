@@ -9,7 +9,8 @@ app = FastAPI(title="Hackathon O1 Project")
 
 @app.get("/", response_class=HTMLResponse)
 def home():
-    supabase_configured = bool(os.getenv("SUPABASE_URL"))
+    supabase_url = os.getenv("SUPABASE_URL")
+    supabase_configured = bool(supabase_url and len(supabase_url.strip()) > 0)
     return f"""
     <!DOCTYPE html>
     <html lang="en">
