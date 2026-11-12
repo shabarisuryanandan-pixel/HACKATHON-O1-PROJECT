@@ -38,11 +38,11 @@ def _render_svg_room(rid: str, label: str, sub: str, x: int, y: int, w: int, h: 
 
         <!-- Top Header Bar -->
         <rect x="{x+1}" y="{y+1}" width="{w-2}" height="28" rx="5" fill="#1E2024" opacity="0.85" />
-        <text x="{x+10}" y="{y+19}" fill="#FFFFFF" font-family="Inter, sans-serif" font-size="11.5" font-weight="700">{label}</text>
-        <text id="occ_badge_{rid}" x="{x+w-10}" y="{y+19}" fill="#8E9297" font-family="Inter, sans-serif" font-size="10.5" font-weight="700" text-anchor="end">OFF</text>
+        <text x="{x+10}" y="{y+19}" fill="#FFFFFF" font-family="Futura, Jost, sans-serif" font-size="11.5" font-weight="700">{label}</text>
+        <text id="occ_badge_{rid}" x="{x+w-10}" y="{y+19}" fill="#8E9297" font-family="Futura, Jost, sans-serif" font-size="10.5" font-weight="700" text-anchor="end">OFF</text>
 
         <!-- Subtitle / Wing Area -->
-        <text id="sub_badge_{rid}" x="{x+10}" y="{y+40}" fill="#8E9297" font-family="Inter, sans-serif" font-size="9.5" font-weight="500">{sub}</text>
+        <text id="sub_badge_{rid}" x="{x+10}" y="{y+40}" fill="#8E9297" font-family="Futura, Jost, sans-serif" font-size="9.5" font-weight="500">{sub}</text>
 
         <!-- 4 Individual Ceiling Luminaires (L1, L2, L3, L4) -->
         <g>
@@ -60,8 +60,8 @@ def _render_svg_room(rid: str, label: str, sub: str, x: int, y: int, w: int, h: 
 
         <!-- Bottom AC & Power Pill -->
         <rect id="ac_bg_{rid}" x="{x+8}" y="{ac_y}" width="{w-16}" height="18" rx="4" fill="#1E2024" />
-        <text id="ac_{rid}" x="{x+14}" y="{ac_y+12.5}" fill="#8E9297" font-family="Inter, sans-serif" font-size="9.5" font-weight="600">AC: OFF</text>
-        <text id="kw_{rid}" x="{x+w-14}" y="{ac_y+12.5}" fill="#8E9297" font-family="Inter, sans-serif" font-size="9.5" font-weight="600" text-anchor="end">0.0 kW</text>
+        <text id="ac_{rid}" x="{x+14}" y="{ac_y+12.5}" fill="#8E9297" font-family="Futura, Jost, sans-serif" font-size="9.5" font-weight="600">AC: OFF</text>
+        <text id="kw_{rid}" x="{x+w-14}" y="{ac_y+12.5}" fill="#8E9297" font-family="Futura, Jost, sans-serif" font-size="9.5" font-weight="600" text-anchor="end">0.0 kW</text>
     </g>
     """
 
@@ -98,17 +98,17 @@ def render_cad_sandbox_html():
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GridSense // Block B Interactive Simulator</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Jost:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * {{ box-sizing: border-box; }}
         body {{
-            font-family: 'Inter', sans-serif;
+            font-family: 'Futura', 'Jost', sans-serif;
             background-color: #2B2D31;
             color: #D9DAD0;
             margin: 0;
         }}
-        h1, h2, h3, .font-heading {{ font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: -0.015em; }}
-        .font-data {{ font-family: 'Inter', sans-serif; font-variant-numeric: tabular-nums; }}
+        h1, h2, h3, .font-heading {{ font-family: 'Abril Fatface', serif; letter-spacing: 0.01em; font-weight: 400; }}
+        .font-data {{ font-family: 'Futura', 'Jost', sans-serif; font-variant-numeric: tabular-nums; }}
         .card {{
             background: #36393F;
             border-radius: 12px;
@@ -521,17 +521,17 @@ def render_cad_sandbox_html():
                             <!-- TOP WING HEADERS -->
                             <g>
                                 <rect x="25" y="12" width="310" height="28" rx="5" fill="#27292E" stroke="#40444B" />
-                                <text id="svgLeftWingHeader" x="180" y="30" fill="#FFC93C" font-family="Inter, sans-serif" font-size="11" font-weight="700" text-anchor="middle">
+                                <text id="svgLeftWingHeader" x="180" y="30" fill="#FFC93C" font-family="Futura, Jost, sans-serif" font-size="11" font-weight="700" text-anchor="middle">
                                     LEFT WING (WEST) // 83 PEOPLE
                                 </text>
 
                                 <rect x="430" y="12" width="260" height="28" rx="5" fill="#FFC93C" />
-                                <text x="560" y="30" fill="#2B2D31" font-family="Inter, sans-serif" font-size="11.5" font-weight="800" text-anchor="middle">
+                                <text x="560" y="30" fill="#2B2D31" font-family="Futura, Jost, sans-serif" font-size="11.5" font-weight="800" text-anchor="middle">
                                     JIT BLOCK B - FLOOR PLAN
                                 </text>
 
                                 <rect x="785" y="12" width="310" height="28" rx="5" fill="#27292E" stroke="#40444B" />
-                                <text id="svgRightWingHeader" x="940" y="30" fill="#FFC93C" font-family="Inter, sans-serif" font-size="11" font-weight="700" text-anchor="middle">
+                                <text id="svgRightWingHeader" x="940" y="30" fill="#FFC93C" font-family="Futura, Jost, sans-serif" font-size="11" font-weight="700" text-anchor="middle">
                                     RIGHT WING (EAST) // 22 PEOPLE
                                 </text>
                             </g>
@@ -539,8 +539,8 @@ def render_cad_sandbox_html():
                             <!-- NORTH MAIN STAIRCASE (CENTER TOP) -->
                             <g id="grp_main_stairs">
                                 <rect id="box_main_stairs" x="490" y="55" width="140" height="135" rx="6" class="zone-box-on" />
-                                <text x="560" y="80" fill="#FFFFFF" font-family="Inter, sans-serif" font-size="11.5" font-weight="700" text-anchor="middle">MAIN STAIRS</text>
-                                <text id="status_main_stairs" x="560" y="96" fill="#FFC93C" font-family="Inter, sans-serif" font-size="9.5" font-weight="700" text-anchor="middle">LIGHTS: ON</text>
+                                <text x="560" y="80" fill="#FFFFFF" font-family="Futura, Jost, sans-serif" font-size="11.5" font-weight="700" text-anchor="middle">MAIN STAIRS</text>
+                                <text id="status_main_stairs" x="560" y="96" fill="#FFC93C" font-family="Futura, Jost, sans-serif" font-size="9.5" font-weight="700" text-anchor="middle">LIGHTS: ON</text>
                                 <!-- Stair Treads -->
                                 <line x1="515" y1="112" x2="605" y2="112" stroke="#8E9297" stroke-width="1.5" />
                                 <line x1="515" y1="124" x2="605" y2="124" stroke="#8E9297" stroke-width="1.5" />
@@ -554,7 +554,7 @@ def render_cad_sandbox_html():
                             <g>
                                 <!-- Left Wing Corridor Path -->
                                 <path id="corridor_left" d="M 350 210 L 245 210 L 245 685 L 350 685" class="corridor-line corridor-on" />
-                                <text id="label_corridor_left" x="255" y="204" fill="#FFC93C" font-family="Inter, sans-serif" font-size="9.5" font-weight="700">LEFT CORRIDOR: ON</text>
+                                <text id="label_corridor_left" x="255" y="204" fill="#FFC93C" font-family="Futura, Jost, sans-serif" font-size="9.5" font-weight="700">LEFT CORRIDOR: ON</text>
                                 <circle id="cl_lum1" cx="245" cy="280" r="5" class="luminaire lum-on" />
                                 <circle id="cl_lum2" cx="245" cy="410" r="5" class="luminaire lum-on" />
                                 <circle id="cl_lum3" cx="245" cy="540" r="5" class="luminaire lum-on" />
@@ -562,7 +562,7 @@ def render_cad_sandbox_html():
 
                                 <!-- Right Wing Corridor Path -->
                                 <path id="corridor_right" d="M 770 210 L 875 210 L 875 685 L 770 685" class="corridor-line corridor-on" />
-                                <text id="label_corridor_right" x="865" y="204" fill="#FFC93C" font-family="Inter, sans-serif" font-size="9.5" font-weight="700" text-anchor="end">RIGHT CORRIDOR: ON</text>
+                                <text id="label_corridor_right" x="865" y="204" fill="#FFC93C" font-family="Futura, Jost, sans-serif" font-size="9.5" font-weight="700" text-anchor="end">RIGHT CORRIDOR: ON</text>
                                 <circle id="cr_lum1" cx="875" cy="280" r="5" class="luminaire lum-on" />
                                 <circle id="cr_lum2" cx="875" cy="410" r="5" class="luminaire lum-on" />
                                 <circle id="cr_lum3" cx="875" cy="540" r="5" class="luminaire lum-on" />
@@ -572,30 +572,30 @@ def render_cad_sandbox_html():
                             <!-- LEFT ELEVATOR BANK (LIFT 1 & LIFT 2 + RESTROOMS) -->
                             <g transform="translate(270, 290)">
                                 <rect x="0" y="0" width="115" height="295" rx="6" fill="#232529" stroke="#40444B" stroke-width="1.5" />
-                                <text x="57" y="20" fill="#FFFFFF" font-family="Inter, sans-serif" font-size="10.5" font-weight="700" text-anchor="middle">LEFT LIFTS</text>
+                                <text x="57" y="20" fill="#FFFFFF" font-family="Futura, Jost, sans-serif" font-size="10.5" font-weight="700" text-anchor="middle">LEFT LIFTS</text>
 
                                 <!-- LIFT 1 -->
                                 <rect id="lift_box_L1" x="10" y="30" width="44" height="62" rx="4" class="lift-car-on" />
-                                <text x="32" y="56" fill="#FFFFFF" font-family="Inter, sans-serif" font-size="11" font-weight="700" text-anchor="middle">L-1</text>
-                                <text id="lift_txt_L1" x="32" y="76" fill="#FFC93C" font-family="Inter, sans-serif" font-size="9" font-weight="700" text-anchor="middle">ON</text>
+                                <text x="32" y="56" fill="#FFFFFF" font-family="Futura, Jost, sans-serif" font-size="11" font-weight="700" text-anchor="middle">L-1</text>
+                                <text id="lift_txt_L1" x="32" y="76" fill="#FFC93C" font-family="Futura, Jost, sans-serif" font-size="9" font-weight="700" text-anchor="middle">ON</text>
 
                                 <!-- LIFT 2 -->
                                 <rect id="lift_box_L2" x="61" y="30" width="44" height="62" rx="4" class="lift-car-on" />
-                                <text x="83" y="56" fill="#FFFFFF" font-family="Inter, sans-serif" font-size="11" font-weight="700" text-anchor="middle">L-2</text>
-                                <text id="lift_txt_L2" x="83" y="76" fill="#FFC93C" font-family="Inter, sans-serif" font-size="9" font-weight="700" text-anchor="middle">ON</text>
+                                <text x="83" y="56" fill="#FFFFFF" font-family="Futura, Jost, sans-serif" font-size="11" font-weight="700" text-anchor="middle">L-2</text>
+                                <text id="lift_txt_L2" x="83" y="76" fill="#FFC93C" font-family="Futura, Jost, sans-serif" font-size="9" font-weight="700" text-anchor="middle">ON</text>
 
                                 <!-- Left Bank Status Pill -->
                                 <rect x="10" y="100" width="95" height="22" rx="4" fill="#1E2024" />
-                                <text id="left_bank_badge" x="57" y="115" fill="#FFC93C" font-family="Inter, sans-serif" font-size="9" font-weight="700" text-anchor="middle">2 ACTIVE</text>
+                                <text id="left_bank_badge" x="57" y="115" fill="#FFC93C" font-family="Futura, Jost, sans-serif" font-size="9" font-weight="700" text-anchor="middle">2 ACTIVE</text>
 
                                 <!-- Restrooms (Left) -->
                                 <rect x="10" y="135" width="95" height="68" rx="4" fill="#1E2024" stroke="#36393F" />
-                                <text x="57" y="165" fill="#D9DAD0" font-family="Inter, sans-serif" font-size="10" font-weight="600" text-anchor="middle">Toilet (M)</text>
-                                <text x="57" y="182" fill="#8E9297" font-family="Inter, sans-serif" font-size="8.5" text-anchor="middle">Exhaust Sensor</text>
+                                <text x="57" y="165" fill="#D9DAD0" font-family="Futura, Jost, sans-serif" font-size="10" font-weight="600" text-anchor="middle">Toilet (M)</text>
+                                <text x="57" y="182" fill="#8E9297" font-family="Futura, Jost, sans-serif" font-size="8.5" text-anchor="middle">Exhaust Sensor</text>
 
                                 <rect x="10" y="212" width="95" height="68" rx="4" fill="#1E2024" stroke="#36393F" />
-                                <text x="57" y="242" fill="#D9DAD0" font-family="Inter, sans-serif" font-size="10" font-weight="600" text-anchor="middle">Toilet (F)</text>
-                                <text x="57" y="259" fill="#8E9297" font-family="Inter, sans-serif" font-size="8.5" text-anchor="middle">Exhaust Sensor</text>
+                                <text x="57" y="242" fill="#D9DAD0" font-family="Futura, Jost, sans-serif" font-size="10" font-weight="600" text-anchor="middle">Toilet (F)</text>
+                                <text x="57" y="259" fill="#8E9297" font-family="Futura, Jost, sans-serif" font-size="8.5" text-anchor="middle">Exhaust Sensor</text>
                             </g>
 
                             <!-- CENTRAL CIRCULAR ATRIUM -->
@@ -605,38 +605,38 @@ def render_cad_sandbox_html():
                                 <circle cx="560" cy="440" r="70" fill="#16181B" stroke="#FFC93C" stroke-width="1.2" opacity="0.85" />
                                 <line x1="450" y1="440" x2="670" y2="440" stroke="#2E3136" stroke-width="1" />
                                 <line x1="560" y1="330" x2="560" y2="550" stroke="#2E3136" stroke-width="1" />
-                                <text x="560" y="432" fill="#FFFFFF" font-family="Inter, sans-serif" font-size="13" font-weight="700" text-anchor="middle">CENTRAL ATRIUM</text>
-                                <text x="560" y="450" fill="#8E9297" font-family="Inter, sans-serif" font-size="9.5" text-anchor="middle">Open to Sky // Natural Lux</text>
-                                <text id="atriumRelocArrow" x="560" y="472" fill="#FFC93C" font-family="Inter, sans-serif" font-size="10" font-weight="700" text-anchor="middle"></text>
+                                <text x="560" y="432" fill="#FFFFFF" font-family="Futura, Jost, sans-serif" font-size="13" font-weight="700" text-anchor="middle">CENTRAL ATRIUM</text>
+                                <text x="560" y="450" fill="#8E9297" font-family="Futura, Jost, sans-serif" font-size="9.5" text-anchor="middle">Open to Sky // Natural Lux</text>
+                                <text id="atriumRelocArrow" x="560" y="472" fill="#FFC93C" font-family="Futura, Jost, sans-serif" font-size="10" font-weight="700" text-anchor="middle"></text>
                             </g>
 
                             <!-- RIGHT ELEVATOR BANK (LIFT 3 & LIFT 4 + RESTROOMS) -->
                             <g transform="translate(735, 290)">
                                 <rect x="0" y="0" width="115" height="295" rx="6" fill="#232529" stroke="#40444B" stroke-width="1.5" />
-                                <text x="57" y="20" fill="#FFFFFF" font-family="Inter, sans-serif" font-size="10.5" font-weight="700" text-anchor="middle">RIGHT LIFTS</text>
+                                <text x="57" y="20" fill="#FFFFFF" font-family="Futura, Jost, sans-serif" font-size="10.5" font-weight="700" text-anchor="middle">RIGHT LIFTS</text>
 
                                 <!-- LIFT 3 -->
                                 <rect id="lift_box_L3" x="10" y="30" width="44" height="62" rx="4" class="lift-car-on" />
-                                <text x="32" y="56" fill="#FFFFFF" font-family="Inter, sans-serif" font-size="11" font-weight="700" text-anchor="middle">L-3</text>
-                                <text id="lift_txt_L3" x="32" y="76" fill="#FFC93C" font-family="Inter, sans-serif" font-size="9" font-weight="700" text-anchor="middle">ON</text>
+                                <text x="32" y="56" fill="#FFFFFF" font-family="Futura, Jost, sans-serif" font-size="11" font-weight="700" text-anchor="middle">L-3</text>
+                                <text id="lift_txt_L3" x="32" y="76" fill="#FFC93C" font-family="Futura, Jost, sans-serif" font-size="9" font-weight="700" text-anchor="middle">ON</text>
 
                                 <!-- LIFT 4 -->
                                 <rect id="lift_box_L4" x="61" y="30" width="44" height="62" rx="4" class="lift-car-on" />
-                                <text x="83" y="56" fill="#FFFFFF" font-family="Inter, sans-serif" font-size="11" font-weight="700" text-anchor="middle">L-4</text>
-                                <text id="lift_txt_L4" x="83" y="76" fill="#FFC93C" font-family="Inter, sans-serif" font-size="9" font-weight="700" text-anchor="middle">ON</text>
+                                <text x="83" y="56" fill="#FFFFFF" font-family="Futura, Jost, sans-serif" font-size="11" font-weight="700" text-anchor="middle">L-4</text>
+                                <text id="lift_txt_L4" x="83" y="76" fill="#FFC93C" font-family="Futura, Jost, sans-serif" font-size="9" font-weight="700" text-anchor="middle">ON</text>
 
                                 <!-- Right Bank Status Pill -->
                                 <rect x="10" y="100" width="95" height="22" rx="4" fill="#1E2024" />
-                                <text id="right_bank_badge" x="57" y="115" fill="#FFC93C" font-family="Inter, sans-serif" font-size="9" font-weight="700" text-anchor="middle">2 ACTIVE</text>
+                                <text id="right_bank_badge" x="57" y="115" fill="#FFC93C" font-family="Futura, Jost, sans-serif" font-size="9" font-weight="700" text-anchor="middle">2 ACTIVE</text>
 
                                 <!-- Restrooms (Right) -->
                                 <rect x="10" y="135" width="95" height="68" rx="4" fill="#1E2024" stroke="#36393F" />
-                                <text x="57" y="165" fill="#D9DAD0" font-family="Inter, sans-serif" font-size="10" font-weight="600" text-anchor="middle">Toilet (M)</text>
-                                <text x="57" y="182" fill="#8E9297" font-family="Inter, sans-serif" font-size="8.5" text-anchor="middle">Exhaust Sensor</text>
+                                <text x="57" y="165" fill="#D9DAD0" font-family="Futura, Jost, sans-serif" font-size="10" font-weight="600" text-anchor="middle">Toilet (M)</text>
+                                <text x="57" y="182" fill="#8E9297" font-family="Futura, Jost, sans-serif" font-size="8.5" text-anchor="middle">Exhaust Sensor</text>
 
                                 <rect x="10" y="212" width="95" height="68" rx="4" fill="#1E2024" stroke="#36393F" />
-                                <text x="57" y="242" fill="#D9DAD0" font-family="Inter, sans-serif" font-size="10" font-weight="600" text-anchor="middle">Toilet (F)</text>
-                                <text x="57" y="259" fill="#8E9297" font-family="Inter, sans-serif" font-size="8.5" text-anchor="middle">Exhaust Sensor</text>
+                                <text x="57" y="242" fill="#D9DAD0" font-family="Futura, Jost, sans-serif" font-size="10" font-weight="600" text-anchor="middle">Toilet (F)</text>
+                                <text x="57" y="259" fill="#8E9297" font-family="Futura, Jost, sans-serif" font-size="8.5" text-anchor="middle">Exhaust Sensor</text>
                             </g>
 
                             <!-- ALL 8 CLASSROOMS + 3 LABS (PRECISION GENERATED) -->
@@ -646,8 +646,8 @@ def render_cad_sandbox_html():
                             <!-- SW STAIRS -->
                             <g id="grp_sw_stairs">
                                 <rect id="box_sw_stairs" x="95" y="775" width="130" height="65" rx="6" class="zone-box-on" />
-                                <text x="160" y="800" fill="#FFFFFF" font-family="Inter, sans-serif" font-size="10.5" font-weight="700" text-anchor="middle">STAIRS SW</text>
-                                <text id="status_sw_stairs" x="160" y="818" fill="#FFC93C" font-family="Inter, sans-serif" font-size="9" font-weight="700" text-anchor="middle">LIGHTS: ON</text>
+                                <text x="160" y="800" fill="#FFFFFF" font-family="Futura, Jost, sans-serif" font-size="10.5" font-weight="700" text-anchor="middle">STAIRS SW</text>
+                                <text id="status_sw_stairs" x="160" y="818" fill="#FFC93C" font-family="Futura, Jost, sans-serif" font-size="9" font-weight="700" text-anchor="middle">LIGHTS: ON</text>
                                 <circle id="lum_sw_stairs" cx="115" cy="805" r="5" class="luminaire lum-on" />
                             </g>
 
@@ -655,32 +655,32 @@ def render_cad_sandbox_html():
                             <g id="grp_faculty_lounge">
                                 <rect id="box_faculty_lounge" x="235" y="705" width="185" height="135" rx="6" class="zone-box-on" />
                                 <rect x="236" y="706" width="183" height="26" rx="5" fill="#1E2024" opacity="0.85" />
-                                <text x="246" y="723" fill="#FFFFFF" font-family="Inter, sans-serif" font-size="11" font-weight="700">Faculty Lounge</text>
-                                <text id="status_faculty_lounge" x="410" y="723" fill="#FFC93C" font-family="Inter, sans-serif" font-size="9.5" font-weight="700" text-anchor="end">ON</text>
-                                <text x="246" y="744" fill="#8E9297" font-family="Inter, sans-serif" font-size="9.5">Staff Seating (80 m²)</text>
+                                <text x="246" y="723" fill="#FFFFFF" font-family="Futura, Jost, sans-serif" font-size="11" font-weight="700">Faculty Lounge</text>
+                                <text id="status_faculty_lounge" x="410" y="723" fill="#FFC93C" font-family="Futura, Jost, sans-serif" font-size="9.5" font-weight="700" text-anchor="end">ON</text>
+                                <text x="246" y="744" fill="#8E9297" font-family="Futura, Jost, sans-serif" font-size="9.5">Staff Seating (80 m²)</text>
                                 <circle id="lum1_faculty" cx="295" cy="765" r="5.5" class="luminaire lum-on" />
                                 <circle id="lum2_faculty" cx="360" cy="765" r="5.5" class="luminaire lum-on" />
                                 <rect x="275" y="782" width="105" height="16" rx="3" class="desk-box desk-on" id="desk_faculty" />
-                                <text id="ac_faculty" x="327" y="825" fill="#FFC93C" font-family="Inter, sans-serif" font-size="9.5" font-weight="600" text-anchor="middle">AC: 25°C (Daytime)</text>
+                                <text id="ac_faculty" x="327" y="825" fill="#FFC93C" font-family="Futura, Jost, sans-serif" font-size="9.5" font-weight="600" text-anchor="middle">AC: 25°C (Daytime)</text>
                             </g>
 
                             <!-- SEMINAR HALL (180 m²) -->
                             <g id="grp_seminar_hall">
                                 <rect x="430" y="705" width="245" height="135" rx="6" class="zone-box-off" />
                                 <rect x="431" y="706" width="243" height="26" rx="5" fill="#1E2024" opacity="0.85" />
-                                <text x="442" y="723" fill="#FFFFFF" font-family="Inter, sans-serif" font-size="11" font-weight="700">Seminar Hall (180 m²)</text>
-                                <text x="664" y="723" fill="#8E9297" font-family="Inter, sans-serif" font-size="9.5" font-weight="700" text-anchor="end">STANDBY</text>
-                                <text x="552" y="758" fill="#8E9297" font-family="Inter, sans-serif" font-size="10" text-anchor="middle">120-Seat Auditorium // Event Interlock</text>
+                                <text x="442" y="723" fill="#FFFFFF" font-family="Futura, Jost, sans-serif" font-size="11" font-weight="700">Seminar Hall (180 m²)</text>
+                                <text x="664" y="723" fill="#8E9297" font-family="Futura, Jost, sans-serif" font-size="9.5" font-weight="700" text-anchor="end">STANDBY</text>
+                                <text x="552" y="758" fill="#8E9297" font-family="Futura, Jost, sans-serif" font-size="10" text-anchor="middle">120-Seat Auditorium // Event Interlock</text>
                                 <rect x="470" y="772" width="165" height="10" rx="2" fill="#2E3136" />
                                 <rect x="480" y="790" width="145" height="10" rx="2" fill="#2E3136" />
-                                <text x="552" y="825" fill="#8E9297" font-family="Inter, sans-serif" font-size="9.5" text-anchor="middle">Circuit Isolated (0.0 kW)</text>
+                                <text x="552" y="825" fill="#8E9297" font-family="Futura, Jost, sans-serif" font-size="9.5" text-anchor="middle">Circuit Isolated (0.0 kW)</text>
                             </g>
 
                             <!-- SE STAIRS -->
                             <g id="grp_se_stairs">
                                 <rect id="box_se_stairs" x="895" y="775" width="130" height="65" rx="6" class="zone-box-on" />
-                                <text x="960" y="800" fill="#FFFFFF" font-family="Inter, sans-serif" font-size="10.5" font-weight="700" text-anchor="middle">STAIRS SE</text>
-                                <text id="status_se_stairs" x="960" y="818" fill="#FFC93C" font-family="Inter, sans-serif" font-size="9" font-weight="700" text-anchor="middle">LIGHTS: ON</text>
+                                <text x="960" y="800" fill="#FFFFFF" font-family="Futura, Jost, sans-serif" font-size="10.5" font-weight="700" text-anchor="middle">STAIRS SE</text>
+                                <text id="status_se_stairs" x="960" y="818" fill="#FFC93C" font-family="Futura, Jost, sans-serif" font-size="9" font-weight="700" text-anchor="middle">LIGHTS: ON</text>
                                 <circle id="lum_se_stairs" cx="915" cy="805" r="5" class="luminaire lum-on" />
                             </g>
 
