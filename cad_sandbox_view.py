@@ -108,7 +108,7 @@ def render_cad_sandbox_html():
             margin: 0;
         }}
         h1, h2, h3, .font-heading {{ font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: -0.015em; }}
-        .font-data {{ font-family: 'Inter', sans-serif; font-variant-numeric: tabular-nums; }}
+        .font-data {{ font-family: 'Inter', sans-serif; }}
         .card {{
             background: #36393F;
             border-radius: 12px;
@@ -287,7 +287,6 @@ def render_cad_sandbox_html():
                 <a href="/" class="nav-link">Dashboard</a>
                 <a href="/sandbox" class="nav-link active">Sandbox</a>
                 <a href="/systems" class="nav-link">Campus Systems</a>
-                <a href="/blueprint" class="nav-link">Blueprint</a>
             </nav>
         </div>
     </header>

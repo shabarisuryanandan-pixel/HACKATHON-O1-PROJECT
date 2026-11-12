@@ -349,7 +349,7 @@ def home():
             margin: 0;
         }}
         h1, h2, h3, .font-heading {{ font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: -0.015em; }}
-        .font-data {{ font-family: 'Inter', sans-serif; font-variant-numeric: tabular-nums; }}
+        .font-data {{ font-family: 'Inter', sans-serif; }}
         .card {{
             background: #36393F;
             border-radius: 12px;
@@ -408,7 +408,6 @@ def home():
                 <a href="/" class="nav-link active">Dashboard</a>
                 <a href="/sandbox" class="nav-link">Sandbox</a>
                 <a href="/systems" class="nav-link">Campus Systems</a>
-                <a href="/blueprint" class="nav-link">Blueprint</a>
             </nav>
         </div>
     </header>
@@ -470,181 +469,19 @@ def home():
             </div>
         </section>
 
-        <div class="mb-5">
-            <h2 class="text-base font-semibold text-white">Telemetry Nodes</h2>
-            <p class="text-xs mt-0.5" style="color: #8E9297;">Live Waste Index Score (WIS) and active automated interventions</p>
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
+            <div>
+                <h2 class="text-base font-semibold text-white">Telemetry Nodes</h2>
+                <p class="text-xs mt-0.5" style="color: #8E9297;">Auto-cycling live Waste Index Score (WIS) across Block A, Block B, and Block C</p>
+            </div>
+            <div class="flex items-center gap-2">
+                <button onclick="selectTelemetryBlock(0, true)" id="tabBlock0" class="px-3 py-1 rounded-lg text-xs font-semibold transition-all" style="background: #FFC93C; color: #2B2D31;">Block A</button>
+                <button onclick="selectTelemetryBlock(1, true)" id="tabBlock1" class="px-3 py-1 rounded-lg text-xs font-semibold transition-all" style="background: #36393F; color: #D9DAD0;">Block B</button>
+                <button onclick="selectTelemetryBlock(2, true)" id="tabBlock2" class="px-3 py-1 rounded-lg text-xs font-semibold transition-all" style="background: #36393F; color: #D9DAD0;">Block C</button>
+            </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-8">
-
-            <div class="card p-5 flex flex-col justify-between">
-                <div>
-                    <div class="flex items-center justify-between mb-3">
-                        <span class="text-xs font-semibold font-data" style="color: #8E9297;">BLOCK B // B101</span>
-                        <span class="text-[11px] font-data font-medium px-2 py-0.5 rounded-md" style="background: rgba(255,201,60,0.1); color: #FFC93C;">WIS: 18</span>
-                    </div>
-                    <div class="text-sm font-semibold text-white mb-3">Lecture Room B101 (East)</div>
-                    <div class="rounded-lg p-3" style="background: #2B2D31;">
-                        <div class="kv-row">
-                            <span style="color: #8E9297;">Window Lighting</span>
-                            <span class="font-data text-xs" style="color: #D9DAD0;">Zone A Locked OFF</span>
-                        </div>
-                        <div class="kv-row">
-                            <span style="color: #8E9297;">Dynamic HVAC</span>
-                            <span class="font-data text-xs" style="color: #D9DAD0;">26C Setpoint (35 Occ)</span>
-                        </div>
-                        <div class="kv-row">
-                            <span style="color: #8E9297;">Smartboard</span>
-                            <span class="font-data text-xs" style="color: #FFC93C;">Sleep (7m Timeout)</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="mt-4 pt-3 flex justify-between items-center text-xs" style="border-top: 1px solid rgba(255,255,255,0.06);">
-                    <span style="color: #8E9297;">Power Reading</span>
-                    <span class="font-data font-semibold" style="color: #FFC93C;">1.8 kW <span style="color: #8E9297; text-decoration: line-through; font-weight: 400;">4.9 kW</span></span>
-                </div>
-            </div>
-
-            <div class="card p-5 flex flex-col justify-between">
-                <div>
-                    <div class="flex items-center justify-between mb-3">
-                        <span class="text-xs font-semibold font-data" style="color: #8E9297;">BLOCK C // LAB C1</span>
-                        <span class="text-[11px] font-data font-medium px-2 py-0.5 rounded-md" style="background: rgba(255,201,60,0.1); color: #FFC93C;">WIS: 12</span>
-                    </div>
-                    <div class="text-sm font-semibold text-white mb-3">Advanced Computing Lab</div>
-                    <div class="rounded-lg p-3" style="background: #2B2D31;">
-                        <div class="kv-row">
-                            <span style="color: #8E9297;">PC Power State</span>
-                            <span class="font-data text-xs" style="color: #D9DAD0;">60 Systems in S3 Sleep</span>
-                        </div>
-                        <div class="kv-row">
-                            <span style="color: #8E9297;">Thermal Load Cut</span>
-                            <span class="font-data text-xs" style="color: #D9DAD0;">-6.0 kW Heat Removed</span>
-                        </div>
-                        <div class="kv-row">
-                            <span style="color: #8E9297;">Lab AC Compressors</span>
-                            <span class="font-data text-xs" style="color: #D9DAD0;">Isolated</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="mt-4 pt-3 flex justify-between items-center text-xs" style="border-top: 1px solid rgba(255,255,255,0.06);">
-                    <span style="color: #8E9297;">Power Reading</span>
-                    <span class="font-data font-semibold" style="color: #FFC93C;">0.18 kW <span style="color: #8E9297; text-decoration: line-through; font-weight: 400;">12.8 kW</span></span>
-                </div>
-            </div>
-
-            <div class="card p-5 flex flex-col justify-between">
-                <div>
-                    <div class="flex items-center justify-between mb-3">
-                        <span class="text-xs font-semibold font-data" style="color: #8E9297;">BLOCK B // ELEVATORS</span>
-                        <span class="text-[11px] font-data font-medium px-2 py-0.5 rounded-md" style="background: rgba(255,201,60,0.1); color: #FFC93C;">WIS: 22</span>
-                    </div>
-                    <div class="text-sm font-semibold text-white mb-3">4-Lift Elevator Bank</div>
-                    <div class="rounded-lg p-3" style="background: #2B2D31;">
-                        <div class="kv-row">
-                            <span style="color: #8E9297;">Active Safety Floor</span>
-                            <span class="font-data text-xs" style="color: #FFC93C;">2 Lifts Active Min</span>
-                        </div>
-                        <div class="kv-row">
-                            <span style="color: #8E9297;">Deep Sleep Lifts</span>
-                            <span class="font-data text-xs" style="color: #D9DAD0;">Cars 3 and 4 Parked</span>
-                        </div>
-                        <div class="kv-row">
-                            <span style="color: #8E9297;">Accessibility</span>
-                            <span class="font-data text-xs" style="color: #D9DAD0;">100% Compliant</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="mt-4 pt-3 flex justify-between items-center text-xs" style="border-top: 1px solid rgba(255,255,255,0.06);">
-                    <span style="color: #8E9297;">Standby Savings</span>
-                    <span class="font-data font-semibold" style="color: #FFC93C;">22 kWh/day</span>
-                </div>
-            </div>
-
-            <div class="card p-5 flex flex-col justify-between">
-                <div>
-                    <div class="flex items-center justify-between mb-3">
-                        <span class="text-xs font-semibold font-data" style="color: #8E9297;">HOSTEL // 120 ROOMS</span>
-                        <span class="text-[11px] font-data font-medium px-2 py-0.5 rounded-md" style="background: rgba(255,201,60,0.1); color: #FFC93C;">WIS: 15</span>
-                    </div>
-                    <div class="text-sm font-semibold text-white mb-3">Hostel Block and Geyser Grid</div>
-                    <div class="rounded-lg p-3" style="background: #2B2D31;">
-                        <div class="kv-row">
-                            <span style="color: #8E9297;">Vacant Room Mode</span>
-                            <span class="font-data text-xs" style="color: #D9DAD0;">Sensor Auto-Kill</span>
-                        </div>
-                        <div class="kv-row">
-                            <span style="color: #8E9297;">Occupied Rooms</span>
-                            <span class="font-data text-xs" style="color: #D9DAD0;">100% Manual Control</span>
-                        </div>
-                        <div class="kv-row">
-                            <span style="color: #8E9297;">Geyser Staggering</span>
-                            <span class="font-data text-xs" style="color: #D9DAD0;">W1 05:30 AM / W2 06:30 AM</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="mt-4 pt-3 flex justify-between items-center text-xs" style="border-top: 1px solid rgba(255,255,255,0.06);">
-                    <span style="color: #8E9297;">Demand Breach</span>
-                    <span class="font-data font-semibold" style="color: #D9DAD0;">Zero Violations</span>
-                </div>
-            </div>
-
-            <div class="card p-5 flex flex-col justify-between">
-                <div>
-                    <div class="flex items-center justify-between mb-3">
-                        <span class="text-xs font-semibold font-data" style="color: #8E9297;">CAMPUS // 15 COOLERS</span>
-                        <span class="text-[11px] font-data font-medium px-2 py-0.5 rounded-md" style="background: rgba(255,201,60,0.1); color: #FFC93C;">WIS: 05</span>
-                    </div>
-                    <div class="text-sm font-semibold text-white mb-3">Commercial Cooling Units</div>
-                    <div class="rounded-lg p-3" style="background: #2B2D31;">
-                        <div class="kv-row">
-                            <span style="color: #8E9297;">Night Cut-off</span>
-                            <span class="font-data text-xs" style="color: #D9DAD0;">07:00 PM - 07:00 AM Daily</span>
-                        </div>
-                        <div class="kv-row">
-                            <span style="color: #8E9297;">Sunday Policy</span>
-                            <span class="font-data text-xs" style="color: #D9DAD0;">100% Locked OFF</span>
-                        </div>
-                        <div class="kv-row">
-                            <span style="color: #8E9297;">Thermal Buffer</span>
-                            <span class="font-data text-xs" style="color: #D9DAD0;">2+ Hours Retention</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="mt-4 pt-3 flex justify-between items-center text-xs" style="border-top: 1px solid rgba(255,255,255,0.06);">
-                    <span style="color: #8E9297;">Monthly Savings</span>
-                    <span class="font-data font-semibold" style="color: #FFC93C;">1,620 kWh (INR 14.5K)</span>
-                </div>
-            </div>
-
-            <div class="card p-5 flex flex-col justify-between">
-                <div>
-                    <div class="flex items-center justify-between mb-3">
-                        <span class="text-xs font-semibold font-data" style="color: #8E9297;">NETWORK // 150 APs</span>
-                        <span class="text-[11px] font-data font-medium px-2 py-0.5 rounded-md" style="background: rgba(255,201,60,0.1); color: #FFC93C;">WIS: 10</span>
-                    </div>
-                    <div class="text-sm font-semibold text-white mb-3">Enterprise PoE WiFi Grid</div>
-                    <div class="rounded-lg p-3" style="background: #2B2D31;">
-                        <div class="kv-row">
-                            <span style="color: #8E9297;">Academic APs</span>
-                            <span class="font-data text-xs" style="color: #FFC93C;">5 GHz Radios Off</span>
-                        </div>
-                        <div class="kv-row">
-                            <span style="color: #8E9297;">Off-Hours Mode</span>
-                            <span class="font-data text-xs" style="color: #D9DAD0;">2.4 GHz Only (&lt;5W)</span>
-                        </div>
-                        <div class="kv-row">
-                            <span style="color: #8E9297;">Hostel APs</span>
-                            <span class="font-data text-xs" style="color: #D9DAD0;">Full 24/7 Bandwidth</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="mt-4 pt-3 flex justify-between items-center text-xs" style="border-top: 1px solid rgba(255,255,255,0.06);">
-                    <span style="color: #8E9297;">Monthly Potential</span>
-                    <span class="font-data font-semibold" style="color: #FFC93C;">2,700 kWh</span>
-                </div>
-            </div>
-
+        <div id="blockNodesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-8 transition-opacity duration-300">
         </div>
 
         <!-- SESSION SUGGESTIONS & SPATIAL OPTIMIZATION LOG (BY TIME) -->
@@ -668,6 +505,124 @@ def home():
     </footer>
 
     <script>
+        const TELEMETRY_BLOCKS = [
+            [
+                {{
+                    tag: 'BLOCK A // ADMIN WING', wis: 'WIS: 14', title: 'Administrative Offices',
+                    rows: [['Corridor Lighting', 'Zone B & C OFF'], ['HVAC Setpoint', '26°C (18 Staff)'], ['After-Hours Mode', '10:30 PM Lockdown']],
+                    footerLabel: 'Power Reading', footerVal: '1.4 kW', footerStrike: '4.2 kW'
+                }},
+                {{
+                    tag: 'BLOCK A // SEMINAR HALL', wis: 'WIS: 19', title: 'Executive Seminar Hall',
+                    rows: [['Projector & Audio', 'Auto-Sleep (7m Idle)'], ['Occupancy', '0 Scheduled (ERP)'], ['Chiller Valve', 'Closed / Standby']],
+                    footerLabel: 'Power Reading', footerVal: '0.2 kW', footerStrike: '6.8 kW'
+                }},
+                {{
+                    tag: 'BLOCK A // AUDITORIUM', wis: 'WIS: 11', title: 'Main Auditorium & Foyer',
+                    rows: [['Stage Lighting', 'Isolated at Breaker'], ['Lobby Cooling', 'Economy Ventilation'], ['Safety Override', 'Ready (Portal)']],
+                    footerLabel: 'Daily Savings', footerVal: '38 kWh/day', footerStrike: ''
+                }}
+            ],
+            [
+                {{
+                    tag: 'BLOCK B // B101', wis: 'WIS: 18', title: 'Lecture Room B101 (East)',
+                    rows: [['Window Lighting', 'Zone A Locked OFF'], ['Dynamic HVAC', '26°C Setpoint (35 Occ)'], ['Smartboard', 'Sleep (7m Timeout)']],
+                    footerLabel: 'Power Reading', footerVal: '1.8 kW', footerStrike: '4.9 kW'
+                }},
+                {{
+                    tag: 'BLOCK B // LAB B-3', wis: 'WIS: 15', title: 'Computer Lab B-3',
+                    rows: [['PC Power State', '50 Systems Auto-Sleep'], ['Thermal Load Cut', '-5.0 kW Heat Removed'], ['Lab AC Compressors', 'Isolated']],
+                    footerLabel: 'Power Reading', footerVal: '0.2 kW', footerStrike: '11.4 kW'
+                }},
+                {{
+                    tag: 'BLOCK B // ELEVATORS', wis: 'WIS: 22', title: '4-Lift Elevator Bank',
+                    rows: [['Active Safety Floor', '2 Lifts Active Min'], ['Deep Sleep Lifts', 'Cars 3 and 4 Parked'], ['Accessibility', '100% Compliant']],
+                    footerLabel: 'Standby Savings', footerVal: '22 kWh/day', footerStrike: ''
+                }}
+            ],
+            [
+                {{
+                    tag: 'BLOCK C // LAB C1', wis: 'WIS: 12', title: 'Advanced Computing Lab',
+                    rows: [['PC Power State', '60 Systems Auto-Sleep'], ['Thermal Load Cut', '-6.0 kW Heat Removed'], ['Morning Wake-Up', '07:45 AM Auto-Boot']],
+                    footerLabel: 'Power Reading', footerVal: '0.18 kW', footerStrike: '12.8 kW'
+                }},
+                {{
+                    tag: 'BLOCK C // STUDIOS', wis: 'WIS: 09', title: 'Sun-Facing Daylight Studios',
+                    rows: [['Natural Daylight', '480 Lux (Lights OFF)'], ['Afternoon Classes', 'Shifted from Block B'], ['Thermal Comfort', 'Fans + 26°C Trim']],
+                    footerLabel: 'Power Reading', footerVal: '1.1 kW', footerStrike: '5.4 kW'
+                }},
+                {{
+                    tag: 'BLOCK C // ECE & MECH', wis: 'WIS: 16', title: 'Hardware & Robotics Lab',
+                    rows: [['Workbench Mains', 'Timer Interlocked'], ['Exhaust & Ventilation', 'Occupancy Linked'], ['Curfew Cutoff', '10:30 PM Full OFF']],
+                    footerLabel: 'Daily Savings', footerVal: '44 kWh/day', footerStrike: ''
+                }}
+            ]
+        ];
+
+        let currentTelemetryIdx = 0;
+        let telemetryTimer = null;
+
+        function renderTelemetryBlock(idx) {{
+            currentTelemetryIdx = idx;
+            const grid = document.getElementById('blockNodesGrid');
+            if (!grid) return;
+            grid.style.opacity = '0.35';
+            setTimeout(() => {{
+                const cards = TELEMETRY_BLOCKS[idx];
+                grid.innerHTML = cards.map(c => `
+                    <div class="card p-5 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="text-xs font-semibold font-data" style="color: #8E9297;">${{c.tag}}</span>
+                                <span class="text-[11px] font-data font-medium px-2 py-0.5 rounded-md" style="background: rgba(255,201,60,0.1); color: #FFC93C;">${{c.wis}}</span>
+                            </div>
+                            <div class="text-sm font-semibold text-white mb-3">${{c.title}}</div>
+                            <div class="rounded-lg p-3" style="background: #2B2D31;">
+                                ${{c.rows.map(r => `
+                                    <div class="kv-row">
+                                        <span style="color: #8E9297;">${{r[0]}}</span>
+                                        <span class="font-data text-xs" style="color: #D9DAD0;">${{r[1]}}</span>
+                                    </div>
+                                `).join('')}}
+                            </div>
+                        </div>
+                        <div class="mt-4 pt-3 flex justify-between items-center text-xs" style="border-top: 1px solid rgba(255,255,255,0.06);">
+                            <span style="color: #8E9297;">${{c.footerLabel}}</span>
+                            <span class="font-data font-semibold" style="color: #FFC93C;">${{c.footerVal}} ${{c.footerStrike ? `<span style="color: #8E9297; text-decoration: line-through; font-weight: 400;">${{c.footerStrike}}</span>` : ''}}</span>
+                        </div>
+                    </div>
+                `).join('');
+                grid.style.opacity = '1';
+            }}, 140);
+
+            [0, 1, 2].forEach(i => {{
+                const btn = document.getElementById('tabBlock' + i);
+                if (!btn) return;
+                if (i === idx) {{
+                    btn.style.background = '#FFC93C';
+                    btn.style.color = '#2B2D31';
+                }} else {{
+                    btn.style.background = '#36393F';
+                    btn.style.color = '#D9DAD0';
+                }}
+            }});
+        }}
+
+        function selectTelemetryBlock(idx, restartTimer) {{
+            renderTelemetryBlock(idx);
+            if (restartTimer) {{
+                clearInterval(telemetryTimer);
+                telemetryTimer = setInterval(() => {{
+                    renderTelemetryBlock((currentTelemetryIdx + 1) % 3);
+                }}, 4500);
+            }}
+        }}
+
+        renderTelemetryBlock(0);
+        telemetryTimer = setInterval(() => {{
+            renderTelemetryBlock((currentTelemetryIdx + 1) % 3);
+        }}, 4500);
+
         function formatTo12Hour(time24) {{
             if (!time24) return '';
             const parts = time24.split(':');
@@ -879,7 +834,7 @@ def view_blueprint():
             margin: 0;
         }}
         h1, h2, h3, .font-heading {{ font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: -0.015em; }}
-        .font-data {{ font-family: 'Inter', sans-serif; font-variant-numeric: tabular-nums; }}
+        .font-data {{ font-family: 'Inter', sans-serif; }}
         .card {{
             background: #36393F;
             border-radius: 12px;

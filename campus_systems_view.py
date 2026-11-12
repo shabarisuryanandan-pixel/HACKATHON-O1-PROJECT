@@ -23,7 +23,7 @@ def render_campus_systems_html() -> str:
             margin: 0;
         }
         h1, h2, h3, .font-heading { font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: -0.015em; }
-        .font-data { font-family: 'Inter', sans-serif; font-variant-numeric: tabular-nums; }
+        .font-data { font-family: 'Inter', sans-serif; }
         .card {
             background-color: #36393F;
             border: 1px solid rgba(255, 255, 255, 0.06);
@@ -74,7 +74,6 @@ def render_campus_systems_html() -> str:
                 <a href="/" class="nav-link">Dashboard</a>
                 <a href="/sandbox" class="nav-link">Sandbox</a>
                 <a href="/systems" class="nav-link active">Campus Systems</a>
-                <a href="/blueprint" class="nav-link">Blueprint</a>
             </nav>
         </div>
     </header>
