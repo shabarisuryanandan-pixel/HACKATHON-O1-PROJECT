@@ -586,8 +586,17 @@ def evaluate_sandbox_state(payload: dict) -> dict:
         f"(Saved {kw_saved} kW / {savings_pct}% reduction | INR {inr_saved}/hr saved)."
     )
 
+    reloc_notice = ""
+    if relocations:
+        moves = [
+            f"Please move the class in {r['from_label']} ({r['students']} students) to {r['to_label']}."
+            for r in relocations
+        ]
+        reloc_notice = "Classroom Move Notice: " + " ".join(moves) + "\n\n"
+
     formatted_message = (
         f"[GridSense Simulation // JIT Block B @ {time_12h}]\n"
+        f"{reloc_notice}"
         f"1. Suggestion: {part1_suggestion}\n"
         f"2. Actions Taken: {part2_actions}\n"
         f"3. Energy Saved: {part3_savings}"
