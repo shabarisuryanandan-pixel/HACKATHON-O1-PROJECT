@@ -320,7 +320,7 @@ def render_cad_sandbox_html():
                     <!-- Time of Day (12-Hour AM/PM) -->
                     <div>
                         <div class="flex justify-between items-center text-xs mb-1.5">
-                            <span style="color: #D9DAD0;">Time of Day (12-Hr AM/PM)</span>
+                            <span style="color: #D9DAD0;">Time of Day</span>
                             <span id="timeDisplay12h" class="font-data font-bold text-sm" style="color: #FFC93C;">02:00 PM</span>
                         </div>
                         <input type="range" id="timeSlider" min="6" max="23" step="0.5" value="14.0" oninput="onVariableInputChanged()" class="w-full">
