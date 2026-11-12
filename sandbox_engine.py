@@ -1,42 +1,50 @@
 """
-GridSense Simulation Engine: Evaluates interactive sandbox inputs
-(Time of Day, Outdoor Weather, Zone Occupancies) and computes dynamic
-lighting states, adaptive AC setpoints, spatial class relocations,
-before/after energy metrics, and Telegram mobile alerts.
+GridSense Simulation Engine: 8 Classrooms Per Floor (B101 to B108 & B201 to B208),
+CAD Architectural layout with desks, luminaire fixtures, 4-lift elevator bank,
+staircase, 3-zone corridor relays, and Telegram mobile alerts.
 """
 
 def evaluate_sandbox_state(payload):
-    time_str = payload.get("time", "19:00")
+    time_str = payload.get("time", "19:30")
     temp_c = float(payload.get("temperature", 32.0))
-    weather_cond = payload.get("weather", "Sunny / Daylight") # Sunny, Overcast, Night
-    rooms_input = payload.get("rooms", {}) # {"B101": 25, "B104": 15, "A_SEM1": 0, ...}
+    weather_cond = payload.get("weather", "Sunny / Daylight")
+    selected_floor = int(payload.get("floor", 1))
+    rooms_input = payload.get("rooms", {}) # e.g. {"B101": 25, "B108": 20, ...}
 
     hour = int(time_str.split(":")[0])
     minute = int(time_str.split(":")[1])
     time_float = hour + minute / 60.0
 
-    # 1. Daylight availability based on time & weather
     is_daylight = (7.0 <= time_float <= 17.5) and ("Night" not in weather_cond)
     lux_level = 650 if (is_daylight and "Sunny" in weather_cond) else (280 if is_daylight else 0)
 
-    # Room registry for simulation
-    all_rooms = {
-        "A_SEM1": {"name": "Block A // Seminar Hall 1", "block": "Block A", "floor": 1, "capacity": 150, "orientation": "North", "near_entrance": True},
-        "A_SEM2": {"name": "Block A // Seminar Hall 2", "block": "Block A", "floor": 2, "capacity": 120, "orientation": "North", "near_entrance": False},
-        "B101": {"name": "Block B // Room B101", "block": "Block B", "floor": 1, "capacity": 60, "orientation": "East", "near_entrance": True},
-        "B102": {"name": "Block B // Room B102", "block": "Block B", "floor": 1, "capacity": 60, "orientation": "North", "near_entrance": True},
-        "B103": {"name": "Block B // Room B103", "block": "Block B", "floor": 1, "capacity": 60, "orientation": "West", "near_entrance": False},
-        "B104": {"name": "Block B // Room B104 (Far End)", "block": "Block B", "floor": 1, "capacity": 60, "orientation": "West", "near_entrance": False},
-        "B201": {"name": "Block B // Room B201", "block": "Block B", "floor": 2, "capacity": 60, "orientation": "East", "near_entrance": True},
-        "B204": {"name": "Block B // Room B204 (Far End)", "block": "Block B", "floor": 2, "capacity": 60, "orientation": "West", "near_entrance": False}
-    }
+    # 8 Classrooms per floor:
+    # North Wing: Bx01, Bx02, Bx03, Bx04
+    # South Wing: Bx05, Bx06, Bx07, Bx08
+    # Entrance/Stairs/Lifts are located at the West end (x01 / x05)
+    # Far end of the 80m corridor is at the East end (x04 / x08)
 
-    # Evaluate each room state
+    floor_prefix = f"B{selected_floor}0"
+    all_rooms = {}
+    for i in range(1, 9):
+        r_id = f"B{selected_floor}0{i}" if i < 10 else f"B{selected_floor}{i}"
+        wing = "North Wing" if i <= 4 else "South Wing"
+        corridor_segment = 1 if i in [1, 5] else (2 if i in [2, 6] else 3)
+        near_entrance = (i in [1, 5, 2])
+        all_rooms[r_id] = {
+            "id": r_id,
+            "name": f"Lecture Room {r_id}",
+            "wing": wing,
+            "corridor_segment": corridor_segment,
+            "near_entrance": near_entrance,
+            "capacity": 60,
+            "orientation": "North" if i <= 4 else "South"
+        }
+
     room_results = {}
     total_baseline_kw = 0.0
     total_optimized_kw = 0.0
     active_classes_count = 0
-
     relocation_suggestions = []
 
     for r_id, meta in all_rooms.items():
@@ -45,119 +53,106 @@ def evaluate_sandbox_state(payload):
         if is_occupied:
             active_classes_count += 1
 
-        # Traditional Baseline: If scheduled or after hours, full lights & fixed 20C AC
-        if is_occupied or (time_float < 17.5) or (time_float > 17.5 and r_id in ["B101", "B104", "A_SEM1"]):
+        # Baseline: If daytime or occupied, full lights & AC
+        if is_occupied or (time_float < 17.5):
             base_light_kw = 0.60
-            base_ac_kw = 4.0 if "SEM" in r_id else 3.2
-            base_av_kw = 0.35
-            base_room_kw = round(base_light_kw + base_ac_kw + base_av_kw, 2)
+            base_ac_kw = 3.60
+            base_room_kw = 4.20
+        elif time_float >= 17.5 and r_id in [f"B{selected_floor}01", f"B{selected_floor}08"]:
+            base_room_kw = 4.20 # Left running blindly after hours
         else:
-            base_room_kw = 0.15 # Parasitic standby
+            base_room_kw = 0.15
 
         total_baseline_kw += base_room_kw
 
-        # GridSense Optimized:
+        # GridSense Optimized
         if not is_occupied:
-            # 100% automated kill
             opt_light_state = "OFF"
-            opt_light_kw = 0.0
-            opt_ac_mode = "STANDBY / OFF"
+            opt_ac_mode = "STANDBY"
             opt_ac_setpoint = "OFF"
-            opt_ac_kw = 0.02
-            opt_av_state = "SLEEP (<3W)"
             opt_room_kw = 0.02
         else:
-            # Module A1: Daylight-linked lighting
-            if is_daylight and lux_level > 300 and meta["orientation"] in ["East", "North"]:
-                opt_light_state = "50% (Window Rows Locked OFF)"
+            if is_daylight and lux_level > 300 and meta["orientation"] == "North":
+                opt_light_state = "WINDOW ROWS LOCKED OFF"
                 opt_light_kw = 0.25
             else:
-                opt_light_state = "ON (Full)"
+                opt_light_state = "ON"
                 opt_light_kw = 0.50
 
-            # Module A2: Adaptive AC
             if temp_c < 24.0:
-                opt_ac_mode = "VENTILATION ONLY (Fans Active)"
+                opt_ac_mode = "VENTILATION (Fans)"
                 opt_ac_setpoint = "OFF"
-                opt_ac_kw = 0.20 # Fans only
+                opt_ac_kw = 0.20
             elif occ < 25:
-                opt_ac_mode = "ECO ADAPTIVE (Setpoint: 26°C)"
+                opt_ac_mode = "ECO ADAPTIVE"
                 opt_ac_setpoint = "26°C"
                 opt_ac_kw = 1.80
             else:
-                opt_ac_mode = "DYNAMIC COOLING (Setpoint: 24°C)"
+                opt_ac_mode = "DYNAMIC COOLING"
                 opt_ac_setpoint = "24°C"
                 opt_ac_kw = 2.60
 
-            opt_av_state = "ACTIVE"
-            opt_room_kw = round(opt_light_kw + opt_ac_kw + 0.25, 2)
+            opt_room_kw = round(opt_light_kw + opt_ac_kw + 0.15, 2)
 
         total_optimized_kw += opt_room_kw
 
         room_results[r_id] = {
             "id": r_id,
             "name": meta["name"],
-            "block": meta["block"],
-            "floor": meta["floor"],
+            "wing": meta["wing"],
+            "corridor_segment": meta["corridor_segment"],
             "occupancy": occ,
             "is_occupied": is_occupied,
+            "lighting_glow": is_occupied,
             "lighting_state": opt_light_state,
-            "lighting_glow": (opt_light_state != "OFF"),
             "ac_mode": opt_ac_mode,
             "ac_setpoint": opt_ac_setpoint,
-            "av_state": opt_av_state,
             "baseline_kw": base_room_kw,
             "optimized_kw": opt_room_kw,
             "near_entrance": meta["near_entrance"]
         }
 
-    # Module B: Spatial Consolidation Detection
-    # If a class is isolated in a far-end room (B104 or B204) while near-entrance rooms (B101, B102) are vacant:
-    if room_results["B104"]["is_occupied"] and not room_results["B101"]["is_occupied"]:
+    # Spatial Consolidation check:
+    # If a class is sitting in far rooms (x04, x08, x03, x07) while entrance rooms (x01, x05) are empty:
+    far_rooms_occupied = [r for r in [f"B{selected_floor}04", f"B{selected_floor}08", f"B{selected_floor}03", f"B{selected_floor}07"] if room_results[r]["is_occupied"]]
+    entrance_rooms_free = [r for r in [f"B{selected_floor}01", f"B{selected_floor}05", f"B{selected_floor}02", f"B{selected_floor}06"] if not room_results[r]["is_occupied"]]
+
+    if far_rooms_occupied and entrance_rooms_free:
+        source_r = far_rooms_occupied[0]
+        target_r = entrance_rooms_free[0]
         relocation_suggestions.append({
-            "from_room": "B104 (Far End Corridor)",
-            "to_room": "B101 (Near Staircase)",
-            "students": room_results["B104"]["occupancy"],
-            "reason": "Consolidate to entrance. Allows de-energizing 40m of corridor lighting & Block B Far Wing.",
-            "corridor_saved_kw": 1.8,
-            "inr_per_hour_saved": 16.20
+            "from_room": source_r,
+            "to_room": target_r,
+            "students": room_results[source_r]["occupancy"],
+            "reason": f"Isolated class in {source_r} (Far End). Relocate to {target_r} near the staircase/entrance to completely shut down 40m of corridor lighting and far-wing circuits.",
+            "corridor_saved_kw": 2.2,
+            "inr_per_hour_saved": 19.80
         })
 
-    if room_results["B204"]["is_occupied"] and not room_results["B102"]["is_occupied"]:
-        relocation_suggestions.append({
-            "from_room": "B204 (Floor 2 Far End)",
-            "to_room": "B102 (Floor 1 Entrance)",
-            "students": room_results["B204"]["occupancy"],
-            "reason": "Move Floor 2 class to Floor 1. Allows complete power shutdown of Floor 2 wing & elevator call demand.",
-            "corridor_saved_kw": 2.4,
-            "inr_per_hour_saved": 21.60
-        })
-
-    # Corridor and Elevator logic
-    # Corridors: 3 zones per floor
-    b_floor1_far_lit = room_results["B103"]["is_occupied"] or room_results["B104"]["is_occupied"]
-    b_floor2_far_lit = room_results["B204"]["is_occupied"]
+    # Corridor zone states
+    z1_active = room_results[f"B{selected_floor}01"]["is_occupied"] or room_results[f"B{selected_floor}05"]["is_occupied"]
+    z2_active = room_results[f"B{selected_floor}02"]["is_occupied"] or room_results[f"B{selected_floor}06"]["is_occupied"]
+    z3_active = (room_results[f"B{selected_floor}03"]["is_occupied"] or room_results[f"B{selected_floor}07"]["is_occupied"] or
+                 room_results[f"B{selected_floor}04"]["is_occupied"] or room_results[f"B{selected_floor}08"]["is_occupied"])
 
     corridor_state = {
-        "floor1_zone1_entrance": "ON" if (room_results["B101"]["is_occupied"] or room_results["B102"]["is_occupied"]) else "OFF",
-        "floor1_zone2_mid": "ON" if room_results["B103"]["is_occupied"] else "OFF",
-        "floor1_zone3_far": "ON" if room_results["B104"]["is_occupied"] else "OFF",
-        "floor2_wing": "ON" if (room_results["B201"]["is_occupied"] or room_results["B204"]["is_occupied"]) else "OFF"
+        "zone1_entrance": "LIT" if z1_active else "DARK",
+        "zone2_mid": "LIT" if z2_active else "DARK",
+        "zone3_far": "LIT" if z3_active else "DARK"
     }
 
-    # Add corridor baseline vs optimized
-    base_corridor_kw = 4.2
-    opt_corridor_kw = 0.6 if (not b_floor1_far_lit and not b_floor2_far_lit) else 2.1
+    base_corridor_kw = 4.8
+    opt_corridor_kw = (1.6 if z1_active else 0.0) + (1.6 if z2_active else 0.0) + (1.6 if z3_active else 0.0)
     total_baseline_kw += base_corridor_kw
-    total_optimized_kw += opt_corridor_kw
+    total_optimized_kw += round(opt_corridor_kw, 2)
 
-    # Elevator dynamic staging
+    # Elevator dispatch
     if time_float >= 17.5 or active_classes_count <= 2:
-        elevator_mode = "2 Lifts Active (Mandatory Safety Floor) | 2 Lifts Deep Sleep"
+        elev_state = "2 Lifts Active (Mandatory Safety Minimum) | 2 Lifts Deep Sleep"
         base_elev_kw = 4.8
         opt_elev_kw = 1.4
     else:
-        elevator_mode = "4 Lifts Active (Rush Schedule)"
+        elev_state = "4 Lifts Active (Full Peak Schedule)"
         base_elev_kw = 9.5
         opt_elev_kw = 7.2
 
@@ -166,20 +161,20 @@ def evaluate_sandbox_state(payload):
 
     kw_saved = max(0.0, total_baseline_kw - total_optimized_kw)
     savings_pct = round((kw_saved / (total_baseline_kw + 0.001)) * 100, 1)
-    inr_per_hour_saved = round(kw_saved * 9.00, 2)
+    inr_saved = round(kw_saved * 9.00, 2)
 
     return {
         "time": time_str,
         "temperature": temp_c,
         "weather": weather_cond,
-        "lux_level": lux_level,
+        "floor": selected_floor,
         "active_classes": active_classes_count,
         "total_baseline_kw": round(total_baseline_kw, 2),
         "total_optimized_kw": round(total_optimized_kw, 2),
         "kw_saved": round(kw_saved, 2),
         "savings_percentage": savings_pct,
-        "inr_per_hour_saved": inr_per_hour_saved,
-        "elevator_mode": elevator_mode,
+        "inr_per_hour_saved": inr_saved,
+        "elevator_mode": elev_state,
         "corridor_state": corridor_state,
         "relocations": relocation_suggestions,
         "rooms": room_results
