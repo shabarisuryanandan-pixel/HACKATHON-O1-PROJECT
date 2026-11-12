@@ -47,9 +47,9 @@ def test_multi_class_wing_consolidation():
     assert res["elevator_mode"].startswith("2 Lifts Active: L1 & L2 ON")
 
 
-def test_curfew_shutdown_after_930pm():
+def test_curfew_shutdown_after_1030pm():
     res = evaluate_sandbox_state({
-        "time": "10:00 PM",
+        "time": "10:30 PM",
         "temperature": 27,
         "weather": "Night",
         "rooms": {"B101": 40, "B108": 30},
@@ -68,8 +68,8 @@ def test_temperature_coupled_baseline():
 
 def test_timetable_includes_curfew_slots():
     tt = generate_random_timetable(seed=42)["schedule"]
-    assert tt[-2]["time_12h"] == "09:30 PM"
-    assert tt[-1]["time_12h"] == "10:00 PM"
+    assert tt[-2]["time_12h"] == "10:30 PM"
+    assert tt[-1]["time_12h"] == "11:00 PM"
     assert tt[-1]["active_count"] == 0
 
 

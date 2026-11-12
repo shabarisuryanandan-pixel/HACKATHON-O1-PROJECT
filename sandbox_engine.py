@@ -96,8 +96,8 @@ def generate_random_timetable(seed=None) -> dict:
         {"time_float": 16.0, "label": "04:00 PM", "temp": 31, "weather": "Sunny / Daylight", "profile": "late_afternoon"},
         {"time_float": 18.0, "label": "06:00 PM", "temp": 29, "weather": "Night", "profile": "evening"},
         {"time_float": 19.5, "label": "07:30 PM", "temp": 28, "weather": "Night", "profile": "evening_isolated"},
-        {"time_float": 21.5, "label": "09:30 PM", "temp": 27, "weather": "Night", "profile": "curfew_shutdown"},
-        {"time_float": 22.0, "label": "10:00 PM", "temp": 26, "weather": "Night", "profile": "curfew_shutdown"},
+        {"time_float": 22.5, "label": "10:30 PM", "temp": 27, "weather": "Night", "profile": "curfew_shutdown"},
+        {"time_float": 23.0, "label": "11:00 PM", "temp": 26, "weather": "Night", "profile": "curfew_shutdown"},
     ]
 
     schedule = []
@@ -160,7 +160,7 @@ def generate_random_timetable(seed=None) -> dict:
 
         active_list = [f"{ROOM_META[k]['label']} ({v})" for k, v in rooms.items() if v > 0]
         summary_text = ", ".join(active_list) if active_list else (
-            "Building Shutdown (No Classes After 9:30 PM)" if prof == "curfew_shutdown" else "All Rooms Vacant"
+            "Building Shutdown (No Classes After 10:30 PM)" if prof == "curfew_shutdown" else "All Rooms Vacant"
         )
         schedule.append({
             "time_float": slot["time_float"],
@@ -186,7 +186,7 @@ def evaluate_sandbox_state(payload: dict) -> dict:
     is_daylight = (7.0 <= time_float <= 17.5) and ("Night" not in weather_cond)
     is_working_hours = (7.0 <= time_float <= 17.5)
     is_afternoon_sun = (11.5 <= time_float <= 15.5) and is_daylight
-    is_curfew_shutdown = (time_float >= 21.5) or (time_float < 6.0)
+    is_curfew_shutdown = (time_float >= 22.5) or (time_float < 6.0)
 
     # Clean occupancy map for all 11 spaces
     raw_occ = {}
@@ -534,7 +534,7 @@ def evaluate_sandbox_state(payload: dict) -> dict:
 
     # Part 1 & 2: Suggestion + Actions Taken
     if is_curfew_shutdown:
-        part1_suggestion = f"Campus Curfew ({time_12h}): No classes permitted after 09:30 PM. Complete Block B building shutdown enforced."
+        part1_suggestion = f"Campus Curfew ({time_12h}): No classes permitted after 10:30 PM. Complete Block B building shutdown enforced."
         part2_actions = "Main building breakers tripped OFF: all 11 classrooms & labs, all 4 lifts (L1-L4), corridors, staircases, and Faculty Lounge completely shut down (0.0 kW)."
     else:
         suggestion_parts = []
