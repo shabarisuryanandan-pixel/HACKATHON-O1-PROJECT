@@ -1,6 +1,6 @@
 """
 GridSense Block B Interactive Sandbox & Vector CAD Blueprint
-Minimalist UI (#2B2D31 Gray, #D9DAD0 Silver, #FFC93C Yellow)
+Minimalist UI (#01010D Gray, #E4E6F5 Silver, #6BFBCE Yellow)
 Features:
 - 12-Hour AM/PM time formatting everywhere
 - Mode 1 (Variable Mode): Time slider, Temp slider, and ON/OFF toggle + headcount slider for all 8 Classrooms & 3 Labs
@@ -37,12 +37,12 @@ def _render_svg_room(rid: str, label: str, sub: str, x: int, y: int, w: int, h: 
         <rect id="poly_{rid}" x="{x}" y="{y}" width="{w}" height="{h}" rx="6" class="room-box room-unlit" />
 
         <!-- Top Header Bar -->
-        <rect x="{x+1}" y="{y+1}" width="{w-2}" height="28" rx="5" fill="#1E2024" opacity="0.85" />
+        <rect x="{x+1}" y="{y+1}" width="{w-2}" height="28" rx="5" fill="#050514" opacity="0.85" />
         <text x="{x+10}" y="{y+19}" fill="#FFFFFF" font-family="Inter, sans-serif" font-size="11.5" font-weight="700">{label}</text>
-        <text id="occ_badge_{rid}" x="{x+w-10}" y="{y+19}" fill="#8E9297" font-family="Inter, sans-serif" font-size="10.5" font-weight="700" text-anchor="end">OFF</text>
+        <text id="occ_badge_{rid}" x="{x+w-10}" y="{y+19}" fill="#9499B8" font-family="Inter, sans-serif" font-size="10.5" font-weight="700" text-anchor="end">OFF</text>
 
         <!-- Subtitle / Wing Area -->
-        <text id="sub_badge_{rid}" x="{x+10}" y="{y+40}" fill="#8E9297" font-family="Inter, sans-serif" font-size="9.5" font-weight="500">{sub}</text>
+        <text id="sub_badge_{rid}" x="{x+10}" y="{y+40}" fill="#9499B8" font-family="Inter, sans-serif" font-size="9.5" font-weight="500">{sub}</text>
 
         <!-- 4 Individual Ceiling Luminaires (L1, L2, L3, L4) -->
         <g>
@@ -59,9 +59,9 @@ def _render_svg_room(rid: str, label: str, sub: str, x: int, y: int, w: int, h: 
         <rect id="d4_{rid}" x="{d2_x}" y="{d_y2}" width="{dw}" height="11" rx="2" class="desk-box desk-off" />
 
         <!-- Bottom AC & Power Pill -->
-        <rect id="ac_bg_{rid}" x="{x+8}" y="{ac_y}" width="{w-16}" height="18" rx="4" fill="#1E2024" />
-        <text id="ac_{rid}" x="{x+14}" y="{ac_y+12.5}" fill="#8E9297" font-family="Inter, sans-serif" font-size="9.5" font-weight="600">AC: OFF</text>
-        <text id="kw_{rid}" x="{x+w-14}" y="{ac_y+12.5}" fill="#8E9297" font-family="Inter, sans-serif" font-size="9.5" font-weight="600" text-anchor="end">0.0 kW</text>
+        <rect id="ac_bg_{rid}" x="{x+8}" y="{ac_y}" width="{w-16}" height="18" rx="4" fill="#050514" />
+        <text id="ac_{rid}" x="{x+14}" y="{ac_y+12.5}" fill="#9499B8" font-family="Inter, sans-serif" font-size="9.5" font-weight="600">AC: OFF</text>
+        <text id="kw_{rid}" x="{x+w-14}" y="{ac_y+12.5}" fill="#9499B8" font-family="Inter, sans-serif" font-size="9.5" font-weight="600" text-anchor="end">0.0 kW</text>
     </g>
     """
 
@@ -103,24 +103,47 @@ def render_cad_sandbox_html():
         * {{ box-sizing: border-box; }}
         body {{
             font-family: 'Inter', sans-serif;
-            background-color: #2B2D31;
-            color: #D9DAD0;
+            background-color: #01010D;
+            background-image:
+                radial-gradient(circle at 12% 10%, rgba(83, 49, 251, 0.28) 0%, transparent 40%),
+                radial-gradient(circle at 88% 20%, rgba(107, 251, 206, 0.14) 0%, transparent 38%),
+                radial-gradient(circle at 52% 90%, rgba(83, 49, 251, 0.22) 0%, transparent 46%);
+            background-attachment: fixed;
+            color: #E4E6F5;
             margin: 0;
+        }}
+        header {{
+            background: rgba(1, 1, 13, 0.72) !important;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(107, 251, 206, 0.14) !important;
+            position: sticky;
+            top: 0;
+            z-index: 40;
         }}
         h1, h2, h3, .font-heading {{ font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: -0.015em; }}
         .font-data {{ font-family: 'Inter', sans-serif; }}
         .card {{
-            background: #36393F;
-            border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.07);
+            background: linear-gradient(135deg, rgba(22, 18, 56, 0.58) 0%, rgba(7, 7, 22, 0.62) 100%) !important;
+            backdrop-filter: blur(22px);
+            -webkit-backdrop-filter: blur(22px);
+            border-radius: 14px;
+            border: 1px solid rgba(107, 251, 206, 0.16) !important;
+            box-shadow: 0 10px 36px rgba(1, 1, 13, 0.78), 0 0 28px rgba(83, 49, 251, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.10);
+            transition: border-color 0.25s ease, box-shadow 0.25s ease;
+        }}
+        .card:hover {{
+            border-color: rgba(107, 251, 206, 0.34) !important;
+            box-shadow: 0 14px 44px rgba(1, 1, 13, 0.85), 0 0 34px rgba(83, 49, 251, 0.26), 0 0 16px rgba(107, 251, 206, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.15);
         }}
         .sub-box {{
-            background: #2B2D31;
+            background: rgba(6, 6, 20, 0.65);
+            backdrop-filter: blur(12px);
             border-radius: 8px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(83, 49, 251, 0.22);
         }}
         .nav-link {{
-            color: #8E9297;
+            color: #9499B8;
             font-size: 14px;
             font-weight: 500;
             padding: 8px 4px;
@@ -128,10 +151,10 @@ def render_cad_sandbox_html():
             transition: color 0.15s ease, border-color 0.15s ease;
             text-decoration: none;
         }}
-        .nav-link:hover {{ color: #D9DAD0; }}
+        .nav-link:hover {{ color: #E4E6F5; }}
         .nav-link.active {{
             color: #FFFFFF;
-            border-bottom-color: #FFC93C;
+            border-bottom-color: #6BFBCE;
         }}
         .mode-tab {{
             flex: 1;
@@ -142,20 +165,20 @@ def render_cad_sandbox_html():
             border-radius: 8px;
             cursor: pointer;
             transition: all 0.15s ease;
-            color: #8E9297;
+            color: #9499B8;
             background: transparent;
             border: none;
         }}
         .mode-tab.active {{
-            background: #FFC93C;
-            color: #2B2D31;
+            background: #6BFBCE;
+            color: #01010D;
             font-weight: 700;
         }}
         input[type="range"] {{
             -webkit-appearance: none;
             appearance: none;
             height: 5px;
-            background: #2B2D31;
+            background: #01010D;
             border-radius: 4px;
             outline: none;
         }}
@@ -165,17 +188,17 @@ def render_cad_sandbox_html():
             width: 15px;
             height: 15px;
             border-radius: 50%;
-            background: #FFC93C;
+            background: #6BFBCE;
             cursor: pointer;
-            border: 2px solid #2B2D31;
+            border: 2px solid #01010D;
         }}
 
         /* SVG Blueprint Styles */
         .blueprint-wrap {{
-            background-color: #1E2024;
+            background-color: #050514; box-shadow: inset 0 0 48px rgba(83, 49, 251, 0.16);
             background-image:
-                linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+                linear-gradient(rgba(83, 49, 251, 0.09) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(83, 49, 251, 0.09) 1px, transparent 1px);
             background-size: 28px 28px;
             border-radius: 10px;
             border: 1px solid rgba(255, 255, 255, 0.08);
@@ -184,18 +207,19 @@ def render_cad_sandbox_html():
             transition: fill 0.25s ease, stroke 0.25s ease, stroke-width 0.25s ease;
         }}
         .room-unlit {{
-            fill: #27292E;
-            stroke: #40444B;
+            fill: #0A0A1E;
+            stroke: #2A245A;
             stroke-width: 1.5;
         }}
         .room-lit {{
-            fill: #353022;
-            stroke: #FFC93C;
+            fill: rgba(83, 49, 251, 0.24);
+            stroke: #6BFBCE;
+            filter: drop-shadow(0 0 10px rgba(107, 251, 206, 0.22));
             stroke-width: 2.2;
         }}
         .room-wasted {{
-            fill: #332B24;
-            stroke: #F59E0B;
+            fill: rgba(83, 49, 251, 0.16);
+            stroke: #5331FB;
             stroke-width: 1.8;
             stroke-dasharray: 5 3;
         }}
@@ -209,14 +233,14 @@ def render_cad_sandbox_html():
             transition: all 0.25s ease;
         }}
         .lum-on {{
-            fill: #FFC93C;
+            fill: #6BFBCE;
             stroke: #FEF08A;
             stroke-width: 1.5;
-            filter: drop-shadow(0 0 6px #FFC93C);
+            filter: drop-shadow(0 0 6px #6BFBCE);
         }}
         .lum-off {{
-            fill: #1E2024;
-            stroke: #4F545C;
+            fill: #070716;
+            stroke: #2D285E;
             stroke-width: 1.2;
             filter: none;
         }}
@@ -224,13 +248,13 @@ def render_cad_sandbox_html():
             transition: all 0.25s ease;
         }}
         .desk-on {{
-            fill: #4A412A;
-            stroke: #D9A528;
+            fill: #182C3C;
+            stroke: #6BFBCE;
             stroke-width: 1;
         }}
         .desk-off {{
-            fill: #2E3136;
-            stroke: #3F434A;
+            fill: #0E0E24;
+            stroke: #25214C;
             stroke-width: 1;
         }}
         .corridor-line {{
@@ -238,30 +262,32 @@ def render_cad_sandbox_html():
             fill: none;
         }}
         .corridor-on {{
-            stroke: #FFC93C;
+            stroke: #6BFBCE;
             stroke-width: 4;
-            filter: drop-shadow(0 0 6px rgba(255, 201, 60, 0.6));
+            filter: drop-shadow(0 0 6px rgba(107, 251, 206, 0.6));
         }}
         .corridor-off {{
-            stroke: #3A3E45;
+            stroke: #2A245A;
             stroke-width: 2;
             stroke-dasharray: 6 6;
             filter: none;
         }}
         .lift-car-on {{
-            fill: #3A331E;
-            stroke: #FFC93C;
+            fill: #102B34;
+            stroke: #6BFBCE;
+            filter: drop-shadow(0 0 8px rgba(107, 251, 206, 0.35));
             stroke-width: 2;
         }}
         .lift-car-off {{
-            fill: #232529;
-            stroke: #40444B;
+            fill: #08081A;
+            stroke: #2A245A;
             stroke-width: 1.2;
             stroke-dasharray: 3 3;
         }}
         .zone-box-on {{
-            fill: #353022;
-            stroke: #FFC93C;
+            fill: rgba(83, 49, 251, 0.24);
+            stroke: #6BFBCE;
+            filter: drop-shadow(0 0 10px rgba(107, 251, 206, 0.22));
             stroke-width: 2;
         }}
         .zone-box-off {{
@@ -274,14 +300,14 @@ def render_cad_sandbox_html():
 <body class="min-h-screen flex flex-col">
 
     <!-- TOP NAVBAR -->
-    <header style="background: #2B2D31; border-bottom: 1px solid rgba(255,255,255,0.07);">
+    <header style="background: #01010D; border-bottom: 1px solid rgba(255,255,255,0.07);">
         <div class="max-w-[1560px] mx-auto px-5 h-14 flex items-center justify-between">
             <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm" style="background: #FFC93C; color: #2B2D31;">
+                <div class="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm" style="background: #6BFBCE; color: #01010D;">
                     GS
                 </div>
                 <span class="text-base font-bold text-white tracking-tight">GridSense</span>
-                <span class="text-xs px-2 py-0.5 rounded font-medium" style="background: #36393F; color: #8E9297;">JIT Block B Simulator</span>
+                <span class="text-xs px-2 py-0.5 rounded font-medium" style="background: #12102E; color: #9499B8;">JIT Block B Simulator</span>
             </div>
             <nav class="flex items-center gap-7">
                 <a href="/" class="nav-link">Dashboard</a>
@@ -300,8 +326,8 @@ def render_cad_sandbox_html():
 
                 <!-- 1. MODE SWITCHER (VARIABLE MODE vs SET TIMETABLE MODE) -->
                 <div class="card p-3">
-                    <div class="text-[11px] font-semibold uppercase tracking-wider mb-2" style="color: #8E9297;">Simulation Operating Mode</div>
-                    <div class="flex gap-1.5 p-1 rounded-lg" style="background: #2B2D31;">
+                    <div class="text-[11px] font-semibold uppercase tracking-wider mb-2" style="color: #9499B8;">Simulation Operating Mode</div>
+                    <div class="flex gap-1.5 p-1 rounded-lg" style="background: #01010D;">
                         <button id="tabVariable" onclick="switchMode('variable')" class="mode-tab active">
                             Mode 1: Variable Mode
                         </button>
@@ -314,18 +340,18 @@ def render_cad_sandbox_html():
                 <!-- 2. ENVIRONMENTAL VARIABLES (TIME IN 12H AM/PM & OUTSIDE TEMP) -->
                 <div class="card p-4 space-y-3.5">
                     <div class="flex items-center justify-between">
-                        <span class="text-xs font-semibold uppercase tracking-wider" style="color: #8E9297;">1. Time &amp; Weather Variables</span>
-                        <span id="daylightBadge" class="text-[11px] font-data px-2 py-0.5 rounded" style="background: #2B2D31; color: #FFC93C;">Daylight</span>
+                        <span class="text-xs font-semibold uppercase tracking-wider" style="color: #9499B8;">1. Time &amp; Weather Variables</span>
+                        <span id="daylightBadge" class="text-[11px] font-data px-2 py-0.5 rounded" style="background: #01010D; color: #6BFBCE;">Daylight</span>
                     </div>
 
                     <!-- Time of Day (12-Hour AM/PM) -->
                     <div>
                         <div class="flex justify-between items-center text-xs mb-1.5">
-                            <span style="color: #D9DAD0;">Time of Day</span>
-                            <span id="timeDisplay12h" class="font-data font-bold text-sm" style="color: #FFC93C;">02:00 PM</span>
+                            <span style="color: #E4E6F5;">Time of Day</span>
+                            <span id="timeDisplay12h" class="font-data font-bold text-sm" style="color: #6BFBCE;">02:00 PM</span>
                         </div>
                         <input type="range" id="timeSlider" min="6" max="23" step="0.5" value="14.0" oninput="onVariableInputChanged()" class="w-full">
-                        <div class="flex justify-between text-[10px] font-data mt-1" style="color: #8E9297;">
+                        <div class="flex justify-between text-[10px] font-data mt-1" style="color: #9499B8;">
                             <span>06:00 AM</span>
                             <span>12:00 PM</span>
                             <span>06:00 PM</span>
@@ -336,11 +362,11 @@ def render_cad_sandbox_html():
                     <!-- Outside Temperature -->
                     <div>
                         <div class="flex justify-between items-center text-xs mb-1.5">
-                            <span style="color: #D9DAD0;">Outside Temperature</span>
+                            <span style="color: #E4E6F5;">Outside Temperature</span>
                             <span id="tempDisplay" class="font-data font-bold text-sm text-white">33°C</span>
                         </div>
                         <input type="range" id="tempSlider" min="20" max="40" step="1" value="33" oninput="onVariableInputChanged()" class="w-full">
-                        <div class="flex justify-between text-[10px] font-data mt-1" style="color: #8E9297;">
+                        <div class="flex justify-between text-[10px] font-data mt-1" style="color: #9499B8;">
                             <span>20°C (Cool)</span>
                             <span>30°C (Warm)</span>
                             <span>40°C (Peak Heat)</span>
@@ -349,8 +375,8 @@ def render_cad_sandbox_html():
 
                     <!-- Sky Condition -->
                     <div>
-                        <label class="block text-xs mb-1" style="color: #D9DAD0;">Outside Sky Condition</label>
-                        <select id="weatherSelect" onchange="onVariableInputChanged()" class="w-full p-2 rounded-lg text-xs font-medium outline-none" style="background: #2B2D31; color: #FFFFFF; border: 1px solid rgba(255,255,255,0.08);">
+                        <label class="block text-xs mb-1" style="color: #E4E6F5;">Outside Sky Condition</label>
+                        <select id="weatherSelect" onchange="onVariableInputChanged()" class="w-full p-2 rounded-lg text-xs font-medium outline-none" style="background: #01010D; color: #FFFFFF; border: 1px solid rgba(255,255,255,0.08);">
                             <option value="Sunny / Daylight" selected>Sunny / Clear Sky (High Natural Sunlight)</option>
                             <option value="Overcast / Rainy">Overcast / Cloudy (Low Natural Lux)</option>
                             <option value="Night">Night / Dark Outside</option>
@@ -362,44 +388,44 @@ def render_cad_sandbox_html():
                 <div id="panelVariable" class="card p-4 space-y-3">
                     <div class="flex items-center justify-between">
                         <div>
-                            <div class="text-xs font-semibold uppercase tracking-wider" style="color: #8E9297;">2. Active Classes &amp; Labs</div>
-                            <div class="text-[11px] mt-0.5" style="color: #8E9297;">Toggle ON any room to set student headcount</div>
+                            <div class="text-xs font-semibold uppercase tracking-wider" style="color: #9499B8;">2. Active Classes &amp; Labs</div>
+                            <div class="text-[11px] mt-0.5" style="color: #9499B8;">Toggle ON any room to set student headcount</div>
                         </div>
                         <div class="flex gap-1.5">
-                            <button onclick="loadDemoScenario('wing_consolidate')" class="px-2 py-1 rounded text-[10px] font-semibold" style="background: #2B2D31; color: #FFC93C; border: 1px solid rgba(255,201,60,0.3);">
+                            <button onclick="loadDemoScenario('wing_consolidate')" class="px-2 py-1 rounded text-[10px] font-semibold" style="background: #01010D; color: #6BFBCE; border: 1px solid rgba(107,251,206,0.3);">
                                 3 Left + 1 Right
                             </button>
-                            <button onclick="clearAllRooms()" class="px-2 py-1 rounded text-[10px] font-semibold" style="background: #2B2D31; color: #8E9297;">
+                            <button onclick="clearAllRooms()" class="px-2 py-1 rounded text-[10px] font-semibold" style="background: #01010D; color: #9499B8;">
                                 All Off
                             </button>
                         </div>
                     </div>
 
                     <!-- Live Wing Summary Bar -->
-                    <div class="grid grid-cols-3 gap-2 p-2 rounded-lg text-center font-data text-[11px]" style="background: #2B2D31;">
+                    <div class="grid grid-cols-3 gap-2 p-2 rounded-lg text-center font-data text-[11px]" style="background: #01010D;">
                         <div>
-                            <span style="color: #8E9297;">Active:</span>
+                            <span style="color: #9499B8;">Active:</span>
                             <span id="summaryActiveCount" class="font-bold text-white ml-1">4</span>
                         </div>
                         <div>
-                            <span style="color: #8E9297;">Left Wing:</span>
-                            <span id="summaryLeftPop" class="font-bold" style="color: #FFC93C;">83p</span>
+                            <span style="color: #9499B8;">Left Wing:</span>
+                            <span id="summaryLeftPop" class="font-bold" style="color: #6BFBCE;">83p</span>
                         </div>
                         <div>
-                            <span style="color: #8E9297;">Right Wing:</span>
-                            <span id="summaryRightPop" class="font-bold" style="color: #FFC93C;">22p</span>
+                            <span style="color: #9499B8;">Right Wing:</span>
+                            <span id="summaryRightPop" class="font-bold" style="color: #6BFBCE;">22p</span>
                         </div>
                     </div>
 
                     <!-- Left Wing Rooms -->
                     <div>
-                        <div class="text-[11px] font-bold uppercase tracking-wider mb-1.5" style="color: #D9DAD0;">Left Wing (West // Lifts L1 &amp; L2)</div>
+                        <div class="text-[11px] font-bold uppercase tracking-wider mb-1.5" style="color: #E4E6F5;">Left Wing (West // Lifts L1 &amp; L2)</div>
                         <div id="leftWingControls" class="space-y-1.5"></div>
                     </div>
 
                     <!-- Right Wing Rooms -->
                     <div class="pt-1">
-                        <div class="text-[11px] font-bold uppercase tracking-wider mb-1.5" style="color: #D9DAD0;">Right Wing (East // Lifts L3 &amp; L4)</div>
+                        <div class="text-[11px] font-bold uppercase tracking-wider mb-1.5" style="color: #E4E6F5;">Right Wing (East // Lifts L3 &amp; L4)</div>
                         <div id="rightWingControls" class="space-y-1.5"></div>
                     </div>
                 </div>
@@ -408,10 +434,10 @@ def render_cad_sandbox_html():
                 <div id="panelTimetable" class="card p-4 space-y-3" style="display: none;">
                     <div class="flex items-center justify-between">
                         <div>
-                            <div class="text-xs font-semibold uppercase tracking-wider" style="color: #8E9297;">Generated Day Timetable</div>
-                            <div class="text-[11px] mt-0.5" style="color: #8E9297;">Peak morning sessions, afternoon classes &amp; evening labs</div>
+                            <div class="text-xs font-semibold uppercase tracking-wider" style="color: #9499B8;">Generated Day Timetable</div>
+                            <div class="text-[11px] mt-0.5" style="color: #9499B8;">Peak morning sessions, afternoon classes &amp; evening labs</div>
                         </div>
-                        <button onclick="regenerateTimetable()" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold" style="background: #FFC93C; color: #2B2D31;">
+                        <button onclick="regenerateTimetable()" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold" style="background: #6BFBCE; color: #01010D;">
                             Regenerate
                         </button>
                     </div>
@@ -421,20 +447,20 @@ def render_cad_sandbox_html():
                 <!-- 4. PRIMARY ACTION: SIMULATE BUTTON -->
                 <div class="card p-4 space-y-2.5">
                     <div class="flex items-center justify-between text-xs">
-                        <span style="color: #8E9297;">Floor View State:</span>
+                        <span style="color: #9499B8;">Floor View State:</span>
                         <span id="viewStateBadge" class="font-data font-bold px-2 py-0.5 rounded text-[11px]" style="background: rgba(245,158,11,0.15); color: #F59E0B;">
                             UNMANAGED BASELINE
                         </span>
                     </div>
                     <div class="flex gap-2">
-                        <button onclick="runSimulation()" class="flex-1 py-3 px-4 rounded-xl font-bold text-sm tracking-wide transition-all" style="background: #FFC93C; color: #2B2D31; box-shadow: 0 4px 14px rgba(255,201,60,0.25);">
+                        <button onclick="runSimulation()" class="flex-1 py-3 px-4 rounded-xl font-bold text-sm tracking-wide transition-all" style="background: #6BFBCE; color: #01010D; box-shadow: 0 4px 14px rgba(107,251,206,0.25);">
                             SIMULATE &amp; OPTIMIZE
                         </button>
-                        <button onclick="showBaselinePreview()" class="py-3 px-3.5 rounded-xl font-semibold text-xs transition-all" style="background: #2B2D31; color: #D9DAD0; border: 1px solid rgba(255,255,255,0.08);" title="View Unmanaged State Before Simulation">
+                        <button onclick="showBaselinePreview()" class="py-3 px-3.5 rounded-xl font-semibold text-xs transition-all" style="background: #01010D; color: #E4E6F5; border: 1px solid rgba(255,255,255,0.08);" title="View Unmanaged State Before Simulation">
                             Reset View
                         </button>
                     </div>
-                    <div id="autoPingStatus" class="text-[11px] font-data text-center" style="color: #8E9297;">
+                    <div id="autoPingStatus" class="text-[11px] font-data text-center" style="color: #9499B8;">
                         Clicking Simulate optimizes floor &amp; logs suggestions to Dashboard.
                     </div>
                 </div>
@@ -447,48 +473,48 @@ def render_cad_sandbox_html():
                 <!-- 1. TOP KPI METERS (GLANCEABLE) -->
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div class="card p-4">
-                        <div class="text-[11px] font-semibold uppercase tracking-wider" style="color: #8E9297;">Unmanaged Baseline Draw</div>
+                        <div class="text-[11px] font-semibold uppercase tracking-wider" style="color: #9499B8;">Unmanaged Baseline Draw</div>
                         <div id="meterBaseline" class="text-2xl font-bold font-data text-white mt-1">41.74 kW</div>
-                        <div class="text-[11px] mt-1" style="color: #8E9297;">Random lights &amp; all 4 lifts running</div>
+                        <div class="text-[11px] mt-1" style="color: #9499B8;">Random lights &amp; all 4 lifts running</div>
                     </div>
 
                     <div class="card p-4">
-                        <div class="text-[11px] font-semibold uppercase tracking-wider" style="color: #8E9297;">Simulated Optimized Draw</div>
-                        <div id="meterOptimized" class="text-2xl font-bold font-data mt-1" style="color: #8E9297;">Click Simulate</div>
-                        <div id="meterLiftSub" class="text-[11px] mt-1" style="color: #8E9297;">Awaiting simulation run</div>
+                        <div class="text-[11px] font-semibold uppercase tracking-wider" style="color: #9499B8;">Simulated Optimized Draw</div>
+                        <div id="meterOptimized" class="text-2xl font-bold font-data mt-1" style="color: #9499B8;">Click Simulate</div>
+                        <div id="meterLiftSub" class="text-[11px] mt-1" style="color: #9499B8;">Awaiting simulation run</div>
                     </div>
 
                     <div class="card p-4">
-                        <div class="text-[11px] font-semibold uppercase tracking-wider" style="color: #8E9297;">Savings Rate (Post-Simulation)</div>
-                        <div id="meterSavings" class="text-2xl font-bold font-data mt-1" style="color: #8E9297;">--</div>
-                        <div id="meterInr" class="text-[11px] font-data mt-1" style="color: #8E9297;">Press Simulate to calculate</div>
+                        <div class="text-[11px] font-semibold uppercase tracking-wider" style="color: #9499B8;">Savings Rate (Post-Simulation)</div>
+                        <div id="meterSavings" class="text-2xl font-bold font-data mt-1" style="color: #9499B8;">--</div>
+                        <div id="meterInr" class="text-[11px] font-data mt-1" style="color: #9499B8;">Press Simulate to calculate</div>
                     </div>
                 </div>
 
                 <!-- 2. 3-PART SIMULATION OUTPUT & MESSAGE DISPATCH TEMPLATE -->
-                <div id="simulationReportCard" class="card p-5" style="display: none; border-left: 4px solid #FFC93C;">
+                <div id="simulationReportCard" class="card p-5" style="display: none; border-left: 4px solid #6BFBCE;">
                     <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
                         <div class="flex items-center gap-2">
-                            <span class="px-2.5 py-0.5 rounded text-xs font-bold font-data" style="background: #FFC93C; color: #2B2D31;">SIMULATION COMPLETE</span>
+                            <span class="px-2.5 py-0.5 rounded text-xs font-bold font-data" style="background: #6BFBCE; color: #01010D;">SIMULATION COMPLETE</span>
                             <span id="reportTimeHeader" class="text-sm font-bold text-white">JIT Block B @ 02:00 PM</span>
                         </div>
-                        <span id="reportDispatchBadge" class="text-xs font-data px-2.5 py-0.5 rounded" style="background: #2B2D31; color: #FFC93C;">
+                        <span id="reportDispatchBadge" class="text-xs font-data px-2.5 py-0.5 rounded" style="background: #01010D; color: #6BFBCE;">
                             Auto-Logged to Dashboard
                         </span>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
-                        <div class="p-3.5 rounded-lg" style="background: #2B2D31;">
-                            <div class="font-bold uppercase text-[10px] tracking-wider mb-1.5" style="color: #FFC93C;">1. Relocation Suggestion</div>
-                            <p id="repPart1" class="leading-relaxed" style="color: #D9DAD0;"></p>
+                        <div class="p-3.5 rounded-lg" style="background: #01010D;">
+                            <div class="font-bold uppercase text-[10px] tracking-wider mb-1.5" style="color: #6BFBCE;">1. Relocation Suggestion</div>
+                            <p id="repPart1" class="leading-relaxed" style="color: #E4E6F5;"></p>
                         </div>
-                        <div class="p-3.5 rounded-lg" style="background: #2B2D31;">
+                        <div class="p-3.5 rounded-lg" style="background: #01010D;">
                             <div class="font-bold uppercase text-[10px] tracking-wider mb-1.5 text-white">2. Actions Taken (Lifts &amp; Lights)</div>
-                            <p id="repPart2" class="leading-relaxed" style="color: #D9DAD0;"></p>
+                            <p id="repPart2" class="leading-relaxed" style="color: #E4E6F5;"></p>
                         </div>
-                        <div class="p-3.5 rounded-lg" style="background: #2B2D31;">
-                            <div class="font-bold uppercase text-[10px] tracking-wider mb-1.5" style="color: #FFC93C;">3. Energy &amp; Cost Saved</div>
-                            <p id="repPart3" class="leading-relaxed font-data font-semibold" style="color: #FFC93C;"></p>
+                        <div class="p-3.5 rounded-lg" style="background: #01010D;">
+                            <div class="font-bold uppercase text-[10px] tracking-wider mb-1.5" style="color: #6BFBCE;">3. Energy &amp; Cost Saved</div>
+                            <p id="repPart3" class="leading-relaxed font-data font-semibold" style="color: #6BFBCE;"></p>
                         </div>
                     </div>
                 </div>
@@ -499,17 +525,17 @@ def render_cad_sandbox_html():
                         <div>
                             <div class="flex items-center gap-2">
                                 <span class="text-sm font-bold text-white">Block B Architectural Vector Blueprint (G+4 // 7,500 m²)</span>
-                                <span id="blueprintTimeTag" class="text-xs font-data font-bold px-2 py-0.5 rounded" style="background: #2B2D31; color: #FFC93C;">02:00 PM</span>
+                                <span id="blueprintTimeTag" class="text-xs font-data font-bold px-2 py-0.5 rounded" style="background: #01010D; color: #6BFBCE;">02:00 PM</span>
                             </div>
-                            <p id="elevatorBannerText" class="text-xs font-data mt-0.5" style="color: #8E9297;">
+                            <p id="elevatorBannerText" class="text-xs font-data mt-0.5" style="color: #9499B8;">
                                 Baseline View: All 4 Lifts Running | Random Unmanaged Room Lights ON
                             </p>
                         </div>
                         <!-- Legend -->
-                        <div class="flex flex-wrap items-center gap-3 text-[11px] font-medium" style="color: #D9DAD0;">
-                            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full inline-block" style="background: #FFC93C;"></span> Light ON</span>
+                        <div class="flex flex-wrap items-center gap-3 text-[11px] font-medium" style="color: #E4E6F5;">
+                            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full inline-block" style="background: #6BFBCE;"></span> Light ON</span>
                             <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full inline-block" style="background: #1E2024; border: 1px solid #4F545C;"></span> Light OFF</span>
-                            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded inline-block" style="background: #353022; border: 1.5px solid #FFC93C;"></span> Active Zone</span>
+                            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded inline-block" style="background: #353022; border: 1.5px solid #6BFBCE;"></span> Active Zone</span>
                         </div>
                     </div>
 
@@ -519,18 +545,18 @@ def render_cad_sandbox_html():
 
                             <!-- TOP WING HEADERS -->
                             <g>
-                                <rect x="25" y="12" width="310" height="28" rx="5" fill="#27292E" stroke="#40444B" />
-                                <text id="svgLeftWingHeader" x="180" y="30" fill="#FFC93C" font-family="Inter, sans-serif" font-size="11" font-weight="700" text-anchor="middle">
+                                <rect x="25" y="12" width="310" height="28" rx="5" fill="#0E0C28" stroke="#322B6B" />
+                                <text id="svgLeftWingHeader" x="180" y="30" fill="#6BFBCE" font-family="Inter, sans-serif" font-size="11" font-weight="700" text-anchor="middle">
                                     LEFT WING (WEST) // 83 PEOPLE
                                 </text>
 
-                                <rect x="430" y="12" width="260" height="28" rx="5" fill="#FFC93C" />
-                                <text x="560" y="30" fill="#2B2D31" font-family="Inter, sans-serif" font-size="11.5" font-weight="800" text-anchor="middle">
+                                <rect x="430" y="12" width="260" height="28" rx="5" fill="#6BFBCE" />
+                                <text x="560" y="30" fill="#01010D" font-family="Inter, sans-serif" font-size="11.5" font-weight="800" text-anchor="middle">
                                     JIT BLOCK B - FLOOR PLAN
                                 </text>
 
-                                <rect x="785" y="12" width="310" height="28" rx="5" fill="#27292E" stroke="#40444B" />
-                                <text id="svgRightWingHeader" x="940" y="30" fill="#FFC93C" font-family="Inter, sans-serif" font-size="11" font-weight="700" text-anchor="middle">
+                                <rect x="785" y="12" width="310" height="28" rx="5" fill="#0E0C28" stroke="#322B6B" />
+                                <text id="svgRightWingHeader" x="940" y="30" fill="#6BFBCE" font-family="Inter, sans-serif" font-size="11" font-weight="700" text-anchor="middle">
                                     RIGHT WING (EAST) // 22 PEOPLE
                                 </text>
                             </g>
@@ -539,13 +565,13 @@ def render_cad_sandbox_html():
                             <g id="grp_main_stairs">
                                 <rect id="box_main_stairs" x="490" y="55" width="140" height="135" rx="6" class="zone-box-on" />
                                 <text x="560" y="80" fill="#FFFFFF" font-family="Inter, sans-serif" font-size="11.5" font-weight="700" text-anchor="middle">MAIN STAIRS</text>
-                                <text id="status_main_stairs" x="560" y="96" fill="#FFC93C" font-family="Inter, sans-serif" font-size="9.5" font-weight="700" text-anchor="middle">LIGHTS: ON</text>
+                                <text id="status_main_stairs" x="560" y="96" fill="#6BFBCE" font-family="Inter, sans-serif" font-size="9.5" font-weight="700" text-anchor="middle">LIGHTS: ON</text>
                                 <!-- Stair Treads -->
-                                <line x1="515" y1="112" x2="605" y2="112" stroke="#8E9297" stroke-width="1.5" />
-                                <line x1="515" y1="124" x2="605" y2="124" stroke="#8E9297" stroke-width="1.5" />
-                                <line x1="515" y1="136" x2="605" y2="136" stroke="#8E9297" stroke-width="1.5" />
-                                <line x1="515" y1="148" x2="605" y2="148" stroke="#8E9297" stroke-width="1.5" />
-                                <line x1="515" y1="160" x2="605" y2="160" stroke="#8E9297" stroke-width="1.5" />
+                                <line x1="515" y1="112" x2="605" y2="112" stroke="#9499B8" stroke-width="1.5" />
+                                <line x1="515" y1="124" x2="605" y2="124" stroke="#9499B8" stroke-width="1.5" />
+                                <line x1="515" y1="136" x2="605" y2="136" stroke="#9499B8" stroke-width="1.5" />
+                                <line x1="515" y1="148" x2="605" y2="148" stroke="#9499B8" stroke-width="1.5" />
+                                <line x1="515" y1="160" x2="605" y2="160" stroke="#9499B8" stroke-width="1.5" />
                                 <circle id="lum_main_stairs" cx="560" cy="175" r="5.5" class="luminaire lum-on" />
                             </g>
 
@@ -553,7 +579,7 @@ def render_cad_sandbox_html():
                             <g>
                                 <!-- Left Wing Corridor Path -->
                                 <path id="corridor_left" d="M 350 210 L 245 210 L 245 685 L 350 685" class="corridor-line corridor-on" />
-                                <text id="label_corridor_left" x="255" y="204" fill="#FFC93C" font-family="Inter, sans-serif" font-size="9.5" font-weight="700">LEFT CORRIDOR: ON</text>
+                                <text id="label_corridor_left" x="255" y="204" fill="#6BFBCE" font-family="Inter, sans-serif" font-size="9.5" font-weight="700">LEFT CORRIDOR: ON</text>
                                 <circle id="cl_lum1" cx="245" cy="280" r="5" class="luminaire lum-on" />
                                 <circle id="cl_lum2" cx="245" cy="410" r="5" class="luminaire lum-on" />
                                 <circle id="cl_lum3" cx="245" cy="540" r="5" class="luminaire lum-on" />
@@ -561,7 +587,7 @@ def render_cad_sandbox_html():
 
                                 <!-- Right Wing Corridor Path -->
                                 <path id="corridor_right" d="M 770 210 L 875 210 L 875 685 L 770 685" class="corridor-line corridor-on" />
-                                <text id="label_corridor_right" x="865" y="204" fill="#FFC93C" font-family="Inter, sans-serif" font-size="9.5" font-weight="700" text-anchor="end">RIGHT CORRIDOR: ON</text>
+                                <text id="label_corridor_right" x="865" y="204" fill="#6BFBCE" font-family="Inter, sans-serif" font-size="9.5" font-weight="700" text-anchor="end">RIGHT CORRIDOR: ON</text>
                                 <circle id="cr_lum1" cx="875" cy="280" r="5" class="luminaire lum-on" />
                                 <circle id="cr_lum2" cx="875" cy="410" r="5" class="luminaire lum-on" />
                                 <circle id="cr_lum3" cx="875" cy="540" r="5" class="luminaire lum-on" />
@@ -570,72 +596,72 @@ def render_cad_sandbox_html():
 
                             <!-- LEFT ELEVATOR BANK (LIFT 1 & LIFT 2 + RESTROOMS) -->
                             <g transform="translate(270, 290)">
-                                <rect x="0" y="0" width="115" height="295" rx="6" fill="#232529" stroke="#40444B" stroke-width="1.5" />
+                                <rect x="0" y="0" width="115" height="295" rx="6" fill="#0B0A20" stroke="#322B6B" stroke-width="1.5" />
                                 <text x="57" y="20" fill="#FFFFFF" font-family="Inter, sans-serif" font-size="10.5" font-weight="700" text-anchor="middle">LEFT LIFTS</text>
 
                                 <!-- LIFT 1 -->
                                 <rect id="lift_box_L1" x="10" y="30" width="44" height="62" rx="4" class="lift-car-on" />
                                 <text x="32" y="56" fill="#FFFFFF" font-family="Inter, sans-serif" font-size="11" font-weight="700" text-anchor="middle">L-1</text>
-                                <text id="lift_txt_L1" x="32" y="76" fill="#FFC93C" font-family="Inter, sans-serif" font-size="9" font-weight="700" text-anchor="middle">ON</text>
+                                <text id="lift_txt_L1" x="32" y="76" fill="#6BFBCE" font-family="Inter, sans-serif" font-size="9" font-weight="700" text-anchor="middle">ON</text>
 
                                 <!-- LIFT 2 -->
                                 <rect id="lift_box_L2" x="61" y="30" width="44" height="62" rx="4" class="lift-car-on" />
                                 <text x="83" y="56" fill="#FFFFFF" font-family="Inter, sans-serif" font-size="11" font-weight="700" text-anchor="middle">L-2</text>
-                                <text id="lift_txt_L2" x="83" y="76" fill="#FFC93C" font-family="Inter, sans-serif" font-size="9" font-weight="700" text-anchor="middle">ON</text>
+                                <text id="lift_txt_L2" x="83" y="76" fill="#6BFBCE" font-family="Inter, sans-serif" font-size="9" font-weight="700" text-anchor="middle">ON</text>
 
                                 <!-- Left Bank Status Pill -->
-                                <rect x="10" y="100" width="95" height="22" rx="4" fill="#1E2024" />
-                                <text id="left_bank_badge" x="57" y="115" fill="#FFC93C" font-family="Inter, sans-serif" font-size="9" font-weight="700" text-anchor="middle">2 ACTIVE</text>
+                                <rect x="10" y="100" width="95" height="22" rx="4" fill="#050514" />
+                                <text id="left_bank_badge" x="57" y="115" fill="#6BFBCE" font-family="Inter, sans-serif" font-size="9" font-weight="700" text-anchor="middle">2 ACTIVE</text>
 
                                 <!-- Restrooms (Left) -->
-                                <rect x="10" y="135" width="95" height="68" rx="4" fill="#1E2024" stroke="#36393F" />
-                                <text x="57" y="165" fill="#D9DAD0" font-family="Inter, sans-serif" font-size="10" font-weight="600" text-anchor="middle">Toilet (M)</text>
-                                <text x="57" y="182" fill="#8E9297" font-family="Inter, sans-serif" font-size="8.5" text-anchor="middle">Exhaust Sensor</text>
+                                <rect x="10" y="135" width="95" height="68" rx="4" fill="#050514" stroke="#12102E" />
+                                <text x="57" y="165" fill="#E4E6F5" font-family="Inter, sans-serif" font-size="10" font-weight="600" text-anchor="middle">Toilet (M)</text>
+                                <text x="57" y="182" fill="#9499B8" font-family="Inter, sans-serif" font-size="8.5" text-anchor="middle">Exhaust Sensor</text>
 
-                                <rect x="10" y="212" width="95" height="68" rx="4" fill="#1E2024" stroke="#36393F" />
-                                <text x="57" y="242" fill="#D9DAD0" font-family="Inter, sans-serif" font-size="10" font-weight="600" text-anchor="middle">Toilet (F)</text>
-                                <text x="57" y="259" fill="#8E9297" font-family="Inter, sans-serif" font-size="8.5" text-anchor="middle">Exhaust Sensor</text>
+                                <rect x="10" y="212" width="95" height="68" rx="4" fill="#050514" stroke="#12102E" />
+                                <text x="57" y="242" fill="#E4E6F5" font-family="Inter, sans-serif" font-size="10" font-weight="600" text-anchor="middle">Toilet (F)</text>
+                                <text x="57" y="259" fill="#9499B8" font-family="Inter, sans-serif" font-size="8.5" text-anchor="middle">Exhaust Sensor</text>
                             </g>
 
                             <!-- CENTRAL CIRCULAR ATRIUM -->
                             <g>
-                                <circle cx="560" cy="440" r="145" fill="#1A1C20" stroke="#40444B" stroke-width="2" />
-                                <circle cx="560" cy="440" r="110" fill="#1E2024" stroke="#36393F" stroke-width="1.5" stroke-dasharray="6 4" />
-                                <circle cx="560" cy="440" r="70" fill="#16181B" stroke="#FFC93C" stroke-width="1.2" opacity="0.85" />
+                                <circle cx="560" cy="440" r="145" fill="#1A1C20" stroke="#322B6B" stroke-width="2" />
+                                <circle cx="560" cy="440" r="110" fill="#050514" stroke="#12102E" stroke-width="1.5" stroke-dasharray="6 4" />
+                                <circle cx="560" cy="440" r="70" fill="#16181B" stroke="#6BFBCE" stroke-width="1.2" opacity="0.85" />
                                 <line x1="450" y1="440" x2="670" y2="440" stroke="#2E3136" stroke-width="1" />
                                 <line x1="560" y1="330" x2="560" y2="550" stroke="#2E3136" stroke-width="1" />
                                 <text x="560" y="432" fill="#FFFFFF" font-family="Inter, sans-serif" font-size="13" font-weight="700" text-anchor="middle">CENTRAL ATRIUM</text>
-                                <text x="560" y="450" fill="#8E9297" font-family="Inter, sans-serif" font-size="9.5" text-anchor="middle">Open to Sky // Natural Lux</text>
-                                <text id="atriumRelocArrow" x="560" y="472" fill="#FFC93C" font-family="Inter, sans-serif" font-size="10" font-weight="700" text-anchor="middle"></text>
+                                <text x="560" y="450" fill="#9499B8" font-family="Inter, sans-serif" font-size="9.5" text-anchor="middle">Open to Sky // Natural Lux</text>
+                                <text id="atriumRelocArrow" x="560" y="472" fill="#6BFBCE" font-family="Inter, sans-serif" font-size="10" font-weight="700" text-anchor="middle"></text>
                             </g>
 
                             <!-- RIGHT ELEVATOR BANK (LIFT 3 & LIFT 4 + RESTROOMS) -->
                             <g transform="translate(735, 290)">
-                                <rect x="0" y="0" width="115" height="295" rx="6" fill="#232529" stroke="#40444B" stroke-width="1.5" />
+                                <rect x="0" y="0" width="115" height="295" rx="6" fill="#0B0A20" stroke="#322B6B" stroke-width="1.5" />
                                 <text x="57" y="20" fill="#FFFFFF" font-family="Inter, sans-serif" font-size="10.5" font-weight="700" text-anchor="middle">RIGHT LIFTS</text>
 
                                 <!-- LIFT 3 -->
                                 <rect id="lift_box_L3" x="10" y="30" width="44" height="62" rx="4" class="lift-car-on" />
                                 <text x="32" y="56" fill="#FFFFFF" font-family="Inter, sans-serif" font-size="11" font-weight="700" text-anchor="middle">L-3</text>
-                                <text id="lift_txt_L3" x="32" y="76" fill="#FFC93C" font-family="Inter, sans-serif" font-size="9" font-weight="700" text-anchor="middle">ON</text>
+                                <text id="lift_txt_L3" x="32" y="76" fill="#6BFBCE" font-family="Inter, sans-serif" font-size="9" font-weight="700" text-anchor="middle">ON</text>
 
                                 <!-- LIFT 4 -->
                                 <rect id="lift_box_L4" x="61" y="30" width="44" height="62" rx="4" class="lift-car-on" />
                                 <text x="83" y="56" fill="#FFFFFF" font-family="Inter, sans-serif" font-size="11" font-weight="700" text-anchor="middle">L-4</text>
-                                <text id="lift_txt_L4" x="83" y="76" fill="#FFC93C" font-family="Inter, sans-serif" font-size="9" font-weight="700" text-anchor="middle">ON</text>
+                                <text id="lift_txt_L4" x="83" y="76" fill="#6BFBCE" font-family="Inter, sans-serif" font-size="9" font-weight="700" text-anchor="middle">ON</text>
 
                                 <!-- Right Bank Status Pill -->
-                                <rect x="10" y="100" width="95" height="22" rx="4" fill="#1E2024" />
-                                <text id="right_bank_badge" x="57" y="115" fill="#FFC93C" font-family="Inter, sans-serif" font-size="9" font-weight="700" text-anchor="middle">2 ACTIVE</text>
+                                <rect x="10" y="100" width="95" height="22" rx="4" fill="#050514" />
+                                <text id="right_bank_badge" x="57" y="115" fill="#6BFBCE" font-family="Inter, sans-serif" font-size="9" font-weight="700" text-anchor="middle">2 ACTIVE</text>
 
                                 <!-- Restrooms (Right) -->
-                                <rect x="10" y="135" width="95" height="68" rx="4" fill="#1E2024" stroke="#36393F" />
-                                <text x="57" y="165" fill="#D9DAD0" font-family="Inter, sans-serif" font-size="10" font-weight="600" text-anchor="middle">Toilet (M)</text>
-                                <text x="57" y="182" fill="#8E9297" font-family="Inter, sans-serif" font-size="8.5" text-anchor="middle">Exhaust Sensor</text>
+                                <rect x="10" y="135" width="95" height="68" rx="4" fill="#050514" stroke="#12102E" />
+                                <text x="57" y="165" fill="#E4E6F5" font-family="Inter, sans-serif" font-size="10" font-weight="600" text-anchor="middle">Toilet (M)</text>
+                                <text x="57" y="182" fill="#9499B8" font-family="Inter, sans-serif" font-size="8.5" text-anchor="middle">Exhaust Sensor</text>
 
-                                <rect x="10" y="212" width="95" height="68" rx="4" fill="#1E2024" stroke="#36393F" />
-                                <text x="57" y="242" fill="#D9DAD0" font-family="Inter, sans-serif" font-size="10" font-weight="600" text-anchor="middle">Toilet (F)</text>
-                                <text x="57" y="259" fill="#8E9297" font-family="Inter, sans-serif" font-size="8.5" text-anchor="middle">Exhaust Sensor</text>
+                                <rect x="10" y="212" width="95" height="68" rx="4" fill="#050514" stroke="#12102E" />
+                                <text x="57" y="242" fill="#E4E6F5" font-family="Inter, sans-serif" font-size="10" font-weight="600" text-anchor="middle">Toilet (F)</text>
+                                <text x="57" y="259" fill="#9499B8" font-family="Inter, sans-serif" font-size="8.5" text-anchor="middle">Exhaust Sensor</text>
                             </g>
 
                             <!-- ALL 8 CLASSROOMS + 3 LABS (PRECISION GENERATED) -->
@@ -646,40 +672,40 @@ def render_cad_sandbox_html():
                             <g id="grp_sw_stairs">
                                 <rect id="box_sw_stairs" x="95" y="775" width="130" height="65" rx="6" class="zone-box-on" />
                                 <text x="160" y="800" fill="#FFFFFF" font-family="Inter, sans-serif" font-size="10.5" font-weight="700" text-anchor="middle">STAIRS SW</text>
-                                <text id="status_sw_stairs" x="160" y="818" fill="#FFC93C" font-family="Inter, sans-serif" font-size="9" font-weight="700" text-anchor="middle">LIGHTS: ON</text>
+                                <text id="status_sw_stairs" x="160" y="818" fill="#6BFBCE" font-family="Inter, sans-serif" font-size="9" font-weight="700" text-anchor="middle">LIGHTS: ON</text>
                                 <circle id="lum_sw_stairs" cx="115" cy="805" r="5" class="luminaire lum-on" />
                             </g>
 
                             <!-- FACULTY LOUNGE (80 m²) -->
                             <g id="grp_faculty_lounge">
                                 <rect id="box_faculty_lounge" x="235" y="705" width="185" height="135" rx="6" class="zone-box-on" />
-                                <rect x="236" y="706" width="183" height="26" rx="5" fill="#1E2024" opacity="0.85" />
+                                <rect x="236" y="706" width="183" height="26" rx="5" fill="#050514" opacity="0.85" />
                                 <text x="246" y="723" fill="#FFFFFF" font-family="Inter, sans-serif" font-size="11" font-weight="700">Faculty Lounge</text>
-                                <text id="status_faculty_lounge" x="410" y="723" fill="#FFC93C" font-family="Inter, sans-serif" font-size="9.5" font-weight="700" text-anchor="end">ON</text>
-                                <text x="246" y="744" fill="#8E9297" font-family="Inter, sans-serif" font-size="9.5">Staff Seating (80 m²)</text>
+                                <text id="status_faculty_lounge" x="410" y="723" fill="#6BFBCE" font-family="Inter, sans-serif" font-size="9.5" font-weight="700" text-anchor="end">ON</text>
+                                <text x="246" y="744" fill="#9499B8" font-family="Inter, sans-serif" font-size="9.5">Staff Seating (80 m²)</text>
                                 <circle id="lum1_faculty" cx="295" cy="765" r="5.5" class="luminaire lum-on" />
                                 <circle id="lum2_faculty" cx="360" cy="765" r="5.5" class="luminaire lum-on" />
                                 <rect x="275" y="782" width="105" height="16" rx="3" class="desk-box desk-on" id="desk_faculty" />
-                                <text id="ac_faculty" x="327" y="825" fill="#FFC93C" font-family="Inter, sans-serif" font-size="9.5" font-weight="600" text-anchor="middle">AC: 25°C (Daytime)</text>
+                                <text id="ac_faculty" x="327" y="825" fill="#6BFBCE" font-family="Inter, sans-serif" font-size="9.5" font-weight="600" text-anchor="middle">AC: 25°C (Daytime)</text>
                             </g>
 
                             <!-- SEMINAR HALL (180 m²) -->
                             <g id="grp_seminar_hall">
                                 <rect x="430" y="705" width="245" height="135" rx="6" class="zone-box-off" />
-                                <rect x="431" y="706" width="243" height="26" rx="5" fill="#1E2024" opacity="0.85" />
+                                <rect x="431" y="706" width="243" height="26" rx="5" fill="#050514" opacity="0.85" />
                                 <text x="442" y="723" fill="#FFFFFF" font-family="Inter, sans-serif" font-size="11" font-weight="700">Seminar Hall (180 m²)</text>
-                                <text x="664" y="723" fill="#8E9297" font-family="Inter, sans-serif" font-size="9.5" font-weight="700" text-anchor="end">STANDBY</text>
-                                <text x="552" y="758" fill="#8E9297" font-family="Inter, sans-serif" font-size="10" text-anchor="middle">120-Seat Auditorium // Event Interlock</text>
+                                <text x="664" y="723" fill="#9499B8" font-family="Inter, sans-serif" font-size="9.5" font-weight="700" text-anchor="end">STANDBY</text>
+                                <text x="552" y="758" fill="#9499B8" font-family="Inter, sans-serif" font-size="10" text-anchor="middle">120-Seat Auditorium // Event Interlock</text>
                                 <rect x="470" y="772" width="165" height="10" rx="2" fill="#2E3136" />
                                 <rect x="480" y="790" width="145" height="10" rx="2" fill="#2E3136" />
-                                <text x="552" y="825" fill="#8E9297" font-family="Inter, sans-serif" font-size="9.5" text-anchor="middle">Circuit Isolated (0.0 kW)</text>
+                                <text x="552" y="825" fill="#9499B8" font-family="Inter, sans-serif" font-size="9.5" text-anchor="middle">Circuit Isolated (0.0 kW)</text>
                             </g>
 
                             <!-- SE STAIRS -->
                             <g id="grp_se_stairs">
                                 <rect id="box_se_stairs" x="895" y="775" width="130" height="65" rx="6" class="zone-box-on" />
                                 <text x="960" y="800" fill="#FFFFFF" font-family="Inter, sans-serif" font-size="10.5" font-weight="700" text-anchor="middle">STAIRS SE</text>
-                                <text id="status_se_stairs" x="960" y="818" fill="#FFC93C" font-family="Inter, sans-serif" font-size="9" font-weight="700" text-anchor="middle">LIGHTS: ON</text>
+                                <text id="status_se_stairs" x="960" y="818" fill="#6BFBCE" font-family="Inter, sans-serif" font-size="9" font-weight="700" text-anchor="middle">LIGHTS: ON</text>
                                 <circle id="lum_se_stairs" cx="915" cy="805" r="5" class="luminaire lum-on" />
                             </g>
 
@@ -692,9 +718,9 @@ def render_cad_sandbox_html():
                     <div class="flex items-center justify-between mb-3">
                         <div>
                             <h3 class="text-sm font-bold text-white">Session Suggestions Log (By Time)</h3>
-                            <p class="text-xs" style="color: #8E9297;">Chronological log of spatial relocations, wing shutdowns, and Block C sunlight harvesting advisories</p>
+                            <p class="text-xs" style="color: #9499B8;">Chronological log of spatial relocations, wing shutdowns, and Block C sunlight harvesting advisories</p>
                         </div>
-                        <span class="text-xs font-data px-2.5 py-1 rounded" style="background: #2B2D31; color: #FFC93C;">Synced with Dashboard</span>
+                        <span class="text-xs font-data px-2.5 py-1 rounded" style="background: #01010D; color: #6BFBCE;">Synced with Dashboard</span>
                     </div>
                     <div id="sandboxSuggestionsLog" class="space-y-2.5 max-h-[320px] overflow-y-auto pr-1"></div>
                 </div>
@@ -762,18 +788,18 @@ def render_cad_sandbox_html():
                     <div class="flex items-center gap-2">
                         <button id="toggle_${{rm.id}}" onclick="toggleRoomActive('${{rm.id}}')"
                             class="px-2.5 py-1 rounded text-[11px] font-data font-bold transition-all"
-                            style="${{st.active ? 'background: #FFC93C; color: #2B2D31;' : 'background: #36393F; color: #8E9297;'}}">
+                            style="${{st.active ? 'background: #6BFBCE; color: #01010D;' : 'background: #12102E; color: #9499B8;'}}">
                             ${{st.active ? 'ON' : 'OFF'}}
                         </button>
                         <span class="text-xs font-semibold text-white">${{rm.label}}</span>
                     </div>
-                    <span id="lbl_count_${{rm.id}}" class="text-xs font-data font-bold" style="color: ${{st.active ? '#FFC93C' : '#8E9297'}};">
+                    <span id="lbl_count_${{rm.id}}" class="text-xs font-data font-bold" style="color: ${{st.active ? '#6BFBCE' : '#9499B8'}};">
                         ${{st.active ? st.count + ' People' : 'Vacant'}}
                     </span>
                 </div>
                 <div id="slider_wrap_${{rm.id}}" class="mt-2 pt-1.5" style="display: ${{st.active ? 'block' : 'none'}}; border-top: 1px solid rgba(255,255,255,0.05);">
                     <div class="flex items-center gap-2">
-                        <span class="text-[10px] font-data" style="color: #8E9297;">People:</span>
+                        <span class="text-[10px] font-data" style="color: #9499B8;">People:</span>
                         <input type="range" id="slider_${{rm.id}}" min="5" max="${{rm.cap}}" value="${{st.count}}"
                             oninput="onRoomSliderInput('${{rm.id}}', this.value)" class="flex-1">
                     </div>
@@ -845,7 +871,7 @@ def render_cad_sandbox_html():
             const isDay = (timeVal >= 7.0 && timeVal <= 17.5 && weatherSel.value !== 'Night');
             const badge = document.getElementById('daylightBadge');
             badge.innerText = isDay ? 'Daylight Window' : 'Night / Off-Peak';
-            badge.style.color = isDay ? '#FFC93C' : '#8E9297';
+            badge.style.color = isDay ? '#6BFBCE' : '#9499B8';
 
             fetchPreviewEvaluation();
         }}
@@ -905,7 +931,7 @@ def render_cad_sandbox_html():
             const payload = buildPayload(true);
             const statusEl = document.getElementById('autoPingStatus');
             statusEl.innerText = 'Running Python optimization engine...';
-            statusEl.style.color = '#FFC93C';
+            statusEl.style.color = '#6BFBCE';
 
             fetch('/api/sandbox/evaluate', {{
                 method: 'POST',
@@ -918,7 +944,7 @@ def render_cad_sandbox_html():
                 renderFloorPlanState(data, 'simulated', true);
                 loadSuggestionsLog();
                 statusEl.innerText = `Simulation Complete (${{data.time_12h}}) // Logged to Session Suggestions & Dashboard`;
-                statusEl.style.color = '#FFC93C';
+                statusEl.style.color = '#6BFBCE';
             }})
             .catch(err => {{
                 console.error(err);
@@ -936,8 +962,8 @@ def render_cad_sandbox_html():
             const viewBadge = document.getElementById('viewStateBadge');
             if (isSim) {{
                 viewBadge.innerText = 'SIMULATED & OPTIMIZED';
-                viewBadge.style.background = 'rgba(255,201,60,0.18)';
-                viewBadge.style.color = '#FFC93C';
+                viewBadge.style.background = 'rgba(107,251,206,0.18)';
+                viewBadge.style.color = '#6BFBCE';
             }} else {{
                 viewBadge.innerText = 'UNMANAGED BASELINE';
                 viewBadge.style.background = 'rgba(245,158,11,0.15)';
@@ -948,20 +974,20 @@ def render_cad_sandbox_html():
             document.getElementById('meterBaseline').innerText = `${{data.total_baseline_kw}} kW`;
             if (isSim) {{
                 document.getElementById('meterOptimized').innerText = `${{data.total_optimized_kw}} kW`;
-                document.getElementById('meterOptimized').style.color = '#FFC93C';
+                document.getElementById('meterOptimized').style.color = '#6BFBCE';
                 document.getElementById('meterLiftSub').innerText = data.elevator_mode;
                 document.getElementById('meterSavings').innerText = `${{data.kw_saved}} kW (${{data.savings_percentage}}%)`;
-                document.getElementById('meterSavings').style.color = '#FFC93C';
+                document.getElementById('meterSavings').style.color = '#6BFBCE';
                 document.getElementById('meterInr').innerText = `INR ${{data.inr_per_hour_saved}} / Hr Saved`;
-                document.getElementById('meterInr').style.color = '#D9DAD0';
+                document.getElementById('meterInr').style.color = '#E4E6F5';
             }} else {{
                 document.getElementById('meterOptimized').innerText = 'Click Simulate';
-                document.getElementById('meterOptimized').style.color = '#8E9297';
+                document.getElementById('meterOptimized').style.color = '#9499B8';
                 document.getElementById('meterLiftSub').innerText = 'Baseline has all 4 lifts & corridors ON';
                 document.getElementById('meterSavings').innerText = 'Ready';
-                document.getElementById('meterSavings').style.color = '#8E9297';
+                document.getElementById('meterSavings').style.color = '#9499B8';
                 document.getElementById('meterInr').innerText = 'Press Simulate to view savings';
-                document.getElementById('meterInr').style.color = '#8E9297';
+                document.getElementById('meterInr').style.color = '#9499B8';
             }}
 
             // Wing Headers in SVG
@@ -998,7 +1024,7 @@ def render_cad_sandbox_html():
                 if (rData.is_occupied) {{
                     poly.setAttribute('class', 'room-box room-lit');
                     occBadge.textContent = `${{rData.occupancy}} PPL`;
-                    occBadge.setAttribute('fill', '#FFC93C');
+                    occBadge.setAttribute('fill', '#6BFBCE');
                 }} else if (rData.relocated_to) {{
                     poly.setAttribute('class', 'room-box room-relocated');
                     occBadge.textContent = `MOVED -> ${{rData.relocated_to}}`;
@@ -1010,19 +1036,19 @@ def render_cad_sandbox_html():
                 }} else {{
                     poly.setAttribute('class', 'room-box room-unlit');
                     occBadge.textContent = 'VACANT (OFF)';
-                    occBadge.setAttribute('fill', '#8E9297');
+                    occBadge.setAttribute('fill', '#9499B8');
                 }}
 
                 // Relocation subtitle note
                 if (isSim && rData.relocated_from) {{
                     subBadge.textContent = `Consolidated from ${{rData.relocated_from}}`;
-                    subBadge.setAttribute('fill', '#FFC93C');
+                    subBadge.setAttribute('fill', '#6BFBCE');
                 }} else if (isSim && rData.relocated_to) {{
                     subBadge.textContent = `Relocated to ${{rData.relocated_to}} (Wing Shutoff)`;
                     subBadge.setAttribute('fill', '#38BDF8');
                 }} else {{
                     subBadge.textContent = `${{rData.wing}} Wing // ${{rData.lights_on_count}}/4 Lights ON`;
-                    subBadge.setAttribute('fill', '#8E9297');
+                    subBadge.setAttribute('fill', '#9499B8');
                 }}
 
                 // 4 Individual Luminaires
@@ -1044,9 +1070,9 @@ def render_cad_sandbox_html():
 
                 // AC & kW Readout
                 acText.textContent = `AC: ${{rData.ac_setpoint}}`;
-                acText.setAttribute('fill', rData.ac_setpoint === 'OFF' ? '#8E9297' : '#FFC93C');
+                acText.setAttribute('fill', rData.ac_setpoint === 'OFF' ? '#9499B8' : '#6BFBCE');
                 kwText.textContent = `${{rData.kw}} kW`;
-                kwText.setAttribute('fill', rData.is_occupied ? '#FFFFFF' : '#8E9297');
+                kwText.setAttribute('fill', rData.is_occupied ? '#FFFFFF' : '#9499B8');
             }});
 
             // Render 4 Lifts (L1, L2 in Left Wing; L3, L4 in Right Wing)
@@ -1057,7 +1083,7 @@ def render_cad_sandbox_html():
                 if (box) box.setAttribute('class', isOn ? 'lift-car-on' : 'lift-car-off');
                 if (txt) {{
                     txt.textContent = isOn ? 'ON' : 'OFF';
-                    txt.setAttribute('fill', isOn ? '#FFC93C' : '#8E9297');
+                    txt.setAttribute('fill', isOn ? '#6BFBCE' : '#9499B8');
                 }}
             }});
 
@@ -1066,9 +1092,9 @@ def render_cad_sandbox_html():
             const lbBadge = document.getElementById('left_bank_badge');
             const rbBadge = document.getElementById('right_bank_badge');
             lbBadge.textContent = `${{leftLiftsCount}}/2 ACTIVE`;
-            lbBadge.setAttribute('fill', leftLiftsCount > 0 ? '#FFC93C' : '#8E9297');
+            lbBadge.setAttribute('fill', leftLiftsCount > 0 ? '#6BFBCE' : '#9499B8');
             rbBadge.textContent = `${{rightLiftsCount}}/2 ACTIVE`;
-            rbBadge.setAttribute('fill', rightLiftsCount > 0 ? '#FFC93C' : '#8E9297');
+            rbBadge.setAttribute('fill', rightLiftsCount > 0 ? '#6BFBCE' : '#9499B8');
 
             // Corridors (Left & Right)
             const cLeft = document.getElementById('corridor_left');
@@ -1078,11 +1104,11 @@ def render_cad_sandbox_html():
 
             cLeft.setAttribute('class', common.left_corridor ? 'corridor-line corridor-on' : 'corridor-line corridor-off');
             lblLeft.textContent = common.left_corridor ? 'LEFT CORRIDOR: ON' : 'LEFT CORRIDOR: OFF (ISOLATED)';
-            lblLeft.setAttribute('fill', common.left_corridor ? '#FFC93C' : '#8E9297');
+            lblLeft.setAttribute('fill', common.left_corridor ? '#6BFBCE' : '#9499B8');
 
             cRight.setAttribute('class', common.right_corridor ? 'corridor-line corridor-on' : 'corridor-line corridor-off');
             lblRight.textContent = common.right_corridor ? 'RIGHT CORRIDOR: ON' : 'RIGHT CORRIDOR: OFF (ISOLATED)';
-            lblRight.setAttribute('fill', common.right_corridor ? '#FFC93C' : '#8E9297');
+            lblRight.setAttribute('fill', common.right_corridor ? '#6BFBCE' : '#9499B8');
 
             for (let i = 1; i <= 4; i++) {{
                 document.getElementById(`cl_lum${{i}}`).setAttribute('class', common.left_corridor ? 'luminaire lum-on' : 'luminaire lum-off');
@@ -1097,7 +1123,7 @@ def render_cad_sandbox_html():
                 if (bx) bx.setAttribute('class', isOn ? 'zone-box-on' : 'zone-box-off');
                 if (st) {{
                     st.textContent = isOn ? onText : offText;
-                    st.setAttribute('fill', isOn ? '#FFC93C' : '#8E9297');
+                    st.setAttribute('fill', isOn ? '#6BFBCE' : '#9499B8');
                 }}
                 if (lm) lm.setAttribute('class', isOn ? 'luminaire lum-on' : 'luminaire lum-off');
             }};
@@ -1108,7 +1134,7 @@ def render_cad_sandbox_html():
             setZoneState('box_faculty_lounge', 'status_faculty_lounge', 'lum1_faculty', common.faculty_lounge, 'ON', 'OFF');
             document.getElementById('lum2_faculty').setAttribute('class', common.faculty_lounge ? 'luminaire lum-on' : 'luminaire lum-off');
             document.getElementById('ac_faculty').textContent = common.faculty_lounge ? 'AC: 25°C (Active)' : 'AC: OFF (After-Hours)';
-            document.getElementById('ac_faculty').setAttribute('fill', common.faculty_lounge ? '#FFC93C' : '#8E9297');
+            document.getElementById('ac_faculty').setAttribute('fill', common.faculty_lounge ? '#6BFBCE' : '#9499B8');
 
             // 3-Part Simulation Report Card
             const repCard = document.getElementById('simulationReportCard');
@@ -1159,14 +1185,14 @@ def render_cad_sandbox_html():
                 const isSelected = (idx === selectedTimetableIdx);
                 return `
                 <div onclick="selectTimetableSlot(${{idx}})" class="p-2.5 rounded-lg cursor-pointer transition-all"
-                    style="background: ${{isSelected ? '#353022' : '#2B2D31'}}; border: 1px solid ${{isSelected ? '#FFC93C' : 'rgba(255,255,255,0.05)'}};">
+                    style="background: ${{isSelected ? '#353022' : '#01010D'}}; border: 1px solid ${{isSelected ? '#6BFBCE' : 'rgba(255,255,255,0.05)'}};">
                     <div class="flex items-center justify-between">
-                        <span class="font-data font-bold text-xs" style="color: ${{isSelected ? '#FFC93C' : '#FFFFFF'}};">${{slot.time_12h}}</span>
-                        <span class="font-data text-[11px] px-2 py-0.5 rounded" style="background: #36393F; color: #D9DAD0;">
+                        <span class="font-data font-bold text-xs" style="color: ${{isSelected ? '#6BFBCE' : '#FFFFFF'}};">${{slot.time_12h}}</span>
+                        <span class="font-data text-[11px] px-2 py-0.5 rounded" style="background: #12102E; color: #E4E6F5;">
                             ${{slot.active_count}} Classes // ${{slot.total_students}}p // ${{slot.temperature}}°C
                         </span>
                     </div>
-                    <div class="text-[11px] mt-1 truncate" style="color: #8E9297;">${{slot.summary}}</div>
+                    <div class="text-[11px] mt-1 truncate" style="color: #9499B8;">${{slot.summary}}</div>
                 </div>`;
             }}).join('');
         }}
@@ -1223,17 +1249,17 @@ def render_cad_sandbox_html():
                     const list = data.suggestions || [];
                     const el = document.getElementById('sandboxSuggestionsLog');
                     el.innerHTML = list.map(item => `
-                        <div class="p-3 rounded-lg text-xs" style="background: #2B2D31; border: 1px solid rgba(255,255,255,0.05);">
+                        <div class="p-3 rounded-lg text-xs" style="background: #01010D; border: 1px solid rgba(255,255,255,0.05);">
                             <div class="flex items-center justify-between mb-1.5">
                                 <div class="flex items-center gap-2">
-                                    <span class="px-2 py-0.5 rounded font-data font-bold text-[11px]" style="background: rgba(255,201,60,0.15); color: #FFC93C;">${{item.time_12h}}</span>
+                                    <span class="px-2 py-0.5 rounded font-data font-bold text-[11px]" style="background: rgba(107,251,206,0.15); color: #6BFBCE;">${{item.time_12h}}</span>
                                     <span class="font-semibold text-white">${{item.title}}</span>
                                 </div>
-                                <span class="text-[10px] font-data" style="color: #8E9297;">${{item.mode}}</span>
+                                <span class="text-[10px] font-data" style="color: #9499B8;">${{item.mode}}</span>
                             </div>
-                            <div style="color: #D9DAD0;" class="mb-1"><b>Suggestion:</b> ${{item.suggestion}}</div>
-                            <div style="color: #8E9297;" class="mb-1"><b>Actions:</b> ${{item.actions_taken}}</div>
-                            <div class="font-data font-semibold" style="color: #FFC93C;">${{item.energy_saved}}</div>
+                            <div style="color: #E4E6F5;" class="mb-1"><b>Suggestion:</b> ${{item.suggestion}}</div>
+                            <div style="color: #9499B8;" class="mb-1"><b>Actions:</b> ${{item.actions_taken}}</div>
+                            <div class="font-data font-semibold" style="color: #6BFBCE;">${{item.energy_saved}}</div>
                         </div>
                     `).join('');
                 }});

@@ -344,30 +344,51 @@ def home():
         * {{ box-sizing: border-box; }}
         body {{
             font-family: 'Inter', sans-serif;
-            background-color: #2B2D31;
-            color: #D9DAD0;
+            background-color: #01010D;
+            background-image:
+                radial-gradient(circle at 14% 12%, rgba(83, 49, 251, 0.28) 0%, transparent 42%),
+                radial-gradient(circle at 86% 22%, rgba(107, 251, 206, 0.14) 0%, transparent 38%),
+                radial-gradient(circle at 50% 88%, rgba(83, 49, 251, 0.20) 0%, transparent 48%);
+            background-attachment: fixed;
+            color: #E4E6F5;
             margin: 0;
+        }}
+        header {{
+            background: rgba(1, 1, 13, 0.72) !important;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(107, 251, 206, 0.14) !important;
+            position: sticky;
+            top: 0;
+            z-index: 40;
         }}
         h1, h2, h3, .font-heading {{ font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: -0.015em; }}
         .font-data {{ font-family: 'Inter', sans-serif; }}
         .card {{
-            background: #36393F;
-            border-radius: 12px;
-            border: 1px solid rgba(255,255,255,0.06);
-            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+            background: linear-gradient(135deg, rgba(22, 18, 56, 0.58) 0%, rgba(7, 7, 22, 0.62) 100%) !important;
+            backdrop-filter: blur(22px);
+            -webkit-backdrop-filter: blur(22px);
+            border-radius: 14px;
+            border: 1px solid rgba(107, 251, 206, 0.16) !important;
+            box-shadow: 0 10px 36px rgba(1, 1, 13, 0.78), 0 0 28px rgba(83, 49, 251, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.10);
+            transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+        }}
+        .card:hover {{
+            border-color: rgba(107, 251, 206, 0.36) !important;
+            box-shadow: 0 14px 44px rgba(1, 1, 13, 0.85), 0 0 36px rgba(83, 49, 251, 0.28), 0 0 18px rgba(107, 251, 206, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.16);
         }}
         .nav-link {{
             position: relative;
             padding: 6px 0;
-            color: #8E9297;
+            color: #9499B8;
             font-weight: 500;
             font-size: 14px;
             text-decoration: none;
             transition: color 0.15s ease;
         }}
-        .nav-link:hover {{ color: #D9DAD0; }}
+        .nav-link:hover {{ color: #E4E6F5; }}
         .nav-link.active {{
-            color: #FFC93C;
+            color: #6BFBCE;
         }}
         .nav-link.active::after {{
             content: '';
@@ -376,7 +397,7 @@ def home():
             left: 0;
             right: 0;
             height: 2px;
-            background: #FFC93C;
+            background: #6BFBCE;
             border-radius: 1px;
         }}
         .kv-row {{
@@ -393,11 +414,11 @@ def home():
 </head>
 <body class="min-h-screen flex flex-col">
 
-    <header class="border-b" style="border-color: rgba(255,255,255,0.06); background: #2B2D31;">
+    <header class="border-b" style="border-color: rgba(255,255,255,0.06); background: #01010D;">
         <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
             <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: #FFC93C;">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2B2D31" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: #6BFBCE;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#01010D" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                         <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
                     </svg>
                 </div>
@@ -416,33 +437,33 @@ def home():
 
         <div class="mb-8">
             <h1 class="text-2xl font-bold text-white tracking-tight">Campus Overview</h1>
-            <p class="text-sm mt-1" style="color: #8E9297;">JIT campus energy intelligence and optimization status</p>
+            <p class="text-sm mt-1" style="color: #9499B8;">JIT campus energy intelligence and optimization status</p>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
 
             <div class="card p-5">
-                <div class="text-xs font-semibold uppercase tracking-wider" style="color: #8E9297;">Energy Saved</div>
-                <div class="mt-3 text-3xl font-bold" style="color: #FFC93C;">{summary['total_saved_kwh']}<span class="text-sm font-medium ml-1.5" style="color: #8E9297;">kWh</span></div>
-                <div class="text-xs mt-2" style="color: #8E9297;">47.9% reduction over 7 days</div>
+                <div class="text-xs font-semibold uppercase tracking-wider" style="color: #9499B8;">Energy Saved</div>
+                <div class="mt-3 text-3xl font-bold" style="color: #6BFBCE;">{summary['total_saved_kwh']}<span class="text-sm font-medium ml-1.5" style="color: #9499B8;">kWh</span></div>
+                <div class="text-xs mt-2" style="color: #9499B8;">47.9% reduction over 7 days</div>
             </div>
 
             <div class="card p-5">
-                <div class="text-xs font-semibold uppercase tracking-wider" style="color: #8E9297;">Cost Savings</div>
-                <div class="mt-3 text-3xl font-bold" style="color: #FFC93C;">INR {summary['total_saved_inr']}</div>
-                <div class="text-xs mt-2" style="color: #8E9297;">Direct utility cost offset</div>
+                <div class="text-xs font-semibold uppercase tracking-wider" style="color: #9499B8;">Cost Savings</div>
+                <div class="mt-3 text-3xl font-bold" style="color: #6BFBCE;">INR {summary['total_saved_inr']}</div>
+                <div class="text-xs mt-2" style="color: #9499B8;">Direct utility cost offset</div>
             </div>
 
             <div class="card p-5">
-                <div class="text-xs font-semibold uppercase tracking-wider" style="color: #8E9297;">Peak Demand</div>
-                <div class="mt-3 text-3xl font-bold text-white">142<span class="text-sm font-medium ml-1.5" style="color: #8E9297;">kVA</span></div>
-                <div class="text-xs mt-2" style="color: #8E9297;">250 kVA limit / 0 penalties</div>
+                <div class="text-xs font-semibold uppercase tracking-wider" style="color: #9499B8;">Peak Demand</div>
+                <div class="mt-3 text-3xl font-bold text-white">142<span class="text-sm font-medium ml-1.5" style="color: #9499B8;">kVA</span></div>
+                <div class="text-xs mt-2" style="color: #9499B8;">250 kVA limit / 0 penalties</div>
             </div>
 
             <div class="card p-5">
-                <div class="text-xs font-semibold uppercase tracking-wider" style="color: #8E9297;">Managed Assets</div>
-                <div class="mt-3 text-3xl font-bold text-white">14<span class="text-sm font-medium ml-1.5" style="color: #8E9297;">Zones</span></div>
-                <div class="text-xs mt-2" style="color: #8E9297;">Across Blocks A, B, C and Hostel</div>
+                <div class="text-xs font-semibold uppercase tracking-wider" style="color: #9499B8;">Managed Assets</div>
+                <div class="mt-3 text-3xl font-bold text-white">14<span class="text-sm font-medium ml-1.5" style="color: #9499B8;">Zones</span></div>
+                <div class="text-xs mt-2" style="color: #9499B8;">Across Blocks A, B, C and Hostel</div>
             </div>
 
         </div>
@@ -451,15 +472,15 @@ def home():
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-5">
                 <div>
                     <h2 class="text-base font-semibold text-white">7-Day Power Profile</h2>
-                    <p class="text-xs mt-0.5" style="color: #8E9297;">672 intervals at 15-min resolution across JIT infrastructure</p>
+                    <p class="text-xs mt-0.5" style="color: #9499B8;">672 intervals at 15-min resolution across JIT infrastructure</p>
                 </div>
-                <div class="flex items-center gap-5 text-xs" style="color: #8E9297;">
+                <div class="flex items-center gap-5 text-xs" style="color: #9499B8;">
                     <span class="flex items-center gap-2">
-                        <span class="w-3 h-[3px] rounded-full" style="background: #8E9297; opacity: 0.6;"></span>
+                        <span class="w-3 h-[3px] rounded-full" style="background: #9499B8; opacity: 0.6;"></span>
                         Baseline
                     </span>
                     <span class="flex items-center gap-2">
-                        <span class="w-3 h-[3px] rounded-full" style="background: #FFC93C;"></span>
+                        <span class="w-3 h-[3px] rounded-full" style="background: #6BFBCE;"></span>
                         GridSense
                     </span>
                 </div>
@@ -472,12 +493,12 @@ def home():
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
             <div>
                 <h2 class="text-base font-semibold text-white">Telemetry Nodes</h2>
-                <p class="text-xs mt-0.5" style="color: #8E9297;">Auto-cycling live Waste Index Score (WIS) across Block A, Block B, and Block C</p>
+                <p class="text-xs mt-0.5" style="color: #9499B8;">Auto-cycling live Waste Index Score (WIS) across Block A, Block B, and Block C</p>
             </div>
             <div class="flex items-center gap-2">
-                <button onclick="selectTelemetryBlock(0, true)" id="tabBlock0" class="px-3 py-1 rounded-lg text-xs font-semibold transition-all" style="background: #FFC93C; color: #2B2D31;">Block A</button>
-                <button onclick="selectTelemetryBlock(1, true)" id="tabBlock1" class="px-3 py-1 rounded-lg text-xs font-semibold transition-all" style="background: #36393F; color: #D9DAD0;">Block B</button>
-                <button onclick="selectTelemetryBlock(2, true)" id="tabBlock2" class="px-3 py-1 rounded-lg text-xs font-semibold transition-all" style="background: #36393F; color: #D9DAD0;">Block C</button>
+                <button onclick="selectTelemetryBlock(0, true)" id="tabBlock0" class="px-3 py-1 rounded-lg text-xs font-semibold transition-all" style="background: #6BFBCE; color: #01010D;">Block A</button>
+                <button onclick="selectTelemetryBlock(1, true)" id="tabBlock1" class="px-3 py-1 rounded-lg text-xs font-semibold transition-all" style="background: #12102E; color: #E4E6F5;">Block B</button>
+                <button onclick="selectTelemetryBlock(2, true)" id="tabBlock2" class="px-3 py-1 rounded-lg text-xs font-semibold transition-all" style="background: #12102E; color: #E4E6F5;">Block C</button>
             </div>
         </div>
 
@@ -490,84 +511,84 @@ def home():
             <div class="card p-5 flex flex-col justify-between">
                 <div>
                     <div class="flex items-center justify-between mb-3">
-                        <span class="text-xs font-semibold font-data" style="color: #8E9297;">HOSTEL // 120 ROOMS</span>
-                        <span class="text-[11px] font-data font-medium px-2 py-0.5 rounded-md" style="background: rgba(255,201,60,0.1); color: #FFC93C;">WIS: 15</span>
+                        <span class="text-xs font-semibold font-data" style="color: #9499B8;">HOSTEL // 120 ROOMS</span>
+                        <span class="text-[11px] font-data font-medium px-2 py-0.5 rounded-md" style="background: rgba(107,251,206,0.1); color: #6BFBCE;">WIS: 15</span>
                     </div>
                     <div class="text-sm font-semibold text-white mb-3">Hostel Block and Geyser Grid</div>
-                    <div class="rounded-lg p-3" style="background: #2B2D31;">
+                    <div class="rounded-lg p-3" style="background: #01010D;">
                         <div class="kv-row">
-                            <span style="color: #8E9297;">Vacant Room Mode</span>
-                            <span class="font-data text-xs" style="color: #D9DAD0;">Sensor Auto-Kill</span>
+                            <span style="color: #9499B8;">Vacant Room Mode</span>
+                            <span class="font-data text-xs" style="color: #E4E6F5;">Sensor Auto-Kill</span>
                         </div>
                         <div class="kv-row">
-                            <span style="color: #8E9297;">Occupied Rooms</span>
-                            <span class="font-data text-xs" style="color: #D9DAD0;">100% Manual Control</span>
+                            <span style="color: #9499B8;">Occupied Rooms</span>
+                            <span class="font-data text-xs" style="color: #E4E6F5;">100% Manual Control</span>
                         </div>
                         <div class="kv-row">
-                            <span style="color: #8E9297;">Geyser Staggering</span>
-                            <span class="font-data text-xs" style="color: #D9DAD0;">W1 05:30 AM / W2 06:30 AM</span>
+                            <span style="color: #9499B8;">Geyser Staggering</span>
+                            <span class="font-data text-xs" style="color: #E4E6F5;">W1 05:30 AM / W2 06:30 AM</span>
                         </div>
                     </div>
                 </div>
                 <div class="mt-4 pt-3 flex justify-between items-center text-xs" style="border-top: 1px solid rgba(255,255,255,0.06);">
-                    <span style="color: #8E9297;">Demand Breach</span>
-                    <span class="font-data font-semibold" style="color: #D9DAD0;">Zero Violations</span>
+                    <span style="color: #9499B8;">Demand Breach</span>
+                    <span class="font-data font-semibold" style="color: #E4E6F5;">Zero Violations</span>
                 </div>
             </div>
 
             <div class="card p-5 flex flex-col justify-between">
                 <div>
                     <div class="flex items-center justify-between mb-3">
-                        <span class="text-xs font-semibold font-data" style="color: #8E9297;">CAMPUS // 15 COOLERS</span>
-                        <span class="text-[11px] font-data font-medium px-2 py-0.5 rounded-md" style="background: rgba(255,201,60,0.1); color: #FFC93C;">WIS: 05</span>
+                        <span class="text-xs font-semibold font-data" style="color: #9499B8;">CAMPUS // 15 COOLERS</span>
+                        <span class="text-[11px] font-data font-medium px-2 py-0.5 rounded-md" style="background: rgba(107,251,206,0.1); color: #6BFBCE;">WIS: 05</span>
                     </div>
                     <div class="text-sm font-semibold text-white mb-3">Commercial Cooling Units</div>
-                    <div class="rounded-lg p-3" style="background: #2B2D31;">
+                    <div class="rounded-lg p-3" style="background: #01010D;">
                         <div class="kv-row">
-                            <span style="color: #8E9297;">Night Cut-off</span>
-                            <span class="font-data text-xs" style="color: #D9DAD0;">07:00 PM - 07:00 AM Daily</span>
+                            <span style="color: #9499B8;">Night Cut-off</span>
+                            <span class="font-data text-xs" style="color: #E4E6F5;">07:00 PM - 07:00 AM Daily</span>
                         </div>
                         <div class="kv-row">
-                            <span style="color: #8E9297;">Sunday Policy</span>
-                            <span class="font-data text-xs" style="color: #D9DAD0;">100% Locked OFF</span>
+                            <span style="color: #9499B8;">Sunday Policy</span>
+                            <span class="font-data text-xs" style="color: #E4E6F5;">100% Locked OFF</span>
                         </div>
                         <div class="kv-row">
-                            <span style="color: #8E9297;">Thermal Buffer</span>
-                            <span class="font-data text-xs" style="color: #D9DAD0;">2+ Hours Retention</span>
+                            <span style="color: #9499B8;">Thermal Buffer</span>
+                            <span class="font-data text-xs" style="color: #E4E6F5;">2+ Hours Retention</span>
                         </div>
                     </div>
                 </div>
                 <div class="mt-4 pt-3 flex justify-between items-center text-xs" style="border-top: 1px solid rgba(255,255,255,0.06);">
-                    <span style="color: #8E9297;">Monthly Savings</span>
-                    <span class="font-data font-semibold" style="color: #FFC93C;">1,620 kWh (INR 14.5K)</span>
+                    <span style="color: #9499B8;">Monthly Savings</span>
+                    <span class="font-data font-semibold" style="color: #6BFBCE;">1,620 kWh (INR 14.5K)</span>
                 </div>
             </div>
 
             <div class="card p-5 flex flex-col justify-between">
                 <div>
                     <div class="flex items-center justify-between mb-3">
-                        <span class="text-xs font-semibold font-data" style="color: #8E9297;">NETWORK // 150 APs</span>
-                        <span class="text-[11px] font-data font-medium px-2 py-0.5 rounded-md" style="background: rgba(255,201,60,0.1); color: #FFC93C;">WIS: 10</span>
+                        <span class="text-xs font-semibold font-data" style="color: #9499B8;">NETWORK // 150 APs</span>
+                        <span class="text-[11px] font-data font-medium px-2 py-0.5 rounded-md" style="background: rgba(107,251,206,0.1); color: #6BFBCE;">WIS: 10</span>
                     </div>
                     <div class="text-sm font-semibold text-white mb-3">Enterprise WiFi Grid</div>
-                    <div class="rounded-lg p-3" style="background: #2B2D31;">
+                    <div class="rounded-lg p-3" style="background: #01010D;">
                         <div class="kv-row">
-                            <span style="color: #8E9297;">Academic APs</span>
-                            <span class="font-data text-xs" style="color: #FFC93C;">5 GHz Radios Off</span>
+                            <span style="color: #9499B8;">Academic APs</span>
+                            <span class="font-data text-xs" style="color: #6BFBCE;">5 GHz Radios Off</span>
                         </div>
                         <div class="kv-row">
-                            <span style="color: #8E9297;">Off-Hours Mode</span>
-                            <span class="font-data text-xs" style="color: #D9DAD0;">Low-Power Eco (&lt;5W)</span>
+                            <span style="color: #9499B8;">Off-Hours Mode</span>
+                            <span class="font-data text-xs" style="color: #E4E6F5;">Low-Power Eco (&lt;5W)</span>
                         </div>
                         <div class="kv-row">
-                            <span style="color: #8E9297;">Hostel APs</span>
-                            <span class="font-data text-xs" style="color: #D9DAD0;">Full 24/7 Bandwidth</span>
+                            <span style="color: #9499B8;">Hostel APs</span>
+                            <span class="font-data text-xs" style="color: #E4E6F5;">Full 24/7 Bandwidth</span>
                         </div>
                     </div>
                 </div>
                 <div class="mt-4 pt-3 flex justify-between items-center text-xs" style="border-top: 1px solid rgba(255,255,255,0.06);">
-                    <span style="color: #8E9297;">Monthly Potential</span>
-                    <span class="font-data font-semibold" style="color: #FFC93C;">2,700 kWh</span>
+                    <span style="color: #9499B8;">Monthly Potential</span>
+                    <span class="font-data font-semibold" style="color: #6BFBCE;">2,700 kWh</span>
                 </div>
             </div>
 
@@ -577,14 +598,14 @@ def home():
         <section class="card p-6 mb-8">
             <div class="mb-5">
                 <h2 class="text-base font-semibold text-white">Session Suggestions &amp; Spatial Optimization Log (By Time)</h2>
-                <p class="text-xs mt-0.5" style="color: #8E9297;">Live time-indexed spatial consolidation, wing shutdowns, and Block C natural daylight harvesting logs</p>
+                <p class="text-xs mt-0.5" style="color: #9499B8;">Live time-indexed spatial consolidation, wing shutdowns, and Block C natural daylight harvesting logs</p>
             </div>
             <div id="dashboardSuggestionsLog" class="space-y-3"></div>
         </section>
 
     </main>
 
-    <footer class="py-4 px-6 text-center text-xs" style="color: #8E9297; border-top: 1px solid rgba(255,255,255,0.06);">
+    <footer class="py-4 px-6 text-center text-xs" style="color: #9499B8; border-top: 1px solid rgba(255,255,255,0.06);">
         GridSense v1.0 / JIT Campus
     </footer>
 
@@ -657,22 +678,22 @@ def home():
                     <div class="card p-5 flex flex-col justify-between">
                         <div>
                             <div class="flex items-center justify-between mb-3">
-                                <span class="text-xs font-semibold font-data" style="color: #8E9297;">${{c.tag}}</span>
-                                <span class="text-[11px] font-data font-medium px-2 py-0.5 rounded-md" style="background: rgba(255,201,60,0.1); color: #FFC93C;">${{c.wis}}</span>
+                                <span class="text-xs font-semibold font-data" style="color: #9499B8;">${{c.tag}}</span>
+                                <span class="text-[11px] font-data font-medium px-2 py-0.5 rounded-md" style="background: rgba(107,251,206,0.1); color: #6BFBCE;">${{c.wis}}</span>
                             </div>
                             <div class="text-sm font-semibold text-white mb-3">${{c.title}}</div>
-                            <div class="rounded-lg p-3" style="background: #2B2D31;">
+                            <div class="rounded-lg p-3" style="background: #01010D;">
                                 ${{c.rows.map(r => `
                                     <div class="kv-row">
-                                        <span style="color: #8E9297;">${{r[0]}}</span>
-                                        <span class="font-data text-xs" style="color: #D9DAD0;">${{r[1]}}</span>
+                                        <span style="color: #9499B8;">${{r[0]}}</span>
+                                        <span class="font-data text-xs" style="color: #E4E6F5;">${{r[1]}}</span>
                                     </div>
                                 `).join('')}}
                             </div>
                         </div>
                         <div class="mt-4 pt-3 flex justify-between items-center text-xs" style="border-top: 1px solid rgba(255,255,255,0.06);">
-                            <span style="color: #8E9297;">${{c.footerLabel}}</span>
-                            <span class="font-data font-semibold" style="color: #FFC93C;">${{c.footerVal}} ${{c.footerStrike ? `<span style="color: #8E9297; text-decoration: line-through; font-weight: 400;">${{c.footerStrike}}</span>` : ''}}</span>
+                            <span style="color: #9499B8;">${{c.footerLabel}}</span>
+                            <span class="font-data font-semibold" style="color: #6BFBCE;">${{c.footerVal}} ${{c.footerStrike ? `<span style="color: #9499B8; text-decoration: line-through; font-weight: 400;">${{c.footerStrike}}</span>` : ''}}</span>
                         </div>
                     </div>
                 `).join('');
@@ -683,11 +704,11 @@ def home():
                 const btn = document.getElementById('tabBlock' + i);
                 if (!btn) return;
                 if (i === idx) {{
-                    btn.style.background = '#FFC93C';
-                    btn.style.color = '#2B2D31';
+                    btn.style.background = '#6BFBCE';
+                    btn.style.color = '#01010D';
                 }} else {{
-                    btn.style.background = '#36393F';
-                    btn.style.color = '#D9DAD0';
+                    btn.style.background = '#12102E';
+                    btn.style.color = '#E4E6F5';
                 }}
             }});
         }}
@@ -724,26 +745,26 @@ def home():
                 const container = document.getElementById('dashboardSuggestionsLog');
                 const items = data.suggestions || [];
                 container.innerHTML = items.map(item => `
-                    <div class="p-4 rounded-xl" style="background: #2B2D31; border: 1px solid rgba(255,255,255,0.06);">
+                    <div class="p-4 rounded-xl" style="background: #01010D; border: 1px solid rgba(255,255,255,0.06);">
                         <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
                             <div class="flex items-center gap-2.5">
-                                <span class="px-2.5 py-0.5 rounded text-xs font-bold font-data" style="background: rgba(255,201,60,0.15); color: #FFC93C;">${{item.time_12h}}</span>
+                                <span class="px-2.5 py-0.5 rounded text-xs font-bold font-data" style="background: rgba(107,251,206,0.15); color: #6BFBCE;">${{item.time_12h}}</span>
                                 <span class="text-sm font-semibold text-white">${{item.title}}</span>
                             </div>
-                            <span class="text-xs font-data px-2 py-0.5 rounded" style="background: #36393F; color: #D9DAD0;">${{item.mode}}</span>
+                            <span class="text-xs font-data px-2 py-0.5 rounded" style="background: #12102E; color: #E4E6F5;">${{item.mode}}</span>
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs mt-2">
-                            <div class="p-2.5 rounded-lg" style="background: #36393F;">
-                                <div class="font-semibold uppercase text-[10px] mb-1" style="color: #FFC93C;">1. Relocation &amp; Spatial Suggestion</div>
-                                <div style="color: #D9DAD0;">${{item.suggestion}}</div>
+                            <div class="p-2.5 rounded-lg" style="background: #12102E;">
+                                <div class="font-semibold uppercase text-[10px] mb-1" style="color: #6BFBCE;">1. Relocation &amp; Spatial Suggestion</div>
+                                <div style="color: #E4E6F5;">${{item.suggestion}}</div>
                             </div>
-                            <div class="p-2.5 rounded-lg" style="background: #36393F;">
-                                <div class="font-semibold uppercase text-[10px] mb-1" style="color: #D9DAD0;">2. Hardware Actions Taken</div>
-                                <div style="color: #D9DAD0;">${{item.actions_taken}}</div>
+                            <div class="p-2.5 rounded-lg" style="background: #12102E;">
+                                <div class="font-semibold uppercase text-[10px] mb-1" style="color: #E4E6F5;">2. Hardware Actions Taken</div>
+                                <div style="color: #E4E6F5;">${{item.actions_taken}}</div>
                             </div>
-                            <div class="p-2.5 rounded-lg" style="background: #36393F;">
-                                <div class="font-semibold uppercase text-[10px] mb-1" style="color: #8E9297;">3. Energy &amp; Cost Saved</div>
-                                <div class="font-data font-semibold" style="color: #FFC93C;">${{item.energy_saved}}</div>
+                            <div class="p-2.5 rounded-lg" style="background: #12102E;">
+                                <div class="font-semibold uppercase text-[10px] mb-1" style="color: #9499B8;">3. Energy &amp; Cost Saved</div>
+                                <div class="font-data font-semibold" style="color: #6BFBCE;">${{item.energy_saved}}</div>
                             </div>
                         </div>
                     </div>
@@ -788,8 +809,8 @@ def home():
                             {{
                                 label: 'GridSense (kW)',
                                 data: gridsenseData,
-                                borderColor: '#FFC93C',
-                                backgroundColor: 'rgba(255, 201, 60, 0.08)',
+                                borderColor: '#6BFBCE',
+                                backgroundColor: 'rgba(107, 251, 206, 0.08)',
                                 fill: true,
                                 borderWidth: 2,
                                 pointRadius: 0,
@@ -804,9 +825,9 @@ def home():
                         plugins: {{
                             legend: {{ display: false }},
                             tooltip: {{
-                                backgroundColor: '#36393F',
+                                backgroundColor: '#12102E',
                                 titleColor: '#FFFFFF',
-                                bodyColor: '#D9DAD0',
+                                bodyColor: '#E4E6F5',
                                 borderColor: 'rgba(255,255,255,0.06)',
                                 borderWidth: 1,
                                 titleFont: {{ family: 'Inter', size: 12, weight: '600' }},
@@ -819,12 +840,12 @@ def home():
                         scales: {{
                             x: {{
                                 grid: {{ color: 'rgba(255, 255, 255, 0.03)', drawBorder: false }},
-                                ticks: {{ color: '#8E9297', font: {{ family: 'Inter', size: 10 }}, maxTicksLimit: 14 }}
+                                ticks: {{ color: '#9499B8', font: {{ family: 'Inter', size: 10 }}, maxTicksLimit: 14 }}
                             }},
                             y: {{
-                                title: {{ display: true, text: 'Total kW', color: '#8E9297', font: {{ family: 'Inter', size: 11, weight: '500' }} }},
+                                title: {{ display: true, text: 'Total kW', color: '#9499B8', font: {{ family: 'Inter', size: 11, weight: '500' }} }},
                                 grid: {{ color: 'rgba(255, 255, 255, 0.03)', drawBorder: false }},
-                                ticks: {{ color: '#8E9297', font: {{ family: 'Inter', size: 10 }} }}
+                                ticks: {{ color: '#9499B8', font: {{ family: 'Inter', size: 10 }} }}
                             }}
                         }}
                     }}
@@ -847,55 +868,55 @@ def view_blueprint():
         zones_html = ""
         for z in b_data.get("zones", []):
             zones_html += f"""
-            <div class='p-3 rounded-lg text-xs mb-2' style='background: #2B2D31; border: 1px solid rgba(255,255,255,0.04);'>
-                <div class='font-semibold' style='color: #FFC93C;'>{z.get('name', '')} (ID: {z.get('id', '')})</div>
-                <div style='color: #8E9297; font-size: 11px; margin-top: 4px;'>Capacity: {z.get('capacity', 'N/A')} | Solutions: {', '.join(z.get('solution_mapping', []))}</div>
+            <div class='p-3 rounded-lg text-xs mb-2' style='background: #01010D; border: 1px solid rgba(255,255,255,0.04);'>
+                <div class='font-semibold' style='color: #6BFBCE;'>{z.get('name', '')} (ID: {z.get('id', '')})</div>
+                <div style='color: #9499B8; font-size: 11px; margin-top: 4px;'>Capacity: {z.get('capacity', 'N/A')} | Solutions: {', '.join(z.get('solution_mapping', []))}</div>
             </div>"""
         for lab in b_data.get("labs", []):
             zones_html += f"""
-            <div class='p-3 rounded-lg text-xs mb-2' style='background: #2B2D31; border: 1px solid rgba(255,255,255,0.04);'>
-                <div class='font-semibold' style='color: #FFC93C;'>{lab.get('name', '')} (ID: {lab.get('id', '')})</div>
-                <div style='color: #8E9297; font-size: 11px; margin-top: 4px;'>PCs: {lab.get('pc_count', '')} (Active: {lab.get('pc_active_watts', '')}W, Sleep: {lab.get('pc_sleep_watts', '')}W) | Solutions: {', '.join(lab.get('solution_mapping', []))}</div>
+            <div class='p-3 rounded-lg text-xs mb-2' style='background: #01010D; border: 1px solid rgba(255,255,255,0.04);'>
+                <div class='font-semibold' style='color: #6BFBCE;'>{lab.get('name', '')} (ID: {lab.get('id', '')})</div>
+                <div style='color: #9499B8; font-size: 11px; margin-top: 4px;'>PCs: {lab.get('pc_count', '')} (Active: {lab.get('pc_active_watts', '')}W, Sleep: {lab.get('pc_sleep_watts', '')}W) | Solutions: {', '.join(lab.get('solution_mapping', []))}</div>
             </div>"""
         for w in b_data.get("wings", []):
             stagger = w.get("geyser_bank", {}).get("stagger_slot", "")
             zones_html += f"""
-            <div class='p-3 rounded-lg text-xs mb-2' style='background: #2B2D31; border: 1px solid rgba(255,255,255,0.04);'>
-                <div class='font-semibold' style='color: #FFC93C;'>{w.get('name', '')} (ID: {w.get('id', '')})</div>
-                <div style='color: #8E9297; font-size: 11px; margin-top: 4px;'>Rooms: {w.get('rooms_count', '')} | Presence Sensing: Dual-Tech PIR</div>
-                <div style='color: #D9DAD0; font-size: 11px; margin-top: 4px;'>Policy: Vacant = Auto-Kill | Occupied = 100% Manual User Control</div>
-                <div style='color: #8E9297; font-size: 11px; margin-top: 4px;'>Geyser Slot: {stagger}</div>
+            <div class='p-3 rounded-lg text-xs mb-2' style='background: #01010D; border: 1px solid rgba(255,255,255,0.04);'>
+                <div class='font-semibold' style='color: #6BFBCE;'>{w.get('name', '')} (ID: {w.get('id', '')})</div>
+                <div style='color: #9499B8; font-size: 11px; margin-top: 4px;'>Rooms: {w.get('rooms_count', '')} | Presence Sensing: Dual-Tech PIR</div>
+                <div style='color: #E4E6F5; font-size: 11px; margin-top: 4px;'>Policy: Vacant = Auto-Kill | Occupied = 100% Manual User Control</div>
+                <div style='color: #9499B8; font-size: 11px; margin-top: 4px;'>Geyser Slot: {stagger}</div>
             </div>"""
         for wc in b_data.get("water_coolers", []):
             zones_html += f"""
-            <div class='p-2 rounded-lg text-xs mb-1 flex justify-between' style='background: #2B2D31; border: 1px solid rgba(255,255,255,0.04); font-size: 11px;'>
-                <span style='color: #8E9297;'>Commercial Water Cooler {wc.get('id', '')} (Floor {wc.get('floor', '')})</span>
-                <span class='font-semibold' style='color: #FFC93C;'>{wc.get('compressor_kw', '')} kW | Interlocked 07:00 PM - 07:00 AM</span>
+            <div class='p-2 rounded-lg text-xs mb-1 flex justify-between' style='background: #01010D; border: 1px solid rgba(255,255,255,0.04); font-size: 11px;'>
+                <span style='color: #9499B8;'>Commercial Water Cooler {wc.get('id', '')} (Floor {wc.get('floor', '')})</span>
+                <span class='font-semibold' style='color: #6BFBCE;'>{wc.get('compressor_kw', '')} kW | Interlocked 07:00 PM - 07:00 AM</span>
             </div>"""
         for hm in b_data.get("heavy_motors", []):
             zones_html += f"""
-            <div class='p-2 rounded-lg text-xs mb-1 flex justify-between' style='background: #2B2D31; border: 1px solid rgba(255,255,255,0.04); font-size: 11px;'>
-                <span style='color: #8E9297;'>{hm.get('name', '')}</span>
-                <span class='font-semibold' style='color: #FFC93C;'>{hm.get('kw', '')} kW | Shifted to Solar Window</span>
+            <div class='p-2 rounded-lg text-xs mb-1 flex justify-between' style='background: #01010D; border: 1px solid rgba(255,255,255,0.04); font-size: 11px;'>
+                <span style='color: #9499B8;'>{hm.get('name', '')}</span>
+                <span class='font-semibold' style='color: #6BFBCE;'>{hm.get('kw', '')} kW | Shifted to Solar Window</span>
             </div>"""
 
         elev_info = ""
         if "elevator_bank" in b_data:
             eb = b_data["elevator_bank"]
             elev_info = f"""
-            <div class='p-3 rounded-lg text-xs mb-2' style='background: #2B2D31; border: 1px solid rgba(255,255,255,0.04);'>
-                <div class='font-semibold' style='color: #FFC93C;'>4-Lift Elevator Bank (ID: {eb.get('id', '')})</div>
-                <div style='color: #8E9297; font-size: 11px; margin-top: 4px;'>Total Cars: {eb.get('total_cars')} | Mandatory Active Safety Floor: {eb.get('mandatory_safety_floor')} Cars</div>
-                <div style='color: #8E9297; font-size: 11px;'>Motor Rating: {eb.get('car_rating_motor_kw')} kW | Standby Parasitic: {eb.get('standby_parasitic_kw')} kW</div>
+            <div class='p-3 rounded-lg text-xs mb-2' style='background: #01010D; border: 1px solid rgba(255,255,255,0.04);'>
+                <div class='font-semibold' style='color: #6BFBCE;'>4-Lift Elevator Bank (ID: {eb.get('id', '')})</div>
+                <div style='color: #9499B8; font-size: 11px; margin-top: 4px;'>Total Cars: {eb.get('total_cars')} | Mandatory Active Safety Floor: {eb.get('mandatory_safety_floor')} Cars</div>
+                <div style='color: #9499B8; font-size: 11px;'>Motor Rating: {eb.get('car_rating_motor_kw')} kW | Standby Parasitic: {eb.get('standby_parasitic_kw')} kW</div>
             </div>"""
 
         blocks_html += f"""
         <div class='card p-6 mb-5'>
             <div class='flex items-center justify-between pb-3 mb-4' style='border-bottom: 1px solid rgba(255,255,255,0.06);'>
                 <h3 class='text-base font-semibold text-white'>{b_name}</h3>
-                <span class='text-xs font-medium' style='color: #FFC93C;'>{len(b_data.get('zones', [])) + len(b_data.get('labs', [])) + len(b_data.get('wings', []))} Managed Asset Groups</span>
+                <span class='text-xs font-medium' style='color: #6BFBCE;'>{len(b_data.get('zones', [])) + len(b_data.get('labs', [])) + len(b_data.get('wings', []))} Managed Asset Groups</span>
             </div>
-            <p class='text-xs mb-4' style='color: #8E9297;'>{b_data.get('description', '')}</p>
+            <p class='text-xs mb-4' style='color: #9499B8;'>{b_data.get('description', '')}</p>
             {elev_info}
             {zones_html}
         </div>
@@ -913,30 +934,51 @@ def view_blueprint():
         * {{ box-sizing: border-box; }}
         body {{
             font-family: 'Inter', sans-serif;
-            background-color: #2B2D31;
-            color: #D9DAD0;
+            background-color: #01010D;
+            background-image:
+                radial-gradient(circle at 14% 12%, rgba(83, 49, 251, 0.28) 0%, transparent 42%),
+                radial-gradient(circle at 86% 22%, rgba(107, 251, 206, 0.14) 0%, transparent 38%),
+                radial-gradient(circle at 50% 88%, rgba(83, 49, 251, 0.20) 0%, transparent 48%);
+            background-attachment: fixed;
+            color: #E4E6F5;
             margin: 0;
+        }}
+        header {{
+            background: rgba(1, 1, 13, 0.72) !important;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(107, 251, 206, 0.14) !important;
+            position: sticky;
+            top: 0;
+            z-index: 40;
         }}
         h1, h2, h3, .font-heading {{ font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: -0.015em; }}
         .font-data {{ font-family: 'Inter', sans-serif; }}
         .card {{
-            background: #36393F;
-            border-radius: 12px;
-            border: 1px solid rgba(255,255,255,0.06);
-            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+            background: linear-gradient(135deg, rgba(22, 18, 56, 0.58) 0%, rgba(7, 7, 22, 0.62) 100%) !important;
+            backdrop-filter: blur(22px);
+            -webkit-backdrop-filter: blur(22px);
+            border-radius: 14px;
+            border: 1px solid rgba(107, 251, 206, 0.16) !important;
+            box-shadow: 0 10px 36px rgba(1, 1, 13, 0.78), 0 0 28px rgba(83, 49, 251, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.10);
+            transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+        }}
+        .card:hover {{
+            border-color: rgba(107, 251, 206, 0.36) !important;
+            box-shadow: 0 14px 44px rgba(1, 1, 13, 0.85), 0 0 36px rgba(83, 49, 251, 0.28), 0 0 18px rgba(107, 251, 206, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.16);
         }}
         .nav-link {{
             position: relative;
             padding: 6px 0;
-            color: #8E9297;
+            color: #9499B8;
             font-weight: 500;
             font-size: 14px;
             text-decoration: none;
             transition: color 0.15s ease;
         }}
-        .nav-link:hover {{ color: #D9DAD0; }}
+        .nav-link:hover {{ color: #E4E6F5; }}
         .nav-link.active {{
-            color: #FFC93C;
+            color: #6BFBCE;
         }}
         .nav-link.active::after {{
             content: '';
@@ -945,18 +987,18 @@ def view_blueprint():
             left: 0;
             right: 0;
             height: 2px;
-            background: #FFC93C;
+            background: #6BFBCE;
             border-radius: 1px;
         }}
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
 
-    <header class="border-b" style="border-color: rgba(255,255,255,0.06); background: #2B2D31;">
+    <header class="border-b" style="border-color: rgba(255,255,255,0.06); background: #01010D;">
         <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
             <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: #FFC93C;">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2B2D31" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: #6BFBCE;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#01010D" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                         <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
                     </svg>
                 </div>
@@ -976,15 +1018,15 @@ def view_blueprint():
 
         <div class="mb-8">
             <h1 class="text-2xl font-bold text-white tracking-tight">JIT Campus Blueprint</h1>
-            <p class="text-sm mt-1" style="color: #8E9297;">Physical asset hierarchy and digital twin mapping</p>
-            <p class="text-xs mt-1 font-data" style="color: #8E9297;">Tariff: INR 9.00/kWh | Max Demand Limit: 250 kVA</p>
+            <p class="text-sm mt-1" style="color: #9499B8;">Physical asset hierarchy and digital twin mapping</p>
+            <p class="text-xs mt-1 font-data" style="color: #9499B8;">Tariff: INR 9.00/kWh | Max Demand Limit: 250 kVA</p>
         </div>
 
         {blocks_html}
 
     </main>
 
-    <footer class="py-4 px-6 text-center text-xs" style="color: #8E9297; border-top: 1px solid rgba(255,255,255,0.06);">
+    <footer class="py-4 px-6 text-center text-xs" style="color: #9499B8; border-top: 1px solid rgba(255,255,255,0.06);">
         GridSense v1.0 / JIT Campus
     </footer>
 
