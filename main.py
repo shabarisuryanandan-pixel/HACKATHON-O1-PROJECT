@@ -1,9 +1,11 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, JSONResponse
 import os
 import json
+import urllib.request
 from dotenv import load_dotenv
 from campus_blueprint import CAMPUS_BLUEPRINT, CAMPUS_METADATA
+from sandbox_engine import evaluate_sandbox_state
 
 load_dotenv()
 
@@ -127,6 +129,9 @@ def home():
                     <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
                     <span>System Active</span>
                 </div>
+                <a href="/sandbox" class="px-4 py-1.5 neu-btn text-emerald-400 font-semibold glow-emerald">
+                    Interactive Sandbox
+                </a>
                 <a href="/blueprint" class="px-4 py-1.5 neu-btn text-zinc-300 font-semibold">
                     Campus Blueprint
                 </a>
@@ -455,6 +460,565 @@ def home():
                     }});
             }})
             .catch(err => console.error("Telemetry error:", err));
+    </script>
+</body>
+</html>
+"""
+
+@app.post("/api/sandbox/evaluate")
+async def api_sandbox_eval(request: Request):
+    try:
+        body = await request.json()
+    except Exception:
+        body = {}
+    result = evaluate_sandbox_state(body)
+    return result
+
+@app.post("/api/sandbox/notify-telegram")
+async def api_notify_telegram(request: Request):
+    try:
+        body = await request.json()
+        token = body.get("token", "").strip()
+        chat_id = body.get("chat_id", "").strip()
+        message = body.get("message", "GridSense Automation Alert")
+
+        if not token or not chat_id:
+            return {"status": "error", "message": "Bot token and Chat ID are required."}
+
+        url = f"https://api.telegram.org/bot{token}/sendMessage"
+        payload = json.dumps({"chat_id": chat_id, "text": message}).encode("utf-8")
+        req = urllib.request.Request(url, data=payload, headers={"Content-Type": "application/json"})
+        
+        with urllib.request.urlopen(req, timeout=5) as response:
+            res_data = json.loads(response.read().decode())
+            if res_data.get("ok"):
+                return {"status": "success", "message": "Alert sent to phone successfully."}
+            else:
+                return {"status": "error", "message": "Telegram API returned failure."}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+@app.get("/sandbox", response_class=HTMLResponse)
+def view_sandbox():
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GridSense // Interactive Simulation & Testing Sandbox</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        body {{
+            font-family: 'Inter', sans-serif;
+            background-color: #14161b;
+            color: #d1d5db;
+        }}
+        .font-mono-code {{ font-family: 'JetBrains Mono', monospace; }}
+        .neu-card {{
+            background: #181a20;
+            border-radius: 16px;
+            box-shadow: 8px 8px 18px #0d0e12, -8px -8px 18px #23262e;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+        }}
+        .neu-inset {{
+            background: #131418;
+            border-radius: 12px;
+            box-shadow: inset 4px 4px 10px #0a0b0d, inset -4px -4px 10px #1c1d23;
+            border: 1px solid rgba(255, 255, 255, 0.02);
+        }}
+        .neu-btn {{
+            background: #181a20;
+            border-radius: 10px;
+            box-shadow: 4px 4px 10px #0d0e12, -4px -4px 10px #23262e;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            transition: all 0.15s ease;
+        }}
+        .neu-btn:hover {{ color: #10b981; }}
+        .neu-btn:active {{
+            box-shadow: inset 3px 3px 6px #0a0b0d, inset -3px -3px 6px #1c1d23;
+        }}
+
+        /* Room Glow Effect for Lights ON */
+        .room-lit {{
+            background: radial-gradient(circle at center, rgba(251, 191, 36, 0.18) 0%, rgba(24, 26, 32, 0.95) 85%);
+            border: 1.5px solid rgba(251, 191, 36, 0.45) !important;
+            box-shadow: 0 0 16px rgba(251, 191, 36, 0.15), inset 0 0 12px rgba(251, 191, 36, 0.08);
+        }}
+        .room-dark {{
+            background: #111216;
+            border: 1px solid rgba(255, 255, 255, 0.04) !important;
+            opacity: 0.55;
+        }}
+        .corridor-lit {{
+            background: rgba(251, 191, 36, 0.12);
+            border: 1px solid rgba(251, 191, 36, 0.3);
+        }}
+        .corridor-dark {{
+            background: #0f1013;
+            border: 1px dashed rgba(255, 255, 255, 0.05);
+            opacity: 0.4;
+        }}
+    </style>
+</head>
+<body class="min-h-screen p-4 sm:p-8 max-w-7xl mx-auto">
+
+    <!-- HEADER NAVIGATION -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8 pb-4 border-b border-white/5">
+        <div>
+            <div class="text-xs font-mono-code font-bold text-emerald-400 uppercase tracking-widest">Interactive Testing Sandbox // Digital Twin Simulation</div>
+            <h1 class="text-2xl sm:text-3xl font-bold text-white tracking-tight mt-1">Block A & B Architectural Simulation</h1>
+            <p class="text-xs text-zinc-400 font-mono-code mt-0.5">Adjust environmental inputs, stress-test occupancy, and observe real-time spatial consolidation</p>
+        </div>
+        <div class="flex items-center gap-3">
+            <a href="/" class="px-4 py-2 neu-btn font-mono-code text-xs font-semibold text-zinc-300">
+                Back to Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- MAIN TWO-COLUMN LAYOUT -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+        <!-- LEFT COLUMN: CONTROLS & TEST PARAMS (4 COLS) -->
+        <div class="lg:col-span-4 space-y-6">
+
+            <!-- PRESET QUICK SELECTOR -->
+            <div class="p-5 neu-card">
+                <div class="text-xs font-mono-code uppercase text-zinc-400 mb-3 font-bold">1. Quick Scenario Presets</div>
+                <div class="grid grid-cols-3 gap-2">
+                    <button onclick="applyPreset('morning')" class="py-2 px-1 neu-btn text-[11px] font-mono-code font-bold text-zinc-300 text-center">
+                        09:00 AM<br><span class="text-[9px] text-zinc-500 font-normal">Morning Peak</span>
+                    </button>
+                    <button onclick="applyPreset('afternoon')" class="py-2 px-1 neu-btn text-[11px] font-mono-code font-bold text-zinc-300 text-center">
+                        02:30 PM<br><span class="text-[9px] text-zinc-500 font-normal">Afternoon Heat</span>
+                    </button>
+                    <button onclick="applyPreset('night_waste')" class="py-2 px-1 neu-btn text-[11px] font-mono-code font-bold text-amber-400 text-center">
+                        07:30 PM<br><span class="text-[9px] text-zinc-500 font-normal">Stray Late Class</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- TIME & ENVIRONMENT SLIDERS -->
+            <div class="p-5 neu-card space-y-4">
+                <div class="text-xs font-mono-code uppercase text-zinc-400 font-bold">2. Environmental Inputs</div>
+                
+                <div>
+                    <div class="flex justify-between text-xs font-mono-code mb-1">
+                        <span class="text-zinc-400">Time of Day</span>
+                        <span id="timeVal" class="text-emerald-400 font-bold">19:30</span>
+                    </div>
+                    <input type="range" id="timeSlider" min="6" max="23" step="0.5" value="19.5" oninput="onParamChange()" class="w-full accent-emerald-500 cursor-pointer">
+                </div>
+
+                <div>
+                    <div class="flex justify-between text-xs font-mono-code mb-1">
+                        <span class="text-zinc-400">Outdoor Temperature</span>
+                        <span id="tempVal" class="text-amber-400 font-bold">33°C</span>
+                    </div>
+                    <input type="range" id="tempSlider" min="20" max="40" step="1" value="33" oninput="onParamChange()" class="w-full accent-amber-500 cursor-pointer">
+                </div>
+
+                <div>
+                    <div class="text-xs font-mono-code text-zinc-400 mb-1">Weather / Sky Condition</div>
+                    <select id="weatherSelect" onchange="onParamChange()" class="w-full p-2.5 neu-inset text-xs font-mono-code text-zinc-200 outline-none">
+                        <option value="Sunny / Daylight">Sunny / Daylight (High Lux)</option>
+                        <option value="Overcast / Rainy">Overcast / Rainy (Low Ambient Lux)</option>
+                        <option value="Night" selected>Night (Zero Daylight)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- CLASSROOM OCCUPANCY INPUTS -->
+            <div class="p-5 neu-card space-y-3">
+                <div class="text-xs font-mono-code uppercase text-zinc-400 font-bold">3. Headcount per Room</div>
+                
+                <div>
+                    <div class="flex justify-between text-[11px] font-mono-code text-zinc-400">
+                        <span>B101 (Floor 1 Entrance):</span>
+                        <span id="occ_B101_val" class="text-white font-bold">0</span>
+                    </div>
+                    <input type="range" id="occ_B101" min="0" max="60" value="0" oninput="onParamChange()" class="w-full accent-blue-500 cursor-pointer">
+                </div>
+
+                <div>
+                    <div class="flex justify-between text-[11px] font-mono-code text-zinc-400">
+                        <span>B104 (Floor 1 Far Hallway):</span>
+                        <span id="occ_B104_val" class="text-white font-bold">20</span>
+                    </div>
+                    <input type="range" id="occ_B104" min="0" max="60" value="20" oninput="onParamChange()" class="w-full accent-blue-500 cursor-pointer">
+                </div>
+
+                <div>
+                    <div class="flex justify-between text-[11px] font-mono-code text-zinc-400">
+                        <span>B204 (Floor 2 Far Hallway):</span>
+                        <span id="occ_B204_val" class="text-white font-bold">0</span>
+                    </div>
+                    <input type="range" id="occ_B204" min="0" max="60" value="0" oninput="onParamChange()" class="w-full accent-blue-500 cursor-pointer">
+                </div>
+
+                <div>
+                    <div class="flex justify-between text-[11px] font-mono-code text-zinc-400">
+                        <span>A_SEM1 (Block A Seminar 1):</span>
+                        <span id="occ_ASEM1_val" class="text-white font-bold">0</span>
+                    </div>
+                    <input type="range" id="occ_ASEM1" min="0" max="150" value="0" oninput="onParamChange()" class="w-full accent-blue-500 cursor-pointer">
+                </div>
+            </div>
+
+            <!-- TELEGRAM BOT ALERT CONFIG -->
+            <div class="p-5 neu-card space-y-3">
+                <div class="text-xs font-mono-code uppercase text-zinc-400 font-bold">4. Telegram Mobile Ping</div>
+                <p class="text-[11px] text-zinc-500 font-mono-code leading-relaxed">
+                    Test live mobile push alerts. Paste your Telegram Bot Token & Chat ID below to receive real alerts on your phone.
+                </p>
+                <input type="text" id="tgToken" placeholder="Telegram Bot Token" class="w-full p-2.5 neu-inset text-[11px] font-mono-code text-zinc-200 outline-none">
+                <input type="text" id="tgChatId" placeholder="Chat ID (e.g. 123456789)" class="w-full p-2.5 neu-inset text-[11px] font-mono-code text-zinc-200 outline-none">
+                <button onclick="sendTelegramAlert()" class="w-full py-2.5 neu-btn text-xs font-mono-code font-bold text-emerald-400">
+                    Send Live Test Ping to Mobile
+                </button>
+                <div id="tgStatus" class="text-[10px] font-mono-code text-zinc-500 text-center"></div>
+            </div>
+
+        </div>
+
+        <!-- RIGHT COLUMN: VISUAL FLOOR PLAN & TELEMETRY GAUGES (8 COLS) -->
+        <div class="lg:col-span-8 space-y-6">
+
+            <!-- BEFORE VS AFTER COMPARISON GAUGES -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="p-4 neu-card">
+                    <div class="text-[11px] font-mono-code uppercase text-zinc-500">Unmanaged Baseline</div>
+                    <div id="baselineMeter" class="text-2xl font-bold text-red-400 mt-1">23.00 kW</div>
+                    <div class="text-[11px] text-zinc-500 font-mono-code mt-0.5">Fixed 20°C AC + All Lights</div>
+                </div>
+
+                <div class="p-4 neu-card">
+                    <div class="text-[11px] font-mono-code uppercase text-zinc-500">GridSense Optimized</div>
+                    <div id="optimizedMeter" class="text-2xl font-bold text-emerald-400 mt-1">6.19 kW</div>
+                    <div class="text-[11px] text-zinc-500 font-mono-code mt-0.5">Consolidated + Adaptive</div>
+                </div>
+
+                <div class="p-4 neu-card">
+                    <div class="text-[11px] font-mono-code uppercase text-zinc-500">Immediate Savings Rate</div>
+                    <div id="savingsMeter" class="text-2xl font-bold text-yellow-400 mt-1">16.81 kW</div>
+                    <div id="inrMeter" class="text-[11px] text-emerald-400 font-mono-code mt-0.5">INR 151.29 / Hour</div>
+                </div>
+            </div>
+
+            <!-- AUTOMATION ALERT POPUP CARD -->
+            <div id="alertCard" class="p-4 neu-card border-l-4 border-l-yellow-400 flex items-start justify-between gap-4">
+                <div>
+                    <div class="flex items-center gap-2 text-xs font-mono-code font-bold text-yellow-400 uppercase">
+                        <span class="w-2 h-2 rounded-full bg-yellow-400 animate-ping"></span>
+                        Spatial Consolidation Nudge Triggered
+                    </div>
+                    <p id="alertText" class="text-xs font-mono-code text-zinc-300 mt-1">
+                        Class in B104 isolated in far hallway. Relocate to B101 near staircase to darken 40m corridor.
+                    </p>
+                </div>
+                <button onclick="applyConsolidation()" class="px-3 py-1.5 neu-btn text-xs font-mono-code font-bold text-emerald-400 shrink-0">
+                    Apply Move
+                </button>
+            </div>
+
+            <!-- ARCHITECTURAL BLUEPRINT 2D CANVAS -->
+            <div class="p-6 neu-card space-y-6">
+                <div class="flex justify-between items-center border-b border-white/5 pb-3">
+                    <div>
+                        <h2 class="text-base font-bold text-white tracking-tight">Block B: 2D Architectural Layout</h2>
+                        <p class="text-xs text-zinc-400 font-mono-code">Visualizing real-time light illumination, corridor relay zones, and HVAC setpoints</p>
+                    </div>
+                    <div id="elevState" class="text-[11px] font-mono-code text-zinc-400 neu-inset px-3 py-1">
+                        Elevators: 2 Active (Mandatory Safety Floor)
+                    </div>
+                </div>
+
+                <!-- FLOOR 1 BLUEPRINT -->
+                <div>
+                    <div class="text-xs font-mono-code font-bold text-zinc-400 uppercase mb-2">Floor 1 Layout (Arterial 80m Corridor)</div>
+                    <div class="grid grid-cols-12 gap-3">
+                        
+                        <!-- STAIRCASE & ENTRANCE -->
+                        <div class="col-span-2 p-3 neu-inset flex flex-col justify-center items-center text-center">
+                            <span class="text-xs font-mono-code font-bold text-zinc-400">MAIN STAIRS & ELEVATORS</span>
+                            <span class="text-[10px] font-mono-code text-emerald-400 mt-1">4-Car Bank</span>
+                        </div>
+
+                        <!-- ROOM B101 (NEAR ENTRANCE) -->
+                        <div id="card_B101" class="col-span-3 p-4 rounded-xl transition-all duration-300 flex flex-col justify-between room-dark">
+                            <div class="flex justify-between items-start">
+                                <span class="text-xs font-mono-code font-bold text-white">B101</span>
+                                <span id="tag_B101" class="text-[9px] font-mono-code font-bold px-1.5 py-0.5 rounded bg-black/40 text-zinc-400">OFF</span>
+                            </div>
+                            <div class="my-2">
+                                <div id="occ_B101_txt" class="text-xs font-bold text-zinc-300 font-mono-code">0 Students</div>
+                                <div id="ac_B101_txt" class="text-[10px] font-mono-code text-zinc-400">AC: STANDBY</div>
+                            </div>
+                            <div class="text-[9px] font-mono-code text-zinc-500">Daylight: East</div>
+                        </div>
+
+                        <!-- ROOM B102 -->
+                        <div id="card_B102" class="col-span-3 p-4 rounded-xl transition-all duration-300 flex flex-col justify-between room-dark">
+                            <div class="flex justify-between items-start">
+                                <span class="text-xs font-mono-code font-bold text-white">B102</span>
+                                <span id="tag_B102" class="text-[9px] font-mono-code font-bold px-1.5 py-0.5 rounded bg-black/40 text-zinc-400">OFF</span>
+                            </div>
+                            <div class="my-2">
+                                <div id="occ_B102_txt" class="text-xs font-bold text-zinc-300 font-mono-code">0 Students</div>
+                                <div id="ac_B102_txt" class="text-[10px] font-mono-code text-zinc-400">AC: STANDBY</div>
+                            </div>
+                            <div class="text-[9px] font-mono-code text-zinc-500">Daylight: North</div>
+                        </div>
+
+                        <!-- ROOM B104 (FAR END) -->
+                        <div id="card_B104" class="col-span-4 p-4 rounded-xl transition-all duration-300 flex flex-col justify-between room-lit">
+                            <div class="flex justify-between items-start">
+                                <span class="text-xs font-mono-code font-bold text-white">B104 (Far End)</span>
+                                <span id="tag_B104" class="text-[9px] font-mono-code font-bold px-1.5 py-0.5 rounded bg-black/40 text-amber-300">LIT</span>
+                            </div>
+                            <div class="my-2">
+                                <div id="occ_B104_txt" class="text-xs font-bold text-amber-200 font-mono-code">20 Students</div>
+                                <div id="ac_B104_txt" class="text-[10px] font-mono-code text-zinc-300">AC: 26°C Adaptive</div>
+                            </div>
+                            <div class="text-[9px] font-mono-code text-amber-400 font-semibold">Corridor Draw: Active</div>
+                        </div>
+
+                    </div>
+
+                    <!-- 3-ZONE CORRIDOR LIGHTING STRIP -->
+                    <div class="mt-3 grid grid-cols-12 gap-1 text-center font-mono-code text-[10px] py-1">
+                        <div id="corridor_z1" class="col-span-4 py-1.5 rounded corridor-lit text-amber-300 font-bold">
+                            Corridor Zone 1 (Entrance) [LIT]
+                        </div>
+                        <div id="corridor_z2" class="col-span-4 py-1.5 rounded corridor-lit text-amber-300 font-bold">
+                            Corridor Zone 2 (Mid-Way) [LIT]
+                        </div>
+                        <div id="corridor_z3" class="col-span-4 py-1.5 rounded corridor-lit text-amber-300 font-bold">
+                            Corridor Zone 3 (Far End) [LIT]
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BLOCK A OVERVIEW (SEMINAR HALLS) -->
+                <div class="pt-4 border-t border-white/5">
+                    <div class="text-xs font-mono-code font-bold text-zinc-400 uppercase mb-2">Block A (Executive Wing)</div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div id="card_ASEM1" class="p-4 rounded-xl transition-all duration-300 room-dark">
+                            <div class="flex justify-between">
+                                <span class="text-xs font-mono-code font-bold text-white">Seminar Hall 1</span>
+                                <span id="tag_ASEM1" class="text-[9px] font-mono-code font-bold px-1.5 py-0.5 rounded bg-black/40 text-zinc-400">OFF</span>
+                            </div>
+                            <div class="text-[11px] font-mono-code text-zinc-400 mt-2">Capacity: 150 | 4x 2.0 Ton ACs</div>
+                            <div id="ac_ASEM1_txt" class="text-[10px] font-mono-code text-zinc-500 mt-1">AC: Isolated at Distribution Board</div>
+                        </div>
+
+                        <div id="card_ASEM2" class="p-4 rounded-xl transition-all duration-300 room-dark">
+                            <div class="flex justify-between">
+                                <span class="text-xs font-mono-code font-bold text-white">Seminar Hall 2</span>
+                                <span class="text-[9px] font-mono-code font-bold px-1.5 py-0.5 rounded bg-black/40 text-zinc-400">OFF</span>
+                            </div>
+                            <div class="text-[11px] font-mono-code text-zinc-400 mt-2">Capacity: 120 | 3x 2.0 Ton ACs</div>
+                            <div class="text-[10px] font-mono-code text-zinc-500 mt-1">AC: Isolated at Distribution Board</div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- JAVASCRIPT CONTROLLER -->
+    <script>
+        let currentRelocations = [];
+
+        function onParamChange() {{
+            const timeVal = parseFloat(document.getElementById('timeSlider').value);
+            const hours = Math.floor(timeVal);
+            const mins = (timeVal % 1 === 0.5) ? "30" : "00";
+            const timeStr = `${{hours < 10 ? '0' + hours : hours}}:${{mins}}`;
+            document.getElementById('timeVal').innerText = timeStr;
+
+            const temp = document.getElementById('tempSlider').value;
+            document.getElementById('tempVal').innerText = `${{temp}}°C`;
+
+            const weather = document.getElementById('weatherSelect').value;
+
+            // Update occupancy labels
+            const occ_B101 = parseInt(document.getElementById('occ_B101').value);
+            const occ_B104 = parseInt(document.getElementById('occ_B104').value);
+            const occ_B204 = parseInt(document.getElementById('occ_B204').value);
+            const occ_ASEM1 = parseInt(document.getElementById('occ_ASEM1').value);
+
+            document.getElementById('occ_B101_val').innerText = occ_B101;
+            document.getElementById('occ_B104_val').innerText = occ_B104;
+            document.getElementById('occ_B204_val').innerText = occ_B204;
+            document.getElementById('occ_ASEM1_val').innerText = occ_ASEM1;
+
+            const payload = {{
+                time: timeStr,
+                temperature: parseFloat(temp),
+                weather: weather,
+                rooms: {{
+                    "B101": occ_B101,
+                    "B104": occ_B104,
+                    "B204": occ_B204,
+                    "A_SEM1": occ_ASEM1
+                }}
+            }};
+
+            fetch('/api/sandbox/evaluate', {{
+                method: 'POST',
+                headers: {{ 'Content-Type': 'application/json' }},
+                body: JSON.stringify(payload)
+            }})
+            .then(res => res.json())
+            .then(data => renderSandboxState(data))
+            .catch(err => console.error(err));
+        }}
+
+        function renderSandboxState(data) {{
+            document.getElementById('baselineMeter').innerText = `${{data.total_baseline_kw}} kW`;
+            document.getElementById('optimizedMeter').innerText = `${{data.total_optimized_kw}} kW`;
+            document.getElementById('savingsMeter').innerText = `${{data.kw_saved}} kW (${{data.savings_percentage}}%)`;
+            document.getElementById('inrMeter').innerText = `INR ${{data.inr_per_hour_saved}} / Hour`;
+            document.getElementById('elevState').innerText = data.elevator_mode;
+
+            // Render room states
+            const rooms = data.rooms;
+            for (let r_id in rooms) {{
+                const r = rooms[r_id];
+                const card = document.getElementById(`card_${{r_id}}`);
+                const tag = document.getElementById(`tag_${{r_id}}`);
+                const occTxt = document.getElementById(`occ_${{r_id}}_txt`);
+                const acTxt = document.getElementById(`ac_${{r_id}}_txt`);
+
+                if (card && tag) {{
+                    if (r.lighting_glow) {{
+                        card.className = card.className.replace('room-dark', 'room-lit');
+                        tag.innerText = "LIT";
+                        tag.className = "text-[9px] font-mono-code font-bold px-1.5 py-0.5 rounded bg-black/40 text-amber-300";
+                    }} else {{
+                        card.className = card.className.replace('room-lit', 'room-dark');
+                        tag.innerText = "OFF";
+                        tag.className = "text-[9px] font-mono-code font-bold px-1.5 py-0.5 rounded bg-black/40 text-zinc-500";
+                    }}
+                }}
+
+                if (occTxt) occTxt.innerText = `${{r.occupancy}} Students`;
+                if (acTxt) acTxt.innerText = `AC: ${{r.ac_mode}}`;
+            }}
+
+            // Render corridor zones
+            const cz = data.corridor_state;
+            updateCorridorZone('corridor_z1', cz.floor1_zone1_entrance === "ON");
+            updateCorridorZone('corridor_z2', cz.floor1_zone2_mid === "ON");
+            updateCorridorZone('corridor_z3', cz.floor1_zone3_far === "ON");
+
+            // Handle Relocation Alerts
+            currentRelocations = data.relocations || [];
+            const alertCard = document.getElementById('alertCard');
+            const alertText = document.getElementById('alertText');
+
+            if (currentRelocations.length > 0) {{
+                alertCard.style.display = "flex";
+                alertText.innerText = currentRelocations[0].reason;
+            }} else {{
+                alertCard.style.display = "none";
+            }}
+        }}
+
+        function updateCorridorZone(elemId, isLit) {{
+            const el = document.getElementById(elemId);
+            if (!el) return;
+            if (isLit) {{
+                el.className = "col-span-4 py-1.5 rounded corridor-lit text-amber-300 font-bold";
+                el.innerText = el.innerText.replace('[DARK]', '[LIT]').replace('[LIT]', '[LIT]');
+            }} else {{
+                el.className = "col-span-4 py-1.5 rounded corridor-dark text-zinc-600 font-normal";
+                el.innerText = el.innerText.replace('[LIT]', '[DARK]').replace('[DARK]', '[DARK]');
+            }}
+        }}
+
+        function applyConsolidation() {{
+            if (currentRelocations.length > 0) {{
+                // Move headcount from B104 to B101
+                const students = parseInt(document.getElementById('occ_B104').value);
+                document.getElementById('occ_B104').value = 0;
+                document.getElementById('occ_B101').value = students;
+                onParamChange();
+            }}
+        }}
+
+        function applyPreset(type) {{
+            if (type === 'morning') {{
+                document.getElementById('timeSlider').value = 9.5;
+                document.getElementById('tempSlider').value = 27;
+                document.getElementById('weatherSelect').value = "Sunny / Daylight";
+                document.getElementById('occ_B101').value = 45;
+                document.getElementById('occ_B104').value = 40;
+                document.getElementById('occ_ASEM1').value = 0;
+            }} else if (type === 'afternoon') {{
+                document.getElementById('timeSlider').value = 14.5;
+                document.getElementById('tempSlider').value = 36;
+                document.getElementById('weatherSelect').value = "Sunny / Daylight";
+                document.getElementById('occ_B101').value = 30;
+                document.getElementById('occ_B104').value = 0;
+                document.getElementById('occ_ASEM1').value = 80;
+            }} else if (type === 'night_waste') {{
+                document.getElementById('timeSlider').value = 19.5;
+                document.getElementById('tempSlider').value = 31;
+                document.getElementById('weatherSelect').value = "Night";
+                document.getElementById('occ_B101').value = 0;
+                document.getElementById('occ_B104').value = 20; // Isolated in far hallway!
+                document.getElementById('occ_ASEM1').value = 0;
+            }}
+            onParamChange();
+        }}
+
+        function sendTelegramAlert() {{
+            const token = document.getElementById('tgToken').value.trim();
+            const chatId = document.getElementById('tgChatId').value.trim();
+            const statusDiv = document.getElementById('tgStatus');
+
+            if (!token || !chatId) {{
+                statusDiv.innerText = "Please provide both Bot Token and Chat ID.";
+                statusDiv.className = "text-[10px] font-mono-code text-red-400 text-center";
+                return;
+            }}
+
+            statusDiv.innerText = "Dispatching alert to mobile...";
+            statusDiv.className = "text-[10px] font-mono-code text-yellow-400 text-center";
+
+            fetch('/api/sandbox/notify-telegram', {{
+                method: 'POST',
+                headers: {{ 'Content-Type': 'application/json' }},
+                body: JSON.stringify({{
+                    token: token,
+                    chat_id: chatId,
+                    message: "GridSense Alert [JIT Campus]: Spatial Consolidation Triggered. Class B104 shifted to B101 near entrance. 40m corridor lighting de-energized. Instant savings: 16.8 kW (INR 151.29/hr)."
+                }})
+            }})
+            .then(res => res.json())
+            .then(data => {{
+                if (data.status === "success") {{
+                    statusDiv.innerText = "Alert delivered to phone successfully.";
+                    statusDiv.className = "text-[10px] font-mono-code text-emerald-400 text-center";
+                }} else {{
+                    statusDiv.innerText = `Error: ${{data.message}}`;
+                    statusDiv.className = "text-[10px] font-mono-code text-red-400 text-center";
+                }}
+            }})
+            .catch(err => {{
+                statusDiv.innerText = "Network error communicating with Telegram.";
+                statusDiv.className = "text-[10px] font-mono-code text-red-400 text-center";
+            }});
+        }}
+
+        // Run initial evaluation on load
+        window.onload = () => onParamChange();
     </script>
 </body>
 </html>
