@@ -42,13 +42,13 @@ def view_blueprint():
             </div>"""
         # Wings
         for w in b_data.get("wings", []):
-            policy = b_data.get("room_level_control_policy", {})
+            stagger = w.get("geyser_bank", {}).get("stagger_slot", "")
             zones_html += f"""
             <div class='p-3 bg-zinc-900 border border-zinc-800 rounded font-mono-code text-xs mb-2'>
                 <div class='font-bold text-red-400'>{w.get('name', '')} (ID: {w.get('id', '')})</div>
                 <div class='text-zinc-400 text-[11px] mt-1'>Rooms: {w.get('rooms_count', '')} | Presence Sensing: {w.get('room_occupancy_sensors', '')}</div>
                 <div class='text-emerald-400 text-[11px] mt-1'>Control Policy: Vacant = 100% Auto Kill | Occupied = 100% Manual User Mode</div>
-                <div class='text-zinc-400 text-[11px] mt-1'>Geyser Stagger Window: {w.get('geyser_bank', {{}}).get('stagger_slot', '')}</div>
+                <div class='text-zinc-400 text-[11px] mt-1'>Geyser Stagger Window: {stagger}</div>
             </div>"""
         # Water Coolers
         for wc in b_data.get("water_coolers", []):
