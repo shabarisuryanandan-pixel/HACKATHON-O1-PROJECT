@@ -104,315 +104,319 @@ def home():
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GridSense // JIT Campus Energy Intelligence</title>
+    <title>GridSense - JIT Campus Energy Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
+        * {{ box-sizing: border-box; }}
         body {{
             font-family: 'Inter', sans-serif;
-            background-color: #16181d;
-            color: #d1d5db;
+            background-color: #2B2D31;
+            color: #D9DAD0;
+            margin: 0;
         }}
-        .font-mono-code {{ font-family: 'JetBrains Mono', monospace; }}
-
-        .neu-card {{
-            background: #191b22;
-            border-radius: 16px;
-            box-shadow: 8px 8px 18px #0f1014, -8px -8px 18px #232630;
-            border: 1px solid rgba(255, 255, 255, 0.03);
-        }}
-        .neu-inset {{
-            background: #14151a;
-            border-radius: 14px;
-            box-shadow: inset 5px 5px 12px #0c0d10, inset -5px -5px 12px #1c1d24;
-            border: 1px solid rgba(255, 255, 255, 0.02);
-        }}
-        .neu-btn {{
-            background: #191b22;
+        .font-data {{ font-family: 'JetBrains Mono', monospace; }}
+        .card {{
+            background: #36393F;
             border-radius: 12px;
-            box-shadow: 5px 5px 12px #0f1014, -5px -5px 12px #232630;
-            border: 1px solid rgba(255, 255, 255, 0.04);
-            transition: all 0.2s ease;
+            border: 1px solid rgba(255,255,255,0.06);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
         }}
-        .neu-btn:hover {{
-            box-shadow: 2px 2px 6px #0f1014, -2px -2px 6px #232630;
-            color: #10b981;
+        .nav-link {{
+            position: relative;
+            padding: 6px 0;
+            color: #8E9297;
+            font-weight: 500;
+            font-size: 14px;
+            text-decoration: none;
+            transition: color 0.15s ease;
         }}
-        .glow-emerald {{
-            box-shadow: 0 0 12px rgba(16, 185, 129, 0.25);
+        .nav-link:hover {{ color: #D9DAD0; }}
+        .nav-link.active {{
+            color: #FFC93C;
+        }}
+        .nav-link.active::after {{
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #FFC93C;
+            border-radius: 1px;
+        }}
+        .kv-row {{
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 0;
+            font-size: 13px;
+        }}
+        .kv-row + .kv-row {{
+            border-top: 1px solid rgba(255,255,255,0.04);
         }}
     </style>
 </head>
-<body class="min-h-screen flex flex-col justify-between selection:bg-emerald-500 selection:text-black">
+<body class="min-h-screen flex flex-col">
 
-    <header class="py-4 px-6 border-b border-white/5 bg-[#16181d]">
-        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
-            <div class="flex items-center gap-4">
-                <div class="w-10 h-10 rounded-xl neu-card flex items-center justify-center font-mono-code font-bold text-emerald-400">
-                    GS
+    <header class="border-b" style="border-color: rgba(255,255,255,0.06); background: #2B2D31;">
+        <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: #FFC93C;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2B2D31" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                    </svg>
                 </div>
-                <div>
-                    <div class="text-xs font-mono-code tracking-wider text-zinc-400 uppercase">JIT Campus Network</div>
-                    <div class="text-xl font-bold text-white tracking-tight">GridSense Intelligence</div>
-                </div>
+                <span class="text-lg font-bold text-white tracking-tight">GridSense</span>
             </div>
 
-            <div class="flex items-center gap-3 text-xs font-mono-code">
-                <div class="px-3 py-1.5 neu-inset rounded-lg flex items-center gap-2 text-zinc-400">
-                    <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-                    <span>System Active</span>
-                </div>
-                <a href="/sandbox" class="px-4 py-1.5 neu-btn text-emerald-400 font-semibold glow-emerald">
-                    Interactive Sandbox
-                </a>
-                <a href="/blueprint" class="px-4 py-1.5 neu-btn text-zinc-300 font-semibold">
-                    Campus Blueprint
-                </a>
-            </div>
+            <nav class="flex items-center gap-8">
+                <a href="/" class="nav-link active">Dashboard</a>
+                <a href="/sandbox" class="nav-link">Sandbox</a>
+                <a href="/blueprint" class="nav-link">Blueprint</a>
+            </nav>
         </div>
     </header>
 
-    <main class="w-full max-w-7xl mx-auto px-4 sm:px-6 py-8 flex-1">
+    <main class="flex-1 w-full max-w-7xl mx-auto px-6 py-8">
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
-            <div class="p-5 neu-card">
-                <div class="text-xs font-mono-code uppercase text-zinc-400">7-Day Energy Saved</div>
-                <div class="text-2xl font-bold text-emerald-400 mt-2">{summary['total_saved_kwh']} <span class="text-sm font-normal text-zinc-400">kWh</span></div>
-                <div class="text-xs text-zinc-400 mt-1">47.9% reduction vs baseline</div>
-            </div>
-
-            <div class="p-5 neu-card">
-                <div class="text-xs font-mono-code uppercase text-zinc-400">Weekly Savings</div>
-                <div class="text-2xl font-bold text-amber-400 mt-2">INR {summary['total_saved_inr']}</div>
-                <div class="text-xs text-zinc-400 mt-1">Direct utility cost offset</div>
-            </div>
-
-            <div class="p-5 neu-card">
-                <div class="text-xs font-mono-code uppercase text-zinc-400">Max Demand Status</div>
-                <div class="text-2xl font-bold text-blue-400 mt-2">142 <span class="text-sm font-normal text-zinc-400">kVA</span></div>
-                <div class="text-xs text-zinc-400 mt-1">250 kVA limit (0 penalties)</div>
-            </div>
-
-            <div class="p-5 neu-card">
-                <div class="text-xs font-mono-code uppercase text-zinc-400">Managed Zones</div>
-                <div class="text-2xl font-bold text-zinc-200 mt-2">14 Assets</div>
-                <div class="text-xs text-zinc-400 mt-1">Across Blocks A, B, C & Hostel</div>
-            </div>
+        <div class="mb-8">
+            <h1 class="text-2xl font-bold text-white tracking-tight">Campus Overview</h1>
+            <p class="text-sm mt-1" style="color: #8E9297;">JIT campus energy intelligence and optimization status</p>
         </div>
 
-        <section class="p-6 neu-card mb-8">
-            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+
+            <div class="card p-5">
+                <div class="text-xs font-semibold uppercase tracking-wider" style="color: #8E9297;">Energy Saved</div>
+                <div class="mt-3 text-3xl font-bold" style="color: #FFC93C;">{summary['total_saved_kwh']}<span class="text-sm font-medium ml-1.5" style="color: #8E9297;">kWh</span></div>
+                <div class="text-xs mt-2" style="color: #8E9297;">47.9% reduction over 7 days</div>
+            </div>
+
+            <div class="card p-5">
+                <div class="text-xs font-semibold uppercase tracking-wider" style="color: #8E9297;">Cost Savings</div>
+                <div class="mt-3 text-3xl font-bold" style="color: #FFC93C;">INR {summary['total_saved_inr']}</div>
+                <div class="text-xs mt-2" style="color: #8E9297;">Direct utility cost offset</div>
+            </div>
+
+            <div class="card p-5">
+                <div class="text-xs font-semibold uppercase tracking-wider" style="color: #8E9297;">Peak Demand</div>
+                <div class="mt-3 text-3xl font-bold text-white">142<span class="text-sm font-medium ml-1.5" style="color: #8E9297;">kVA</span></div>
+                <div class="text-xs mt-2" style="color: #8E9297;">250 kVA limit / 0 penalties</div>
+            </div>
+
+            <div class="card p-5">
+                <div class="text-xs font-semibold uppercase tracking-wider" style="color: #8E9297;">Managed Assets</div>
+                <div class="mt-3 text-3xl font-bold text-white">14<span class="text-sm font-medium ml-1.5" style="color: #8E9297;">Zones</span></div>
+                <div class="text-xs mt-2" style="color: #8E9297;">Across Blocks A, B, C and Hostel</div>
+            </div>
+
+        </div>
+
+        <section class="card p-6 mb-8">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-5">
                 <div>
-                    <h2 class="text-lg font-bold text-white tracking-tight">7-Day Campus Power Profile (Baseline vs GridSense)</h2>
-                    <p class="text-xs text-zinc-400 font-mono-code mt-0.5">672 intervals at 15-minute resolution across JIT infrastructure</p>
+                    <h2 class="text-base font-semibold text-white">7-Day Power Profile</h2>
+                    <p class="text-xs mt-0.5" style="color: #8E9297;">672 intervals at 15-min resolution across JIT infrastructure</p>
                 </div>
-                <div class="flex items-center gap-4 text-xs font-mono-code">
-                    <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-red-400"></span> Baseline Draw</span>
-                    <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span> GridSense Optimized</span>
+                <div class="flex items-center gap-5 text-xs" style="color: #8E9297;">
+                    <span class="flex items-center gap-2">
+                        <span class="w-3 h-[3px] rounded-full" style="background: #8E9297; opacity: 0.6;"></span>
+                        Baseline
+                    </span>
+                    <span class="flex items-center gap-2">
+                        <span class="w-3 h-[3px] rounded-full" style="background: #FFC93C;"></span>
+                        GridSense
+                    </span>
                 </div>
             </div>
-            <div class="w-full h-72 neu-inset p-4">
+            <div class="w-full" style="height: 280px;">
                 <canvas id="energyChart"></canvas>
             </div>
         </section>
 
-        <div class="mb-5 flex justify-between items-end">
-            <div>
-                <h2 class="text-xl font-bold text-white tracking-tight">Campus Telemetry Nodes</h2>
-                <p class="text-xs text-zinc-400 font-mono-code mt-0.5">Live Waste Index Score (WIS) & active automated interventions</p>
-            </div>
+        <div class="mb-5">
+            <h2 class="text-base font-semibold text-white">Telemetry Nodes</h2>
+            <p class="text-xs mt-0.5" style="color: #8E9297;">Live Waste Index Score (WIS) and active automated interventions</p>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-            <div class="p-5 neu-card flex flex-col justify-between">
-                <div>
-                    <div class="flex items-center justify-between pb-3 mb-3 border-b border-white/5">
-                        <span class="text-xs font-mono-code font-bold text-blue-400">BLOCK B // B101</span>
-                        <span class="px-2.5 py-1 text-[11px] font-mono-code font-bold rounded-md neu-inset text-emerald-400">WIS: 18 / OPTIMAL</span>
-                    </div>
-                    <div class="text-base font-semibold text-white">Lecture Room B101 (East)</div>
-                    <div class="text-xs text-zinc-400 mt-0.5">Capacity: 60 Seats | Module A Bio-Climatic</div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-8">
 
-                    <div class="mt-4 space-y-2 text-xs font-mono-code neu-inset p-3">
-                        <div class="flex justify-between text-zinc-400">
-                            <span>Window Lighting:</span>
-                            <span class="text-emerald-400">Zone A Locked OFF</span>
+            <div class="card p-5 flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-xs font-semibold font-data" style="color: #8E9297;">BLOCK B // B101</span>
+                        <span class="text-[11px] font-data font-medium px-2 py-0.5 rounded-md" style="background: rgba(255,201,60,0.1); color: #FFC93C;">WIS: 18</span>
+                    </div>
+                    <div class="text-sm font-semibold text-white mb-3">Lecture Room B101 (East)</div>
+                    <div class="rounded-lg p-3" style="background: #2B2D31;">
+                        <div class="kv-row">
+                            <span style="color: #8E9297;">Window Lighting</span>
+                            <span class="font-data text-xs" style="color: #D9DAD0;">Zone A Locked OFF</span>
                         </div>
-                        <div class="flex justify-between text-zinc-400">
-                            <span>Dynamic HVAC:</span>
-                            <span class="text-zinc-200">26°C Setpoint (35 Occ)</span>
+                        <div class="kv-row">
+                            <span style="color: #8E9297;">Dynamic HVAC</span>
+                            <span class="font-data text-xs" style="color: #D9DAD0;">26C Setpoint (35 Occ)</span>
                         </div>
-                        <div class="flex justify-between text-zinc-400">
-                            <span>Smartboard State:</span>
-                            <span class="text-amber-400">Sleep (7m Timeout)</span>
+                        <div class="kv-row">
+                            <span style="color: #8E9297;">Smartboard</span>
+                            <span class="font-data text-xs" style="color: #FFC93C;">Sleep (7m Timeout)</span>
                         </div>
                     </div>
                 </div>
-                <div class="mt-4 pt-3 border-t border-white/5 flex justify-between items-center text-xs font-mono-code text-zinc-400">
-                    <span>Power Reading</span>
-                    <span class="text-emerald-400 font-bold">1.8 kW <span class="text-zinc-500 line-through">4.9 kW</span></span>
+                <div class="mt-4 pt-3 flex justify-between items-center text-xs" style="border-top: 1px solid rgba(255,255,255,0.06);">
+                    <span style="color: #8E9297;">Power Reading</span>
+                    <span class="font-data font-semibold" style="color: #FFC93C;">1.8 kW <span style="color: #8E9297; text-decoration: line-through; font-weight: 400;">4.9 kW</span></span>
                 </div>
             </div>
 
-            <div class="p-5 neu-card flex flex-col justify-between">
+            <div class="card p-5 flex flex-col justify-between">
                 <div>
-                    <div class="flex items-center justify-between pb-3 mb-3 border-b border-white/5">
-                        <span class="text-xs font-mono-code font-bold text-purple-400">BLOCK C // LAB C1</span>
-                        <span class="px-2.5 py-1 text-[11px] font-mono-code font-bold rounded-md neu-inset text-emerald-400">WIS: 12 / SECURED</span>
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-xs font-semibold font-data" style="color: #8E9297;">BLOCK C // LAB C1</span>
+                        <span class="text-[11px] font-data font-medium px-2 py-0.5 rounded-md" style="background: rgba(255,201,60,0.1); color: #FFC93C;">WIS: 12</span>
                     </div>
-                    <div class="text-base font-semibold text-white">Advanced Computing Lab</div>
-                    <div class="text-xs text-zinc-400 mt-0.5">60 Workstations | Module C Power Policy</div>
-
-                    <div class="mt-4 space-y-2 text-xs font-mono-code neu-inset p-3">
-                        <div class="flex justify-between text-zinc-400">
-                            <span>PC Power State:</span>
-                            <span class="text-emerald-400">60 Systems in S3 Sleep</span>
+                    <div class="text-sm font-semibold text-white mb-3">Advanced Computing Lab</div>
+                    <div class="rounded-lg p-3" style="background: #2B2D31;">
+                        <div class="kv-row">
+                            <span style="color: #8E9297;">PC Power State</span>
+                            <span class="font-data text-xs" style="color: #D9DAD0;">60 Systems in S3 Sleep</span>
                         </div>
-                        <div class="flex justify-between text-zinc-400">
-                            <span>Thermal Load Cut:</span>
-                            <span class="text-blue-400">-6.0 kW Heat Removed</span>
+                        <div class="kv-row">
+                            <span style="color: #8E9297;">Thermal Load Cut</span>
+                            <span class="font-data text-xs" style="color: #D9DAD0;">-6.0 kW Heat Removed</span>
                         </div>
-                        <div class="flex justify-between text-zinc-400">
-                            <span>Lab AC Compressors:</span>
-                            <span class="text-emerald-400">Isolated</span>
+                        <div class="kv-row">
+                            <span style="color: #8E9297;">Lab AC Compressors</span>
+                            <span class="font-data text-xs" style="color: #D9DAD0;">Isolated</span>
                         </div>
                     </div>
                 </div>
-                <div class="mt-4 pt-3 border-t border-white/5 flex justify-between items-center text-xs font-mono-code text-zinc-400">
-                    <span>Power Reading</span>
-                    <span class="text-emerald-400 font-bold">0.18 kW <span class="text-zinc-500 line-through">12.8 kW</span></span>
+                <div class="mt-4 pt-3 flex justify-between items-center text-xs" style="border-top: 1px solid rgba(255,255,255,0.06);">
+                    <span style="color: #8E9297;">Power Reading</span>
+                    <span class="font-data font-semibold" style="color: #FFC93C;">0.18 kW <span style="color: #8E9297; text-decoration: line-through; font-weight: 400;">12.8 kW</span></span>
                 </div>
             </div>
 
-            <div class="p-5 neu-card flex flex-col justify-between">
+            <div class="card p-5 flex flex-col justify-between">
                 <div>
-                    <div class="flex items-center justify-between pb-3 mb-3 border-b border-white/5">
-                        <span class="text-xs font-mono-code font-bold text-amber-400">BLOCK B // ELEVATORS</span>
-                        <span class="px-2.5 py-1 text-[11px] font-mono-code font-bold rounded-md neu-inset text-blue-400">WIS: 22 / THROTTLED</span>
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-xs font-semibold font-data" style="color: #8E9297;">BLOCK B // ELEVATORS</span>
+                        <span class="text-[11px] font-data font-medium px-2 py-0.5 rounded-md" style="background: rgba(255,201,60,0.1); color: #FFC93C;">WIS: 22</span>
                     </div>
-                    <div class="text-base font-semibold text-white">4-Lift Elevator Bank</div>
-                    <div class="text-xs text-zinc-400 mt-0.5">Module D Dynamic Staging</div>
-
-                    <div class="mt-4 space-y-2 text-xs font-mono-code neu-inset p-3">
-                        <div class="flex justify-between text-zinc-400">
-                            <span>Active Safety Floor:</span>
-                            <span class="text-amber-400">2 Lifts Active Minimum</span>
+                    <div class="text-sm font-semibold text-white mb-3">4-Lift Elevator Bank</div>
+                    <div class="rounded-lg p-3" style="background: #2B2D31;">
+                        <div class="kv-row">
+                            <span style="color: #8E9297;">Active Safety Floor</span>
+                            <span class="font-data text-xs" style="color: #FFC93C;">2 Lifts Active Min</span>
                         </div>
-                        <div class="flex justify-between text-zinc-400">
-                            <span>Deep Sleep Lifts:</span>
-                            <span class="text-zinc-400">Cars 3 & 4 Parked</span>
+                        <div class="kv-row">
+                            <span style="color: #8E9297;">Deep Sleep Lifts</span>
+                            <span class="font-data text-xs" style="color: #D9DAD0;">Cars 3 and 4 Parked</span>
                         </div>
-                        <div class="flex justify-between text-zinc-400">
-                            <span>Accessibility Status:</span>
-                            <span class="text-emerald-400">100% Compliant</span>
+                        <div class="kv-row">
+                            <span style="color: #8E9297;">Accessibility</span>
+                            <span class="font-data text-xs" style="color: #D9DAD0;">100% Compliant</span>
                         </div>
                     </div>
                 </div>
-                <div class="mt-4 pt-3 border-t border-white/5 flex justify-between items-center text-xs font-mono-code text-zinc-400">
-                    <span>Standby Savings</span>
-                    <span class="text-emerald-400 font-bold">22 kWh/day</span>
+                <div class="mt-4 pt-3 flex justify-between items-center text-xs" style="border-top: 1px solid rgba(255,255,255,0.06);">
+                    <span style="color: #8E9297;">Standby Savings</span>
+                    <span class="font-data font-semibold" style="color: #FFC93C;">22 kWh/day</span>
                 </div>
             </div>
 
-            <div class="p-5 neu-card flex flex-col justify-between">
+            <div class="card p-5 flex flex-col justify-between">
                 <div>
-                    <div class="flex items-center justify-between pb-3 mb-3 border-b border-white/5">
-                        <span class="text-xs font-mono-code font-bold text-red-400">HOSTEL // 120 ROOMS</span>
-                        <span class="px-2.5 py-1 text-[11px] font-mono-code font-bold rounded-md neu-inset text-emerald-400">WIS: 15 / BALANCED</span>
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-xs font-semibold font-data" style="color: #8E9297;">HOSTEL // 120 ROOMS</span>
+                        <span class="text-[11px] font-data font-medium px-2 py-0.5 rounded-md" style="background: rgba(255,201,60,0.1); color: #FFC93C;">WIS: 15</span>
                     </div>
-                    <div class="text-base font-semibold text-white">Hostel Block & Geyser Grid</div>
-                    <div class="text-xs text-zinc-400 mt-0.5">Module E Staggering & Presence Sensing</div>
-
-                    <div class="mt-4 space-y-2 text-xs font-mono-code neu-inset p-3">
-                        <div class="flex justify-between text-zinc-400">
-                            <span>Vacant Room Mode:</span>
-                            <span class="text-emerald-400">100% Sensor Auto-Kill</span>
+                    <div class="text-sm font-semibold text-white mb-3">Hostel Block and Geyser Grid</div>
+                    <div class="rounded-lg p-3" style="background: #2B2D31;">
+                        <div class="kv-row">
+                            <span style="color: #8E9297;">Vacant Room Mode</span>
+                            <span class="font-data text-xs" style="color: #D9DAD0;">Sensor Auto-Kill</span>
                         </div>
-                        <div class="flex justify-between text-zinc-400">
-                            <span>Occupied Room Mode:</span>
-                            <span class="text-blue-400">100% Manual User Control</span>
+                        <div class="kv-row">
+                            <span style="color: #8E9297;">Occupied Rooms</span>
+                            <span class="font-data text-xs" style="color: #D9DAD0;">100% Manual Control</span>
                         </div>
-                        <div class="flex justify-between text-zinc-400">
-                            <span>Geyser Staggering:</span>
-                            <span class="text-zinc-200">Wing 1 (5:30) / Wing 2 (6:30)</span>
+                        <div class="kv-row">
+                            <span style="color: #8E9297;">Geyser Staggering</span>
+                            <span class="font-data text-xs" style="color: #D9DAD0;">W1 05:30 / W2 06:30</span>
                         </div>
                     </div>
                 </div>
-                <div class="mt-4 pt-3 border-t border-white/5 flex justify-between items-center text-xs font-mono-code text-zinc-400">
-                    <span>Demand Breach</span>
-                    <span class="text-emerald-400 font-bold">Zero Violations</span>
+                <div class="mt-4 pt-3 flex justify-between items-center text-xs" style="border-top: 1px solid rgba(255,255,255,0.06);">
+                    <span style="color: #8E9297;">Demand Breach</span>
+                    <span class="font-data font-semibold" style="color: #D9DAD0;">Zero Violations</span>
                 </div>
             </div>
 
-            <div class="p-5 neu-card flex flex-col justify-between">
+            <div class="card p-5 flex flex-col justify-between">
                 <div>
-                    <div class="flex items-center justify-between pb-3 mb-3 border-b border-white/5">
-                        <span class="text-xs font-mono-code font-bold text-cyan-400">CAMPUS // 15 COOLERS</span>
-                        <span class="px-2.5 py-1 text-[11px] font-mono-code font-bold rounded-md neu-inset text-emerald-400">WIS: 05 / ISOLATED</span>
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-xs font-semibold font-data" style="color: #8E9297;">CAMPUS // 15 COOLERS</span>
+                        <span class="text-[11px] font-data font-medium px-2 py-0.5 rounded-md" style="background: rgba(255,201,60,0.1); color: #FFC93C;">WIS: 05</span>
                     </div>
-                    <div class="text-base font-semibold text-white">Commercial Cooling Units</div>
-                    <div class="text-xs text-zinc-400 mt-0.5">Module F Interlocked Timers</div>
-
-                    <div class="mt-4 space-y-2 text-xs font-mono-code neu-inset p-3">
-                        <div class="flex justify-between text-zinc-400">
-                            <span>Night Cut-off:</span>
-                            <span class="text-zinc-200">19:00 - 07:00 Daily</span>
+                    <div class="text-sm font-semibold text-white mb-3">Commercial Cooling Units</div>
+                    <div class="rounded-lg p-3" style="background: #2B2D31;">
+                        <div class="kv-row">
+                            <span style="color: #8E9297;">Night Cut-off</span>
+                            <span class="font-data text-xs" style="color: #D9DAD0;">19:00 - 07:00 Daily</span>
                         </div>
-                        <div class="flex justify-between text-zinc-400">
-                            <span>Sunday Policy:</span>
-                            <span class="text-emerald-400">100% Locked OFF</span>
+                        <div class="kv-row">
+                            <span style="color: #8E9297;">Sunday Policy</span>
+                            <span class="font-data text-xs" style="color: #D9DAD0;">100% Locked OFF</span>
                         </div>
-                        <div class="flex justify-between text-zinc-400">
-                            <span>Thermal Buffer:</span>
-                            <span class="text-blue-400">2+ Hours Chill Retention</span>
+                        <div class="kv-row">
+                            <span style="color: #8E9297;">Thermal Buffer</span>
+                            <span class="font-data text-xs" style="color: #D9DAD0;">2+ Hours Retention</span>
                         </div>
                     </div>
                 </div>
-                <div class="mt-4 pt-3 border-t border-white/5 flex justify-between items-center text-xs font-mono-code text-zinc-400">
-                    <span>Monthly Savings</span>
-                    <span class="text-emerald-400 font-bold">1,620 kWh (INR 14.5K)</span>
+                <div class="mt-4 pt-3 flex justify-between items-center text-xs" style="border-top: 1px solid rgba(255,255,255,0.06);">
+                    <span style="color: #8E9297;">Monthly Savings</span>
+                    <span class="font-data font-semibold" style="color: #FFC93C;">1,620 kWh (INR 14.5K)</span>
                 </div>
             </div>
 
-            <div class="p-5 neu-card flex flex-col justify-between">
+            <div class="card p-5 flex flex-col justify-between">
                 <div>
-                    <div class="flex items-center justify-between pb-3 mb-3 border-b border-white/5">
-                        <span class="text-xs font-mono-code font-bold text-emerald-400">NETWORK // 150 APs</span>
-                        <span class="px-2.5 py-1 text-[11px] font-mono-code font-bold rounded-md neu-inset text-emerald-400">WIS: 10 / GREEN</span>
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-xs font-semibold font-data" style="color: #8E9297;">NETWORK // 150 APs</span>
+                        <span class="text-[11px] font-data font-medium px-2 py-0.5 rounded-md" style="background: rgba(255,201,60,0.1); color: #FFC93C;">WIS: 10</span>
                     </div>
-                    <div class="text-base font-semibold text-white">Enterprise PoE WiFi Grid</div>
-                    <div class="text-xs text-zinc-400 mt-0.5">Module H Radio Throttling</div>
-
-                    <div class="mt-4 space-y-2 text-xs font-mono-code neu-inset p-3">
-                        <div class="flex justify-between text-zinc-400">
-                            <span>Academic APs:</span>
-                            <span class="text-amber-400">5 GHz Radios Disabled</span>
+                    <div class="text-sm font-semibold text-white mb-3">Enterprise PoE WiFi Grid</div>
+                    <div class="rounded-lg p-3" style="background: #2B2D31;">
+                        <div class="kv-row">
+                            <span style="color: #8E9297;">Academic APs</span>
+                            <span class="font-data text-xs" style="color: #FFC93C;">5 GHz Radios Off</span>
                         </div>
-                        <div class="flex justify-between text-zinc-400">
-                            <span>Off-Hours Mode:</span>
-                            <span class="text-emerald-400">2.4 GHz Only (&lt;5W)</span>
+                        <div class="kv-row">
+                            <span style="color: #8E9297;">Off-Hours Mode</span>
+                            <span class="font-data text-xs" style="color: #D9DAD0;">2.4 GHz Only (&lt;5W)</span>
                         </div>
-                        <div class="flex justify-between text-zinc-400">
-                            <span>Hostel APs:</span>
-                            <span class="text-zinc-200">Full 24/7 Bandwidth</span>
+                        <div class="kv-row">
+                            <span style="color: #8E9297;">Hostel APs</span>
+                            <span class="font-data text-xs" style="color: #D9DAD0;">Full 24/7 Bandwidth</span>
                         </div>
                     </div>
                 </div>
-                <div class="mt-4 pt-3 border-t border-white/5 flex justify-between items-center text-xs font-mono-code text-zinc-400">
-                    <span>Monthly Potential</span>
-                    <span class="text-emerald-400 font-bold">2,700 kWh</span>
+                <div class="mt-4 pt-3 flex justify-between items-center text-xs" style="border-top: 1px solid rgba(255,255,255,0.06);">
+                    <span style="color: #8E9297;">Monthly Potential</span>
+                    <span class="font-data font-semibold" style="color: #FFC93C;">2,700 kWh</span>
                 </div>
             </div>
+
         </div>
 
     </main>
 
-    <footer class="py-4 px-6 border-t border-white/5 bg-[#14151a] text-xs font-mono-code text-zinc-400">
-        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
-            <span>GridSense v1.0 // JIT Campus Architecture</span>
-            <span>Zero Watermarks // Neumorphic Protocol</span>
-        </div>
+    <footer class="py-4 px-6 text-center text-xs" style="color: #8E9297; border-top: 1px solid rgba(255,255,255,0.06);">
+        GridSense v1.0 / JIT Campus
     </footer>
 
     <script>
@@ -444,21 +448,22 @@ def home():
                             {{
                                 label: 'Baseline Load (kW)',
                                 data: baselineData,
-                                borderColor: 'rgba(239, 68, 68, 0.75)',
-                                backgroundColor: 'transparent',
-                                borderWidth: 2,
+                                borderColor: 'rgba(142, 146, 151, 0.45)',
+                                backgroundColor: 'rgba(142, 146, 151, 0.04)',
+                                fill: true,
+                                borderWidth: 1.5,
                                 pointRadius: 0,
-                                tension: 0.2
+                                tension: 0.3
                             }},
                             {{
                                 label: 'GridSense (kW)',
                                 data: gridsenseData,
-                                borderColor: 'rgba(16, 185, 129, 0.9)',
-                                backgroundColor: 'rgba(16, 185, 129, 0.08)',
+                                borderColor: '#FFC93C',
+                                backgroundColor: 'rgba(255, 201, 60, 0.08)',
                                 fill: true,
                                 borderWidth: 2,
                                 pointRadius: 0,
-                                tension: 0.2
+                                tension: 0.3
                             }}
                         ]
                     }},
@@ -466,19 +471,34 @@ def home():
                         responsive: true,
                         maintainAspectRatio: false,
                         interaction: {{ intersect: false, mode: 'index' }},
-                        plugins: {{ legend: {{ display: false }} }},
+                        plugins: {{
+                            legend: {{ display: false }},
+                            tooltip: {{
+                                backgroundColor: '#36393F',
+                                titleColor: '#FFFFFF',
+                                bodyColor: '#D9DAD0',
+                                borderColor: 'rgba(255,255,255,0.06)',
+                                borderWidth: 1,
+                                titleFont: {{ family: 'Inter', size: 12, weight: '600' }},
+                                bodyFont: {{ family: 'JetBrains Mono', size: 11 }},
+                                padding: 10,
+                                cornerRadius: 8,
+                                displayColors: true
+                            }}
+                        }},
                         scales: {{
                             x: {{
-                                grid: {{ color: 'rgba(255, 255, 255, 0.03)' }},
-                                ticks: {{ color: '#71717a', font: {{ family: 'JetBrains Mono', size: 10 }}, maxTicksLimit: 14 }}
+                                grid: {{ color: 'rgba(255, 255, 255, 0.03)', drawBorder: false }},
+                                ticks: {{ color: '#8E9297', font: {{ family: 'JetBrains Mono', size: 10 }}, maxTicksLimit: 14 }}
                             }},
                             y: {{
-                                title: {{ display: true, text: 'Total kW Draw', color: '#71717a', font: {{ family: 'Inter', size: 11 }} }},
-                                grid: {{ color: 'rgba(255, 255, 255, 0.03)' }},
-                                ticks: {{ color: '#71717a', font: {{ family: 'JetBrains Mono', size: 10 }} }}
+                                title: {{ display: true, text: 'Total kW', color: '#8E9297', font: {{ family: 'Inter', size: 11, weight: '500' }} }},
+                                grid: {{ color: 'rgba(255, 255, 255, 0.03)', drawBorder: false }},
+                                ticks: {{ color: '#8E9297', font: {{ family: 'JetBrains Mono', size: 10 }} }}
                             }}
                         }}
-                    }});
+                    }}
+                }});
             }})
             .catch(err => console.error("Telemetry error:", err));
     </script>
@@ -497,55 +517,55 @@ def view_blueprint():
         zones_html = ""
         for z in b_data.get("zones", []):
             zones_html += f"""
-            <div class='p-3 neu-inset rounded-lg text-xs font-mono-code mb-2'>
-                <div class='font-bold text-blue-400'>{z.get('name', '')} (ID: {z.get('id', '')})</div>
-                <div class='text-zinc-400 text-[11px] mt-1'>Capacity: {z.get('capacity', 'N/A')} | Solutions: {', '.join(z.get('solution_mapping', []))}</div>
+            <div class='p-3 rounded-lg text-xs mb-2' style='background: #2B2D31; border: 1px solid rgba(255,255,255,0.04);'>
+                <div class='font-semibold' style='color: #FFC93C;'>{z.get('name', '')} (ID: {z.get('id', '')})</div>
+                <div style='color: #8E9297; font-size: 11px; margin-top: 4px;'>Capacity: {z.get('capacity', 'N/A')} | Solutions: {', '.join(z.get('solution_mapping', []))}</div>
             </div>"""
         for lab in b_data.get("labs", []):
             zones_html += f"""
-            <div class='p-3 neu-inset rounded-lg text-xs font-mono-code mb-2'>
-                <div class='font-bold text-purple-400'>{lab.get('name', '')} (ID: {lab.get('id', '')})</div>
-                <div class='text-zinc-400 text-[11px] mt-1'>PCs: {lab.get('pc_count', '')} (Active: {lab.get('pc_active_watts', '')}W, Sleep: {lab.get('pc_sleep_watts', '')}W) | Solutions: {', '.join(lab.get('solution_mapping', []))}</div>
+            <div class='p-3 rounded-lg text-xs mb-2' style='background: #2B2D31; border: 1px solid rgba(255,255,255,0.04);'>
+                <div class='font-semibold' style='color: #FFC93C;'>{lab.get('name', '')} (ID: {lab.get('id', '')})</div>
+                <div style='color: #8E9297; font-size: 11px; margin-top: 4px;'>PCs: {lab.get('pc_count', '')} (Active: {lab.get('pc_active_watts', '')}W, Sleep: {lab.get('pc_sleep_watts', '')}W) | Solutions: {', '.join(lab.get('solution_mapping', []))}</div>
             </div>"""
         for w in b_data.get("wings", []):
             stagger = w.get("geyser_bank", {}).get("stagger_slot", "")
             zones_html += f"""
-            <div class='p-3 neu-inset rounded-lg text-xs font-mono-code mb-2'>
-                <div class='font-bold text-red-400'>{w.get('name', '')} (ID: {w.get('id', '')})</div>
-                <div class='text-zinc-400 text-[11px] mt-1'>Rooms: {w.get('rooms_count', '')} | Presence Sensing: Dual-Tech PIR</div>
-                <div class='text-emerald-400 text-[11px] mt-1'>Policy: Vacant = Auto-Kill | Occupied = 100% Manual User Control</div>
-                <div class='text-zinc-400 text-[11px] mt-1'>Geyser Slot: {stagger}</div>
+            <div class='p-3 rounded-lg text-xs mb-2' style='background: #2B2D31; border: 1px solid rgba(255,255,255,0.04);'>
+                <div class='font-semibold' style='color: #FFC93C;'>{w.get('name', '')} (ID: {w.get('id', '')})</div>
+                <div style='color: #8E9297; font-size: 11px; margin-top: 4px;'>Rooms: {w.get('rooms_count', '')} | Presence Sensing: Dual-Tech PIR</div>
+                <div style='color: #D9DAD0; font-size: 11px; margin-top: 4px;'>Policy: Vacant = Auto-Kill | Occupied = 100% Manual User Control</div>
+                <div style='color: #8E9297; font-size: 11px; margin-top: 4px;'>Geyser Slot: {stagger}</div>
             </div>"""
         for wc in b_data.get("water_coolers", []):
             zones_html += f"""
-            <div class='p-2 neu-inset rounded text-[11px] font-mono-code text-zinc-400 mb-1 flex justify-between'>
-                <span>Commercial Water Cooler {wc.get('id', '')} (Floor {wc.get('floor', '')})</span>
-                <span class='text-amber-400 font-bold'>{wc.get('compressor_kw', '')} kW | Interlocked 19:00 - 07:00</span>
+            <div class='p-2 rounded-lg text-xs mb-1 flex justify-between' style='background: #2B2D31; border: 1px solid rgba(255,255,255,0.04); font-size: 11px;'>
+                <span style='color: #8E9297;'>Commercial Water Cooler {wc.get('id', '')} (Floor {wc.get('floor', '')})</span>
+                <span class='font-semibold' style='color: #FFC93C;'>{wc.get('compressor_kw', '')} kW | Interlocked 19:00 - 07:00</span>
             </div>"""
         for hm in b_data.get("heavy_motors", []):
             zones_html += f"""
-            <div class='p-2 neu-inset rounded text-[11px] font-mono-code text-zinc-400 mb-1 flex justify-between'>
-                <span>{hm.get('name', '')}</span>
-                <span class='text-cyan-400 font-bold'>{hm.get('kw', '')} kW | Shifted to Solar Window</span>
+            <div class='p-2 rounded-lg text-xs mb-1 flex justify-between' style='background: #2B2D31; border: 1px solid rgba(255,255,255,0.04); font-size: 11px;'>
+                <span style='color: #8E9297;'>{hm.get('name', '')}</span>
+                <span class='font-semibold' style='color: #FFC93C;'>{hm.get('kw', '')} kW | Shifted to Solar Window</span>
             </div>"""
 
         elev_info = ""
         if "elevator_bank" in b_data:
             eb = b_data["elevator_bank"]
             elev_info = f"""
-            <div class='p-3 neu-inset rounded-lg text-xs font-mono-code mb-2'>
-                <div class='font-bold text-amber-400'>4-Lift Elevator Bank (ID: {eb.get('id', '')})</div>
-                <div class='text-zinc-400 text-[11px] mt-1'>Total Cars: {eb.get('total_cars')} | Mandatory Active Safety Floor: {eb.get('mandatory_safety_floor')} Cars</div>
-                <div class='text-zinc-400 text-[11px]'>Motor Rating: {eb.get('car_rating_motor_kw')} kW | Standby Parasitic: {eb.get('standby_parasitic_kw')} kW</div>
+            <div class='p-3 rounded-lg text-xs mb-2' style='background: #2B2D31; border: 1px solid rgba(255,255,255,0.04);'>
+                <div class='font-semibold' style='color: #FFC93C;'>4-Lift Elevator Bank (ID: {eb.get('id', '')})</div>
+                <div style='color: #8E9297; font-size: 11px; margin-top: 4px;'>Total Cars: {eb.get('total_cars')} | Mandatory Active Safety Floor: {eb.get('mandatory_safety_floor')} Cars</div>
+                <div style='color: #8E9297; font-size: 11px;'>Motor Rating: {eb.get('car_rating_motor_kw')} kW | Standby Parasitic: {eb.get('standby_parasitic_kw')} kW</div>
             </div>"""
 
         blocks_html += f"""
-        <div class='p-6 neu-card mb-6'>
-            <div class='flex items-center justify-between pb-3 mb-3 border-b border-white/5'>
-                <h3 class='text-lg font-bold text-white'>{b_name}</h3>
-                <span class='text-xs font-mono-code text-emerald-400'>{len(b_data.get('zones', [])) + len(b_data.get('labs', [])) + len(b_data.get('wings', []))} Managed Asset Groups</span>
+        <div class='card p-6 mb-5'>
+            <div class='flex items-center justify-between pb-3 mb-4' style='border-bottom: 1px solid rgba(255,255,255,0.06);'>
+                <h3 class='text-base font-semibold text-white'>{b_name}</h3>
+                <span class='text-xs font-medium' style='color: #FFC93C;'>{len(b_data.get('zones', [])) + len(b_data.get('labs', [])) + len(b_data.get('wings', []))} Managed Asset Groups</span>
             </div>
-            <p class='text-xs text-zinc-400 mb-4'>{b_data.get('description', '')}</p>
+            <p class='text-xs mb-4' style='color: #8E9297;'>{b_data.get('description', '')}</p>
             {elev_info}
             {zones_html}
         </div>
@@ -555,53 +575,87 @@ def view_blueprint():
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>JIT Campus Physical Blueprint // GridSense</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JIT Campus Blueprint - GridSense</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
+        * {{ box-sizing: border-box; }}
         body {{
             font-family: 'Inter', sans-serif;
-            background-color: #16181d;
-            color: #d1d5db;
+            background-color: #2B2D31;
+            color: #D9DAD0;
+            margin: 0;
         }}
-        .font-mono-code {{ font-family: 'JetBrains Mono', monospace; }}
-        .neu-card {{
-            background: #191b22;
-            border-radius: 16px;
-            box-shadow: 8px 8px 18px #0f1014, -8px -8px 18px #232630;
-            border: 1px solid rgba(255, 255, 255, 0.03);
-        }}
-        .neu-inset {{
-            background: #14151a;
+        .font-data {{ font-family: 'JetBrains Mono', monospace; }}
+        .card {{
+            background: #36393F;
             border-radius: 12px;
-            box-shadow: inset 4px 4px 10px #0c0d10, inset -4px -4px 10px #1c1d24;
-            border: 1px solid rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255,255,255,0.06);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
         }}
-        .neu-btn {{
-            background: #191b22;
-            border-radius: 10px;
-            box-shadow: 4px 4px 10px #0f1014, -4px -4px 10px #232630;
-            border: 1px solid rgba(255, 255, 255, 0.04);
-            transition: all 0.2s ease;
+        .nav-link {{
+            position: relative;
+            padding: 6px 0;
+            color: #8E9297;
+            font-weight: 500;
+            font-size: 14px;
+            text-decoration: none;
+            transition: color 0.15s ease;
         }}
-        .neu-btn:hover {{
-            color: #10b981;
+        .nav-link:hover {{ color: #D9DAD0; }}
+        .nav-link.active {{
+            color: #FFC93C;
+        }}
+        .nav-link.active::after {{
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #FFC93C;
+            border-radius: 1px;
         }}
     </style>
 </head>
-<body class="min-h-screen p-6 sm:p-10 max-w-5xl mx-auto">
-    <div class="flex items-center justify-between mb-8 pb-4 border-b border-white/5">
-        <div>
-            <div class="text-xs font-mono-code font-bold text-emerald-400 uppercase tracking-widest">Physical Asset Hierarchy // Digital Twin</div>
-            <h1 class="text-2xl sm:text-4xl font-bold text-white tracking-tight mt-1">JIT Campus Blueprint</h1>
-            <p class="text-xs text-zinc-400 font-mono-code mt-1">Institution: JIT | Commercial Tariff: INR 9.00/kWh | Max Demand Limit: 250 kVA</p>
-        </div>
-        <a href="/" class="px-4 py-2 neu-btn font-mono-code text-xs font-semibold text-zinc-300">
-            Back to Dashboard
-        </a>
-    </div>
+<body class="min-h-screen flex flex-col">
 
-    {blocks_html}
+    <header class="border-b" style="border-color: rgba(255,255,255,0.06); background: #2B2D31;">
+        <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: #FFC93C;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2B2D31" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                    </svg>
+                </div>
+                <span class="text-lg font-bold text-white tracking-tight">GridSense</span>
+            </div>
+
+            <nav class="flex items-center gap-8">
+                <a href="/" class="nav-link">Dashboard</a>
+                <a href="/sandbox" class="nav-link">Sandbox</a>
+                <a href="/blueprint" class="nav-link active">Blueprint</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="flex-1 w-full max-w-5xl mx-auto px-6 py-8">
+
+        <div class="mb-8">
+            <h1 class="text-2xl font-bold text-white tracking-tight">JIT Campus Blueprint</h1>
+            <p class="text-sm mt-1" style="color: #8E9297;">Physical asset hierarchy and digital twin mapping</p>
+            <p class="text-xs mt-1 font-data" style="color: #8E9297;">Tariff: INR 9.00/kWh | Max Demand Limit: 250 kVA</p>
+        </div>
+
+        {blocks_html}
+
+    </main>
+
+    <footer class="py-4 px-6 text-center text-xs" style="color: #8E9297; border-top: 1px solid rgba(255,255,255,0.06);">
+        GridSense v1.0 / JIT Campus
+    </footer>
+
 </body>
 </html>
 """
