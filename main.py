@@ -211,6 +211,7 @@ def dispatch_auto_notification(report: dict, time_12h: str, inline_cfg: dict = N
     }
 
 app = FastAPI(title="GridSense: Campus Intelligent Energy Optimization")
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 TELEMETRY_DATA = {}
 if os.path.exists("synthetic_telemetry.json"):
@@ -410,18 +411,72 @@ def home():
         .kv-row + .kv-row {{
             border-top: 1px solid rgba(255,255,255,0.04);
         }}
+        @keyframes gsLogoZoomGlow {{
+            0% {{
+                opacity: 0;
+                transform: scale(0.52);
+                filter: drop-shadow(0 0 8px rgba(83, 49, 251, 0.3));
+            }}
+            55% {{
+                opacity: 1;
+                transform: scale(1.07);
+                filter: drop-shadow(0 0 42px rgba(83, 49, 251, 0.95)) drop-shadow(0 0 22px rgba(107, 251, 206, 0.7));
+            }}
+            100% {{
+                opacity: 1;
+                transform: scale(1);
+                filter: drop-shadow(0 0 26px rgba(83, 49, 251, 0.75)) drop-shadow(0 0 14px rgba(107, 251, 206, 0.45));
+            }}
+        }}
+        @keyframes gsSplashFadeOut {{
+            0% {{ opacity: 1; visibility: visible; }}
+            100% {{ opacity: 0; visibility: hidden; pointer-events: none; }}
+        }}
+        #gsIntroSplash {{
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            background: radial-gradient(circle at 50% 48%, rgba(83, 49, 251, 0.30) 0%, rgba(107, 251, 206, 0.08) 28%, #01010D 66%);
+            background-color: #01010D;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }}
+        .gs-splash-logo {{
+            animation: gsLogoZoomGlow 1.05s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }}
+        #gsIntroSplash.gs-hide {{
+            animation: gsSplashFadeOut 0.48s ease forwards;
+        }}
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
 
+    <div id="gsIntroSplash">
+        <img src="/static/gridsense_logo.jpg" alt="GridSense" class="gs-splash-logo w-32 h-32 rounded-2xl object-cover" style="border: 1px solid rgba(107, 251, 206, 0.35);">
+        <div class="mt-5 text-2xl font-bold tracking-tight text-white font-heading" style="text-shadow: 0 0 20px rgba(107, 251, 206, 0.45);">GridSense</div>
+        <div class="mt-1 text-xs uppercase tracking-widest" style="color: #6BFBCE;">Campus Energy Intelligence</div>
+    </div>
+    <script>
+        (function() {{
+            const splash = document.getElementById('gsIntroSplash');
+            if (sessionStorage.getItem('gs_intro_played')) {{
+                if (splash) splash.style.display = 'none';
+            }} else {{
+                sessionStorage.setItem('gs_intro_played', '1');
+                setTimeout(() => {{
+                    if (splash) splash.classList.add('gs-hide');
+                    setTimeout(() => {{ if (splash) splash.style.display = 'none'; }}, 500);
+                }}, 1250);
+            }}
+        }})();
+    </script>
+
     <header class="border-b" style="border-color: rgba(255,255,255,0.06); background: #01010D;">
         <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
             <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: #6BFBCE;">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#01010D" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
-                    </svg>
-                </div>
+                <img src="/static/gridsense_logo.jpg" alt="GridSense Logo" class="w-9 h-9 rounded-lg object-cover" style="box-shadow: 0 0 14px rgba(83,49,251,0.55); border: 1px solid rgba(107,251,206,0.28);">
                 <span class="text-lg font-bold text-white tracking-tight">GridSense</span>
             </div>
 
@@ -997,11 +1052,7 @@ def view_blueprint():
     <header class="border-b" style="border-color: rgba(255,255,255,0.06); background: #01010D;">
         <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
             <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: #6BFBCE;">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#01010D" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
-                    </svg>
-                </div>
+                <img src="/static/gridsense_logo.jpg" alt="GridSense Logo" class="w-9 h-9 rounded-lg object-cover" style="box-shadow: 0 0 14px rgba(83,49,251,0.55); border: 1px solid rgba(107,251,206,0.28);">
                 <span class="text-lg font-bold text-white tracking-tight">GridSense</span>
             </div>
 

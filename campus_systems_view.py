@@ -86,9 +86,7 @@ def render_campus_systems_html() -> str:
     <header class="w-full" style="background-color: #01010D; border-bottom: 1px solid rgba(255,255,255,0.06);">
         <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
             <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm" style="background-color: #6BFBCE; color: #01010D;">
-                    GS
-                </div>
+                <img src="/static/gridsense_logo.jpg" alt="GridSense Logo" class="w-9 h-9 rounded-lg object-cover" style="box-shadow: 0 0 14px rgba(83,49,251,0.55); border: 1px solid rgba(107,251,206,0.28);">
                 <span class="text-lg font-bold text-white tracking-tight">GridSense</span>
             </div>
 
