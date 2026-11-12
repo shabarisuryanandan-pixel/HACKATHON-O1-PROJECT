@@ -417,26 +417,30 @@ def home():
                 transform: scale(0.35);
                 filter: drop-shadow(0 0 18px rgba(107, 251, 206, 0.75));
             }}
-            35% {{
+            32% {{
                 opacity: 1;
-                transform: scale(1.1);
-                filter: drop-shadow(0 0 48px rgba(107, 251, 206, 0.95)) drop-shadow(0 0 90px rgba(107, 251, 206, 0.55));
+                transform: scale(1.08);
+                filter: drop-shadow(0 0 42px rgba(107, 251, 206, 0.95)) drop-shadow(0 0 85px rgba(107, 251, 206, 0.55));
             }}
-            75% {{
-                opacity: 0.9;
-                transform: scale(6);
+            70% {{
+                opacity: 0.95;
+                transform: scale(7);
                 filter: drop-shadow(0 0 65px rgba(107, 251, 206, 0.85));
             }}
             100% {{
                 opacity: 0;
-                transform: scale(18);
+                transform: scale(22);
                 filter: drop-shadow(0 0 90px rgba(107, 251, 206, 0));
             }}
         }}
-        @keyframes gsTurquoiseScreenGlow {{
-            0% {{ opacity: 0; }}
-            35% {{ opacity: 1; }}
+        @keyframes gsBackdropReveal {{
+            0% {{ opacity: 1; }}
+            52% {{ opacity: 1; }}
             100% {{ opacity: 0; }}
+        }}
+        @keyframes gsMicroDotsGlow {{
+            0%, 100% {{ opacity: 0.55; transform: scale(1); }}
+            45% {{ opacity: 1; transform: scale(1.03); }}
         }}
         #gsIntroSplash {{
             position: fixed;
@@ -444,15 +448,31 @@ def home():
             z-index: 9999;
             pointer-events: none;
             overflow: hidden;
-            background: radial-gradient(circle at center, rgba(107, 251, 206, 0.34) 0%, rgba(107, 251, 206, 0.14) 45%, rgba(107, 251, 206, 0.04) 80%);
-            box-shadow: inset 0 0 140px rgba(107, 251, 206, 0.45);
+            background-color: #000000;
+            background-image:
+                radial-gradient(circle at center, rgba(107, 251, 206, 0.20) 0%, rgba(107, 251, 206, 0.05) 38%, #000000 75%);
+            box-shadow: inset 0 0 140px rgba(107, 251, 206, 0.28);
             display: flex;
             align-items: center;
             justify-content: center;
-            animation: gsTurquoiseScreenGlow 1.35s ease-out forwards;
+            animation: gsBackdropReveal 1.45s ease-in-out forwards;
+        }}
+        #gsIntroSplash::before {{
+            content: "";
+            position: absolute;
+            inset: 0;
+            background-image:
+                radial-gradient(rgba(107, 251, 206, 0.85) 1.2px, transparent 1.2px),
+                radial-gradient(rgba(107, 251, 206, 0.45) 1px, transparent 1px);
+            background-size: 26px 26px, 42px 42px;
+            background-position: 0 0, 13px 17px;
+            filter: drop-shadow(0 0 4px rgba(107, 251, 206, 0.9));
+            animation: gsMicroDotsGlow 1.45s ease-in-out forwards;
         }}
         .gs-splash-logo {{
-            animation: gsLogoZoomPass 1.35s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+            position: relative;
+            z-index: 2;
+            animation: gsLogoZoomPass 1.45s cubic-bezier(0.22, 1, 0.36, 1) forwards;
             will-change: transform, opacity;
         }}
     </style>
@@ -466,7 +486,7 @@ def home():
         setTimeout(() => {{
             const splash = document.getElementById('gsIntroSplash');
             if (splash) splash.style.display = 'none';
-        }}, 1400);
+        }}, 1500);
     </script>
 
     <header class="border-b" style="border-color: rgba(255,255,255,0.06); background: #01010D;">
