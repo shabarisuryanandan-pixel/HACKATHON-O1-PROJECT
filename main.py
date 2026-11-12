@@ -94,12 +94,17 @@ def dispatch_auto_notification(report: dict, time_12h: str, inline_cfg: dict = N
     webhook_url = cfg.get("webhook_url", "")
     if webhook_url:
         try:
+            suggestion_only = report.get("suggestion", "")
+            mail_text = (
+                f"Classroom Update ({time_12h} // JIT Block B):\n\n"
+                f"{suggestion_only}"
+            )
             payload = json.dumps({
                 "time_12h": time_12h,
-                "suggestion": report.get("suggestion", ""),
+                "suggestion": suggestion_only,
                 "actions_taken": report.get("actions_taken", ""),
                 "energy_saved": report.get("energy_saved", ""),
-                "text": msg
+                "text": mail_text
             }).encode("utf-8")
             req = urllib.request.Request(webhook_url, data=payload, headers={"Content-Type": "application/json"})
             with urllib.request.urlopen(req, timeout=10) as _:
