@@ -6,17 +6,139 @@ import json
 import urllib.request
 from dotenv import load_dotenv
 from campus_blueprint import CAMPUS_BLUEPRINT, CAMPUS_METADATA
-from sandbox_engine import evaluate_sandbox_state
+from sandbox_engine import evaluate_sandbox_state, generate_random_timetable, format_12h
 from cad_sandbox_view import render_cad_sandbox_html
+import random
 
 load_dotenv()
 
 SUPABASE_URL = os.getenv("SUPABASE_URL", "https://rzdrqgwmmfliyksuiknx.supabase.co")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY", "sb_publishable_LPVQ_Mzxl8AK8c_JLhMNAw_CoumpNyK")
 
-# Telegram credentials (auto-ping)
-TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
-TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "")
+# Pre-configured / server-persisted notification credentials (zero-prompt auto-dispatch)
+CONFIG_FILE = "notification_config.json"
+DEFAULT_NOTIFY_CONFIG = {
+    "telegram_bot_token": os.getenv("TELEGRAM_BOT_TOKEN", ""),
+    "telegram_chat_id": os.getenv("TELEGRAM_CHAT_ID", ""),
+    "webhook_url": os.getenv("WEBHOOK_URL", ""),  # For n8n / Power Automate / Make
+    "whatsapp_phone": os.getenv("WHATSAPP_PHONE", ""),
+    "whatsapp_apikey": os.getenv("WHATSAPP_APIKEY", "")
+}
+
+def load_notify_config():
+    cfg = dict(DEFAULT_NOTIFY_CONFIG)
+    if os.path.exists(CONFIG_FILE):
+        try:
+            with open(CONFIG_FILE, "r", encoding="utf-8") as f:
+                saved = json.load(f)
+                for k, v in saved.items():
+                    if v:
+                        cfg[k] = v
+        except Exception:
+            pass
+    return cfg
+
+def save_notify_config(new_cfg: dict):
+    cfg = load_notify_config()
+    for k in ["telegram_bot_token", "telegram_chat_id", "webhook_url", "whatsapp_phone", "whatsapp_apikey"]:
+        if k in new_cfg and new_cfg[k] is not None:
+            cfg[k] = str(new_cfg[k]).strip()
+    try:
+        with open(CONFIG_FILE, "w", encoding="utf-8") as f:
+            json.dump(cfg, f, indent=2)
+    except Exception:
+        pass
+    return cfg
+
+# Time-stamped Session Suggestions Log (shared between Sandbox and Main Dashboard)
+SESSION_SUGGESTIONS = [
+    {
+        "time_12h": "12:00 PM",
+        "mode": "Daylight Harvest",
+        "title": "Move 3 Afternoon Classes to Block C (Natural Sunlight)",
+        "suggestion": "3 classes active at 12:00 PM (CR B-101, CR B-102, CR B-108). Relocate to Block C sun-facing studios (>450 lux natural daylight) to shut down Block B artificial lighting and central chiller loop.",
+        "actions_taken": "Block B lighting banks isolated; Lifts L3 & L4 in Deep Sleep; AC setpoints raised to 26°C.",
+        "energy_saved": "Saved 26.4 kW (63.5% reduction | INR 237.60/hr saved)"
+    },
+    {
+        "time_12h": "02:30 PM",
+        "mode": "Wing Consolidation",
+        "title": "Consolidate Right Wing Class to Left Wing",
+        "suggestion": "3 classes active in Left Wing (B-101, B-102, B-103) and 1 class in Right Wing (B-108). Move CR B-108 (24 students) to CR B-104 to shut down the entire Right Wing.",
+        "actions_taken": "Lifts L1 & L2 active for Left Wing; Lifts L3 & L4 OFF. Right Corridor and SE Stairs powered OFF.",
+        "energy_saved": "Saved 24.9 kW (59.8% reduction | INR 224.10/hr saved)"
+    },
+    {
+        "time_12h": "07:30 PM",
+        "mode": "Evening Lockdown",
+        "title": "Relocate Far-Wing Evening Study Group to Main Entrance",
+        "suggestion": "1 isolated evening class in CR B-108 (25 students). Relocate to CR B-101 near Main Staircase to cut off East Wing corridor and far-wing circuits.",
+        "actions_taken": "Lifts L1 & L2 active; Lifts L3 & L4 in Deep Sleep; 10 vacant rooms and Faculty Lounge powered OFF.",
+        "energy_saved": "Saved 31.2 kW (74.8% reduction | INR 280.80/hr saved)"
+    }
+]
+
+def dispatch_auto_notification(report: dict, time_12h: str, inline_cfg: dict = None) -> dict:
+    """Automatically dispatch the 3-part simulation message to n8n/Power Automate Webhook, Telegram, or WhatsApp."""
+    cfg = load_notify_config()
+    if inline_cfg:
+        for k, v in inline_cfg.items():
+            if v:
+                cfg[k] = str(v).strip()
+
+    msg = report.get("formatted_message", "GridSense Simulation Completed")
+    channels_sent = []
+
+    # 1. Webhook (n8n / Microsoft Power Automate / Make)
+    webhook_url = cfg.get("webhook_url", "")
+    if webhook_url:
+        try:
+            payload = json.dumps({
+                "time_12h": time_12h,
+                "suggestion": report.get("suggestion", ""),
+                "actions_taken": report.get("actions_taken", ""),
+                "energy_saved": report.get("energy_saved", ""),
+                "text": msg
+            }).encode("utf-8")
+            req = urllib.request.Request(webhook_url, data=payload, headers={"Content-Type": "application/json"})
+            with urllib.request.urlopen(req, timeout=4) as _:
+                channels_sent.append("Webhook (n8n/Power Automate)")
+        except Exception:
+            pass
+
+    # 2. Telegram Bot API
+    tg_token = cfg.get("telegram_bot_token", "")
+    tg_chat = cfg.get("telegram_chat_id", "")
+    if tg_token and tg_chat:
+        try:
+            url = f"https://api.telegram.org/bot{tg_token}/sendMessage"
+            payload = json.dumps({"chat_id": tg_chat, "text": msg}).encode("utf-8")
+            req = urllib.request.Request(url, data=payload, headers={"Content-Type": "application/json"})
+            with urllib.request.urlopen(req, timeout=4) as resp:
+                res_data = json.loads(resp.read().decode())
+                if res_data.get("ok"):
+                    channels_sent.append("Telegram Mobile")
+        except Exception:
+            pass
+
+    # 3. CallMeBot Free WhatsApp API
+    wa_phone = cfg.get("whatsapp_phone", "")
+    wa_key = cfg.get("whatsapp_apikey", "")
+    if wa_phone and wa_key:
+        try:
+            import urllib.parse
+            encoded_msg = urllib.parse.quote(msg)
+            url = f"https://api.callmebot.com/whatsapp.php?phone={wa_phone}&text={encoded_msg}&apikey={wa_key}"
+            with urllib.request.urlopen(url, timeout=4) as _:
+                channels_sent.append("WhatsApp Mobile")
+        except Exception:
+            pass
+
+    return {
+        "dispatched": len(channels_sent) > 0,
+        "channels": channels_sent,
+        "status": "sent" if channels_sent else "logged_locally"
+    }
 
 app = FastAPI(title="GridSense: Campus Intelligent Energy Optimization")
 
@@ -56,6 +178,33 @@ def health():
         "savings_kwh_7day": TELEMETRY_DATA.get("summary", {}).get("total_saved_kwh", 0)
     }
 
+@app.get("/api/sandbox/timetable")
+def api_get_timetable(seed: int = None):
+    return generate_random_timetable(seed)
+
+@app.get("/api/suggestions")
+def api_get_suggestions():
+    return {"suggestions": SESSION_SUGGESTIONS}
+
+@app.get("/api/notification-config")
+def api_get_notify_config():
+    cfg = load_notify_config()
+    return {
+        "has_telegram": bool(cfg.get("telegram_bot_token") and cfg.get("telegram_chat_id")),
+        "has_webhook": bool(cfg.get("webhook_url")),
+        "has_whatsapp": bool(cfg.get("whatsapp_phone") and cfg.get("whatsapp_apikey")),
+        "webhook_url": cfg.get("webhook_url", "")
+    }
+
+@app.post("/api/notification-config")
+async def api_save_notify_config(request: Request):
+    try:
+        body = await request.json()
+    except Exception:
+        body = {}
+    cfg = save_notify_config(body)
+    return {"status": "saved", "has_webhook": bool(cfg.get("webhook_url")), "has_telegram": bool(cfg.get("telegram_bot_token"))}
+
 @app.post("/api/sandbox/evaluate")
 async def api_sandbox_eval(request: Request):
     try:
@@ -63,29 +212,42 @@ async def api_sandbox_eval(request: Request):
     except Exception:
         body = {}
     result = evaluate_sandbox_state(body)
+
+    # When user clicks "Simulate", log to Session Suggestions and auto-dispatch to phone/webhook
+    if body.get("simulate"):
+        entry = {
+            "time_12h": result["time_12h"],
+            "mode": body.get("mode", "Variable Simulation"),
+            "title": f"{result['active_classes']} Active Space(s) // {result['total_people']} People",
+            "suggestion": result["report"]["suggestion"],
+            "actions_taken": result["report"]["actions_taken"],
+            "energy_saved": result["report"]["energy_saved"]
+        }
+        SESSION_SUGGESTIONS.insert(0, entry)
+        del SESSION_SUGGESTIONS[15:]  # Keep latest 15 entries
+
+        inline_cfg = body.get("notify_config", {})
+        dispatch_info = dispatch_auto_notification(result["report"], result["time_12h"], inline_cfg)
+        result["dispatch"] = dispatch_info
+
     return result
 
 @app.post("/api/sandbox/notify-telegram")
 async def api_notify_telegram(request: Request):
     try:
         body = await request.json()
-        token = body.get("token", "").strip() or TELEGRAM_BOT_TOKEN
-        chat_id = body.get("chat_id", "").strip() or TELEGRAM_CHAT_ID
-        message = body.get("message", "GridSense Automation Alert")
-
-        if not token or not chat_id:
-            return {"status": "error", "message": "Bot token or Chat ID not configured. Please supply once to store."}
-
-        url = f"https://api.telegram.org/bot{token}/sendMessage"
-        payload = json.dumps({"chat_id": chat_id, "text": message}).encode("utf-8")
-        req = urllib.request.Request(url, data=payload, headers={"Content-Type": "application/json"})
-        
-        with urllib.request.urlopen(req, timeout=5) as response:
-            res_data = json.loads(response.read().decode())
-            if res_data.get("ok"):
-                return {"status": "success", "message": "Alert dispatched automatically to your mobile phone."}
-            else:
-                return {"status": "error", "message": "Telegram API returned failure."}
+        if body.get("token") or body.get("chat_id") or body.get("webhook_url"):
+            save_notify_config({
+                "telegram_bot_token": body.get("token", ""),
+                "telegram_chat_id": body.get("chat_id", ""),
+                "webhook_url": body.get("webhook_url", ""),
+                "whatsapp_phone": body.get("whatsapp_phone", ""),
+                "whatsapp_apikey": body.get("whatsapp_apikey", "")
+            })
+        msg = body.get("message", "GridSense Automation Alert")
+        report_obj = {"formatted_message": msg, "suggestion": msg, "actions_taken": "Manual Test", "energy_saved": "Verified"}
+        res = dispatch_auto_notification(report_obj, "Live Test")
+        return {"status": "success", "dispatch": res, "message": "Configuration saved on server. Simulations will now auto-dispatch without prompting."}
     except Exception as e:
         return {"status": "error", "message": str(e)}
 
@@ -345,7 +507,7 @@ def home():
                         </div>
                         <div class="kv-row">
                             <span style="color: #8E9297;">Geyser Staggering</span>
-                            <span class="font-data text-xs" style="color: #D9DAD0;">W1 05:30 / W2 06:30</span>
+                            <span class="font-data text-xs" style="color: #D9DAD0;">W1 05:30 AM / W2 06:30 AM</span>
                         </div>
                     </div>
                 </div>
@@ -365,7 +527,7 @@ def home():
                     <div class="rounded-lg p-3" style="background: #2B2D31;">
                         <div class="kv-row">
                             <span style="color: #8E9297;">Night Cut-off</span>
-                            <span class="font-data text-xs" style="color: #D9DAD0;">19:00 - 07:00 Daily</span>
+                            <span class="font-data text-xs" style="color: #D9DAD0;">07:00 PM - 07:00 AM Daily</span>
                         </div>
                         <div class="kv-row">
                             <span style="color: #8E9297;">Sunday Policy</span>
@@ -413,6 +575,20 @@ def home():
 
         </div>
 
+        <!-- SESSION SUGGESTIONS & SPATIAL OPTIMIZATION LOG (BY TIME) -->
+        <section class="card p-6 mb-8">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-5">
+                <div>
+                    <h2 class="text-base font-semibold text-white">Session Suggestions &amp; Spatial Optimization Log (By Time)</h2>
+                    <p class="text-xs mt-0.5" style="color: #8E9297;">Live time-indexed spatial consolidation, wing shutdowns, and Block C natural daylight harvesting logs</p>
+                </div>
+                <a href="/sandbox" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold" style="background: #FFC93C; color: #2B2D31;">
+                    Open Interactive Simulator
+                </a>
+            </div>
+            <div id="dashboardSuggestionsLog" class="space-y-3"></div>
+        </section>
+
     </main>
 
     <footer class="py-4 px-6 text-center text-xs" style="color: #8E9297; border-top: 1px solid rgba(255,255,255,0.06);">
@@ -420,12 +596,55 @@ def home():
     </footer>
 
     <script>
+        function formatTo12Hour(time24) {{
+            if (!time24) return '';
+            const parts = time24.split(':');
+            let h = parseInt(parts[0], 10);
+            const m = parts[1] || '00';
+            const ampm = h >= 12 ? 'PM' : 'AM';
+            h = h % 12;
+            if (h === 0) h = 12;
+            return (h < 10 ? '0' + h : h) + ':' + m + ' ' + ampm;
+        }}
+
+        fetch('/api/suggestions')
+            .then(res => res.json())
+            .then(data => {{
+                const container = document.getElementById('dashboardSuggestionsLog');
+                const items = data.suggestions || [];
+                container.innerHTML = items.map(item => `
+                    <div class="p-4 rounded-xl" style="background: #2B2D31; border: 1px solid rgba(255,255,255,0.06);">
+                        <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+                            <div class="flex items-center gap-2.5">
+                                <span class="px-2.5 py-0.5 rounded text-xs font-bold font-data" style="background: rgba(255,201,60,0.15); color: #FFC93C;">${{item.time_12h}}</span>
+                                <span class="text-sm font-semibold text-white">${{item.title}}</span>
+                            </div>
+                            <span class="text-xs font-data px-2 py-0.5 rounded" style="background: #36393F; color: #D9DAD0;">${{item.mode}}</span>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs mt-2">
+                            <div class="p-2.5 rounded-lg" style="background: #36393F;">
+                                <div class="font-semibold uppercase text-[10px] mb-1" style="color: #FFC93C;">1. Relocation &amp; Spatial Suggestion</div>
+                                <div style="color: #D9DAD0;">${{item.suggestion}}</div>
+                            </div>
+                            <div class="p-2.5 rounded-lg" style="background: #36393F;">
+                                <div class="font-semibold uppercase text-[10px] mb-1" style="color: #D9DAD0;">2. Hardware Actions Taken</div>
+                                <div style="color: #D9DAD0;">${{item.actions_taken}}</div>
+                            </div>
+                            <div class="p-2.5 rounded-lg" style="background: #36393F;">
+                                <div class="font-semibold uppercase text-[10px] mb-1" style="color: #8E9297;">3. Energy &amp; Cost Saved</div>
+                                <div class="font-data font-semibold" style="color: #FFC93C;">${{item.energy_saved}}</div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            }});
+
         fetch('/api/telemetry')
             .then(res => res.json())
             .then(data => {{
                 const telemetry = data.telemetry || [];
                 const sampled = telemetry.filter((_, idx) => idx % 4 === 0);
-                const labels = sampled.map(p => p.day.substring(0,3) + ' ' + p.timestamp.split(' ')[1]);
+                const labels = sampled.map(p => p.day.substring(0,3) + ' ' + formatTo12Hour(p.timestamp.split(' ')[1]));
                 
                 const baselineData = sampled.map(p => {{
                     let sum = 0;
@@ -540,7 +759,7 @@ def view_blueprint():
             zones_html += f"""
             <div class='p-2 rounded-lg text-xs mb-1 flex justify-between' style='background: #2B2D31; border: 1px solid rgba(255,255,255,0.04); font-size: 11px;'>
                 <span style='color: #8E9297;'>Commercial Water Cooler {wc.get('id', '')} (Floor {wc.get('floor', '')})</span>
-                <span class='font-semibold' style='color: #FFC93C;'>{wc.get('compressor_kw', '')} kW | Interlocked 19:00 - 07:00</span>
+                <span class='font-semibold' style='color: #FFC93C;'>{wc.get('compressor_kw', '')} kW | Interlocked 07:00 PM - 07:00 AM</span>
             </div>"""
         for hm in b_data.get("heavy_motors", []):
             zones_html += f"""

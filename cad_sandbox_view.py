@@ -1,1483 +1,1314 @@
 """
-Interactive Sandbox - Block B Vector Floor Plan
-GridSense Campus Energy Optimization Platform
+GridSense Block B Interactive Sandbox & Vector CAD Blueprint
+Minimalist UI (#2B2D31 Gray, #D9DAD0 Silver, #FFC93C Yellow)
+Features:
+- 12-Hour AM/PM time formatting everywhere
+- Mode 1 (Variable Mode): Time slider, Temp slider, and ON/OFF toggle + headcount slider for all 8 Classrooms & 3 Labs
+- Mode 2 (Set / Timetable Mode): Auto-generated realistic academic schedule by time of day with 1-click slot loading
+- Two-stage workflow: Preview Unmanaged Baseline (random/partial lights ON in empty rooms) -> Click "Simulate" to execute relocations, wing shutdowns, dynamic lift staging, and AC optimization
+- 3-Part Natural Report Template + Time-Indexed Session Suggestions Log
+- Zero-Prompt Automatic Phone / Webhook Dispatch (n8n, Power Automate, Telegram, WhatsApp)
 """
 
+
+def _render_svg_room(rid: str, label: str, sub: str, x: int, y: int, w: int, h: int) -> str:
+    """Generate a perfectly aligned architectural CAD room block with 0 text overlap."""
+    cx = x + w // 2
+    # 4 ceiling luminaires positioned in a clean horizontal row
+    l_y = y + 54
+    l1_x = x + int(w * 0.20)
+    l2_x = x + int(w * 0.40)
+    l3_x = x + int(w * 0.60)
+    l4_x = x + int(w * 0.80)
+
+    # Desks positioned in 2 neat rows in the middle
+    d_y1 = y + 74
+    d_y2 = y + 92
+    dw = int(w * 0.36)
+    d1_x = x + int(w * 0.10)
+    d2_x = x + int(w * 0.54)
+
+    # Bottom status bar for AC setpoint and Relocation tag
+    ac_y = y + h - 24
+
+    return f"""
+    <g id="room_grp_{rid}" class="cad-room-group">
+        <!-- Main Room Structural Box -->
+        <rect id="poly_{rid}" x="{x}" y="{y}" width="{w}" height="{h}" rx="6" class="room-box room-unlit" />
+
+        <!-- Top Header Bar -->
+        <rect x="{x+1}" y="{y+1}" width="{w-2}" height="28" rx="5" fill="#1E2024" opacity="0.85" />
+        <text x="{x+10}" y="{y+19}" fill="#FFFFFF" font-family="Inter, sans-serif" font-size="11.5" font-weight="700">{label}</text>
+        <text id="occ_badge_{rid}" x="{x+w-10}" y="{y+19}" fill="#8E9297" font-family="JetBrains Mono, monospace" font-size="10.5" font-weight="700" text-anchor="end">OFF</text>
+
+        <!-- Subtitle / Wing Area -->
+        <text id="sub_badge_{rid}" x="{x+10}" y="{y+40}" fill="#8E9297" font-family="Inter, sans-serif" font-size="9.5" font-weight="500">{sub}</text>
+
+        <!-- 4 Individual Ceiling Luminaires (L1, L2, L3, L4) -->
+        <g>
+            <circle id="l1_{rid}" cx="{l1_x}" cy="{l_y}" r="6" class="luminaire lum-off" />
+            <circle id="l2_{rid}" cx="{l2_x}" cy="{l_y}" r="6" class="luminaire lum-off" />
+            <circle id="l3_{rid}" cx="{l3_x}" cy="{l_y}" r="6" class="luminaire lum-off" />
+            <circle id="l4_{rid}" cx="{l4_x}" cy="{l_y}" r="6" class="luminaire lum-off" />
+        </g>
+
+        <!-- Student Desks / Lab Workbenches -->
+        <rect id="d1_{rid}" x="{d1_x}" y="{d_y1}" width="{dw}" height="11" rx="2" class="desk-box desk-off" />
+        <rect id="d2_{rid}" x="{d2_x}" y="{d_y1}" width="{dw}" height="11" rx="2" class="desk-box desk-off" />
+        <rect id="d3_{rid}" x="{d1_x}" y="{d_y2}" width="{dw}" height="11" rx="2" class="desk-box desk-off" />
+        <rect id="d4_{rid}" x="{d2_x}" y="{d_y2}" width="{dw}" height="11" rx="2" class="desk-box desk-off" />
+
+        <!-- Bottom AC & Power Pill -->
+        <rect id="ac_bg_{rid}" x="{x+8}" y="{ac_y}" width="{w-16}" height="18" rx="4" fill="#1E2024" />
+        <text id="ac_{rid}" x="{x+14}" y="{ac_y+12.5}" fill="#8E9297" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="600">AC: OFF</text>
+        <text id="kw_{rid}" x="{x+w-14}" y="{ac_y+12.5}" fill="#8E9297" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="600" text-anchor="end">0.0 kW</text>
+    </g>
+    """
+
+
 def render_cad_sandbox_html():
-    return """<!DOCTYPE html>
+    # Generate perfectly aligned SVG rooms for Left Wing, Right Wing, and 3 Labs
+    svg_rooms = []
+
+    # North Wing Labs: LAB1 (Left/NW) and LAB2 (Right/NE)
+    svg_rooms.append(_render_svg_room("LAB1", "Lab B-1", "Left Wing // Hardware Lab (150m²)", 250, 55, 220, 135))
+    svg_rooms.append(_render_svg_room("LAB2", "Lab B-2", "Right Wing // Comm Lab (150m²)", 650, 55, 220, 135))
+
+    # Left Wing Classrooms: B101, B102, B103, B104 (Vertical Stack on West Arc)
+    svg_rooms.append(_render_svg_room("B101", "CR B-101", "Left Wing // Near Main Stairs", 25, 195, 200, 135))
+    svg_rooms.append(_render_svg_room("B102", "CR B-102", "Left Wing // Mid-North", 25, 340, 200, 135))
+    svg_rooms.append(_render_svg_room("B103", "CR B-103", "Left Wing // Mid-South", 25, 485, 200, 135))
+    svg_rooms.append(_render_svg_room("B104", "CR B-104", "Left Wing // Far SW End", 25, 630, 200, 135))
+
+    # Right Wing Classrooms: B105, B106, B107, B108 (Vertical Stack on East Arc)
+    svg_rooms.append(_render_svg_room("B105", "CR B-105", "Right Wing // Near Main Stairs", 895, 195, 200, 135))
+    svg_rooms.append(_render_svg_room("B106", "CR B-106", "Right Wing // Mid-North", 895, 340, 200, 135))
+    svg_rooms.append(_render_svg_room("B107", "CR B-107", "Right Wing // Mid-South", 895, 485, 200, 135))
+    svg_rooms.append(_render_svg_room("B108", "CR B-108", "Right Wing // Far SE End", 895, 630, 200, 135))
+
+    # South-East Computer Lab B-3
+    svg_rooms.append(_render_svg_room("LAB3", "Comp Lab B-3", "Right Wing // 50 PCs (150m²)", 685, 705, 200, 135))
+
+    all_svg_rooms_str = "\n".join(svg_rooms)
+
+    return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GridSense // Sandbox</title>
+    <title>GridSense // Block B Interactive Simulator</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
+        * {{ box-sizing: border-box; }}
+        body {{
             font-family: 'Inter', sans-serif;
             background-color: #2B2D31;
             color: #D9DAD0;
-        }
-        .font-mono { font-family: 'JetBrains Mono', monospace; }
-
-        /* Flat Card System */
-        .gs-card {
+            margin: 0;
+        }}
+        .font-data {{ font-family: 'JetBrains Mono', monospace; }}
+        .card {{
             background: #36393F;
-            border-radius: 10px;
-            border: 1px solid rgba(255,255,255,0.06);
-        }
-        .gs-inset {
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.07);
+        }}
+        .sub-box {{
             background: #2B2D31;
             border-radius: 8px;
-            border: 1px solid rgba(255,255,255,0.06);
-        }
-        .gs-btn {
-            background: #2B2D31;
-            border-radius: 8px;
-            border: 1px solid rgba(255,255,255,0.06);
-            transition: all 0.15s ease;
-            cursor: pointer;
-        }
-        .gs-btn:hover {
-            border-color: #FFC93C;
-            color: #FFC93C;
-        }
-
-        /* Nav */
-        .gs-nav {
-            background: #36393F;
-            border-bottom: 1px solid rgba(255,255,255,0.06);
-        }
-        .gs-nav a {
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }}
+        .nav-link {{
             color: #8E9297;
+            font-size: 14px;
+            font-weight: 500;
+            padding: 8px 4px;
+            border-bottom: 2px solid transparent;
+            transition: color 0.15s ease, border-color 0.15s ease;
             text-decoration: none;
-            font-size: 13px;
-            font-weight: 600;
-            padding: 8px 16px;
-            border-radius: 6px;
-            transition: all 0.15s ease;
-        }
-        .gs-nav a:hover { color: #D9DAD0; }
-        .gs-nav a.active {
-            color: #FFC93C;
-            background: rgba(255,201,60,0.08);
-        }
-
-        /* Mode Tabs */
-        .mode-tab {
+        }}
+        .nav-link:hover {{ color: #D9DAD0; }}
+        .nav-link.active {{
+            color: #FFFFFF;
+            border-bottom-color: #FFC93C;
+        }}
+        .mode-tab {{
             flex: 1;
-            padding: 10px 0;
-            text-align: center;
-            font-family: 'Inter', sans-serif;
-            font-size: 13px;
+            padding: 9px 12px;
+            font-size: 12px;
             font-weight: 600;
+            text-align: center;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.15s ease;
             color: #8E9297;
             background: transparent;
             border: none;
-            border-bottom: 2px solid transparent;
-            cursor: pointer;
-            transition: all 0.15s ease;
-        }
-        .mode-tab:hover { color: #D9DAD0; }
-        .mode-tab.active {
-            color: #FFC93C;
-            border-bottom-color: #FFC93C;
-        }
-
-        /* Timetable Grid */
-        .tt-slot {
-            padding: 8px 10px;
-            border-radius: 6px;
-            border: 1px solid rgba(255,255,255,0.06);
-            background: #2B2D31;
-            cursor: pointer;
-            transition: all 0.15s ease;
-        }
-        .tt-slot:hover {
-            border-color: #FFC93C;
-        }
-        .tt-slot.active {
-            border-color: #FFC93C;
-            background: rgba(255,201,60,0.06);
-        }
-
-        /* Blueprint Canvas */
-        .blueprint-board {
-            background-color: #1E2025;
-            background-image:
-                linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
-            background-size: 20px 20px;
-            border: 1px solid rgba(255,255,255,0.06);
-            border-radius: 10px;
-        }
-
-        /* Room Lighting States */
-        .room-bg {
-            transition: fill 0.3s ease, stroke 0.3s ease, filter 0.3s ease;
-        }
-        .room-lit-bg {
-            fill: rgba(255,201,60,0.08) !important;
-            stroke: #FFC93C !important;
-            stroke-width: 2 !important;
-            filter: drop-shadow(0 0 12px rgba(255,201,60,0.25));
-        }
-        .room-dark-bg {
-            fill: #2B2D31 !important;
-            stroke: #4A4D52 !important;
-            stroke-width: 1.5 !important;
-        }
-
-        /* Desks */
-        .cad-desk {
-            fill: #36393F;
-            stroke: #4A4D52;
-            stroke-width: 1;
-            transition: all 0.3s ease;
-        }
-        .cad-desk-lit {
-            fill: rgba(255,201,60,0.12) !important;
-            stroke: #FFC93C !important;
-            stroke-width: 1 !important;
-        }
-        .cad-chair {
-            fill: #2B2D31;
-            stroke: #4A4D52;
-            stroke-width: 0.8;
-            transition: all 0.3s ease;
-        }
-        .cad-student-dot {
-            fill: #FFC93C;
-            filter: drop-shadow(0 0 3px rgba(255,201,60,0.6));
-            transition: opacity 0.3s ease;
-        }
-
-        /* Ceiling Lights */
-        .light-glow {
-            transition: all 0.3s ease;
-        }
-        .light-on {
-            fill: #FFC93C;
-            stroke: #FFC93C;
-            stroke-width: 1.5;
-            filter: drop-shadow(0 0 6px #FFC93C) drop-shadow(0 0 14px rgba(255,201,60,0.7));
-        }
-        .light-off {
-            fill: #4A4D52;
-            stroke: #4A4D52;
-            stroke-width: 1;
-            filter: none;
-        }
-
-        /* Corridor */
-        .corridor-path-lit {
-            stroke: #FFC93C !important;
-            stroke-width: 3 !important;
-            stroke-dasharray: none !important;
-            filter: drop-shadow(0 0 8px rgba(255,201,60,0.7));
-            transition: all 0.4s ease;
-        }
-        .corridor-path-dark {
-            stroke: #4A4D52 !important;
-            stroke-width: 1.5 !important;
-            stroke-dasharray: 6 6 !important;
-            filter: none;
-            transition: all 0.4s ease;
-        }
-
-        /* Structural */
-        .cad-column {
-            fill: #4A4D52;
-            stroke: #8E9297;
-            stroke-width: 1;
-        }
-        .cad-door-swing {
-            stroke: #8E9297;
-            stroke-width: 1;
-            stroke-dasharray: 2 2;
-            fill: none;
-        }
-
-        /* Slider styling */
-        input[type="range"] {
+        }}
+        .mode-tab.active {{
+            background: #FFC93C;
+            color: #2B2D31;
+            font-weight: 700;
+        }}
+        input[type="range"] {{
             -webkit-appearance: none;
             appearance: none;
-            width: 100%;
-            height: 4px;
+            height: 5px;
             background: #2B2D31;
-            border-radius: 2px;
+            border-radius: 4px;
             outline: none;
-            cursor: pointer;
-        }
-        input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 14px;
-            height: 14px;
-            border-radius: 50%;
-            background: #FFC93C;
-            cursor: pointer;
-        }
-        input[type="range"]::-moz-range-thumb {
-            width: 14px;
-            height: 14px;
-            border-radius: 50%;
-            background: #FFC93C;
-            border: none;
-            cursor: pointer;
-        }
-
-        select {
+        }}
+        input[type="range"]::-webkit-slider-thumb {{
             -webkit-appearance: none;
             appearance: none;
-        }
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: #FFC93C;
+            cursor: pointer;
+            border: 2px solid #2B2D31;
+        }}
 
-        /* Scrollbar */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: #2B2D31; }
-        ::-webkit-scrollbar-thumb { background: #4A4D52; border-radius: 3px; }
+        /* SVG Blueprint Styles */
+        .blueprint-wrap {{
+            background-color: #1E2024;
+            background-image:
+                linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+            background-size: 28px 28px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }}
+        .room-box {{
+            transition: fill 0.25s ease, stroke 0.25s ease, stroke-width 0.25s ease;
+        }}
+        .room-unlit {{
+            fill: #27292E;
+            stroke: #40444B;
+            stroke-width: 1.5;
+        }}
+        .room-lit {{
+            fill: #353022;
+            stroke: #FFC93C;
+            stroke-width: 2.2;
+        }}
+        .room-wasted {{
+            fill: #332B24;
+            stroke: #F59E0B;
+            stroke-width: 1.8;
+            stroke-dasharray: 5 3;
+        }}
+        .room-relocated {{
+            fill: #232A34;
+            stroke: #38BDF8;
+            stroke-width: 1.8;
+            stroke-dasharray: 4 4;
+        }}
+        .luminaire {{
+            transition: all 0.25s ease;
+        }}
+        .lum-on {{
+            fill: #FFC93C;
+            stroke: #FEF08A;
+            stroke-width: 1.5;
+            filter: drop-shadow(0 0 6px #FFC93C);
+        }}
+        .lum-off {{
+            fill: #1E2024;
+            stroke: #4F545C;
+            stroke-width: 1.2;
+            filter: none;
+        }}
+        .desk-box {{
+            transition: all 0.25s ease;
+        }}
+        .desk-on {{
+            fill: #4A412A;
+            stroke: #D9A528;
+            stroke-width: 1;
+        }}
+        .desk-off {{
+            fill: #2E3136;
+            stroke: #3F434A;
+            stroke-width: 1;
+        }}
+        .corridor-line {{
+            transition: all 0.3s ease;
+            fill: none;
+        }}
+        .corridor-on {{
+            stroke: #FFC93C;
+            stroke-width: 4;
+            filter: drop-shadow(0 0 6px rgba(255, 201, 60, 0.6));
+        }}
+        .corridor-off {{
+            stroke: #3A3E45;
+            stroke-width: 2;
+            stroke-dasharray: 6 6;
+            filter: none;
+        }}
+        .lift-car-on {{
+            fill: #3A331E;
+            stroke: #FFC93C;
+            stroke-width: 2;
+        }}
+        .lift-car-off {{
+            fill: #232529;
+            stroke: #40444B;
+            stroke-width: 1.2;
+            stroke-dasharray: 3 3;
+        }}
+        .zone-box-on {{
+            fill: #353022;
+            stroke: #FFC93C;
+            stroke-width: 2;
+        }}
+        .zone-box-off {{
+            fill: #25272C;
+            stroke: #3E4249;
+            stroke-width: 1.5;
+        }}
     </style>
 </head>
-<body class="min-h-screen">
+<body class="min-h-screen flex flex-col">
 
-    <!-- NAVIGATION BAR -->
-    <nav class="gs-nav px-6 py-3 flex items-center justify-between">
-        <div class="flex items-center gap-2">
-            <span style="color:#FFC93C; font-weight:800; font-size:18px; letter-spacing:-0.5px;">GridSense</span>
+    <!-- TOP NAVBAR -->
+    <header style="background: #2B2D31; border-bottom: 1px solid rgba(255,255,255,0.07);">
+        <div class="max-w-[1560px] mx-auto px-5 h-14 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm" style="background: #FFC93C; color: #2B2D31;">
+                    GS
+                </div>
+                <span class="text-base font-bold text-white tracking-tight">GridSense</span>
+                <span class="text-xs px-2 py-0.5 rounded font-medium" style="background: #36393F; color: #8E9297;">JIT Block B Simulator</span>
+            </div>
+            <nav class="flex items-center gap-7">
+                <a href="/" class="nav-link">Dashboard</a>
+                <a href="/sandbox" class="nav-link active">Sandbox</a>
+                <a href="/blueprint" class="nav-link">Blueprint</a>
+            </nav>
         </div>
-        <div class="flex items-center gap-1">
-            <a href="/">Dashboard</a>
-            <a href="/sandbox" class="active">Sandbox</a>
-            <a href="/blueprint">Blueprint</a>
-        </div>
-    </nav>
+    </header>
 
-    <!-- MAIN LAYOUT -->
-    <div class="p-4 max-w-[1560px] mx-auto">
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+    <!-- MAIN CONTENT GRID -->
+    <main class="flex-1 max-w-[1560px] w-full mx-auto px-5 py-5">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
 
-            <!-- LEFT PANEL -->
+            <!-- ================= LEFT COLUMN: CONTROLS (4 COLS) ================= -->
             <div class="lg:col-span-4 space-y-4">
 
-                <!-- MODE SWITCHER -->
-                <div class="gs-card overflow-hidden">
-                    <div class="flex border-b" style="border-color:rgba(255,255,255,0.06);">
-                        <button class="mode-tab active" id="tabVariable" onclick="switchMode('variable')">Variable</button>
-                        <button class="mode-tab" id="tabTimetable" onclick="switchMode('timetable')">Timetable</button>
-                    </div>
-
-                    <!-- VARIABLE MODE PANEL -->
-                    <div id="panelVariable" class="p-4 space-y-4">
-
-                        <!-- Quick Scenarios -->
-                        <div>
-                            <div class="flex justify-between items-center mb-2">
-                                <span class="text-xs font-mono uppercase" style="color:#8E9297; font-weight:700;">Quick Scenarios</span>
-                                <span class="text-xs font-mono" style="color:#FFC93C;">1-Click</span>
-                            </div>
-                            <div class="grid grid-cols-2 gap-2">
-                                <button onclick="applyPreset('morning')" class="gs-btn p-2 text-left">
-                                    <div class="text-xs font-mono font-bold" style="color:#D9DAD0;">09:00 AM</div>
-                                    <div class="text-xs font-mono" style="color:#8E9297; font-size:10px;">Full Morning Rush</div>
-                                </button>
-                                <button onclick="applyPreset('afternoon')" class="gs-btn p-2 text-left">
-                                    <div class="text-xs font-mono font-bold" style="color:#D9DAD0;">02:30 PM</div>
-                                    <div class="text-xs font-mono" style="color:#8E9297; font-size:10px;">Peak Heat + Solar</div>
-                                </button>
-                                <button onclick="applyPreset('night_waste')" class="gs-btn p-2 text-left" style="border-color:rgba(255,201,60,0.3);">
-                                    <div class="text-xs font-mono font-bold" style="color:#FFC93C;">07:30 PM</div>
-                                    <div class="text-xs font-mono" style="color:rgba(255,201,60,0.7); font-size:10px;">After-Hours Waste</div>
-                                </button>
-                                <button onclick="applyPreset('lockdown')" class="gs-btn p-2 text-left">
-                                    <div class="text-xs font-mono font-bold" style="color:#D9DAD0;">22:00 PM</div>
-                                    <div class="text-xs font-mono" style="color:#8E9297; font-size:10px;">Night Lockdown (0 Occ)</div>
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Environmental Controls -->
-                        <div class="space-y-3">
-                            <div class="text-xs font-mono uppercase" style="color:#8E9297; font-weight:700;">Environmental Inputs</div>
-
-                            <div>
-                                <div class="flex justify-between text-xs font-mono mb-1">
-                                    <span style="color:#8E9297;">Time of Day</span>
-                                    <span id="timeVal" class="font-bold" style="color:#FFC93C;">19:30</span>
-                                </div>
-                                <input type="range" id="timeSlider" min="6" max="23" step="0.5" value="19.5" oninput="onParamChange()">
-                            </div>
-
-                            <div>
-                                <div class="flex justify-between text-xs font-mono mb-1">
-                                    <span style="color:#8E9297;">Outdoor Temperature</span>
-                                    <span id="tempVal" class="font-bold" style="color:#FFC93C;">33 C</span>
-                                </div>
-                                <input type="range" id="tempSlider" min="20" max="40" step="1" value="33" oninput="onParamChange()">
-                            </div>
-
-                            <div>
-                                <div class="text-xs font-mono mb-1" style="color:#8E9297;">Sky / Natural Daylight</div>
-                                <select id="weatherSelect" onchange="onParamChange()" class="w-full p-2 gs-inset text-xs font-mono outline-none" style="color:#D9DAD0;">
-                                    <option value="Sunny / Daylight">Sunny / Bright (Daylight Harvesting)</option>
-                                    <option value="Overcast / Rainy">Overcast / Rainy (Low Natural Lux)</option>
-                                    <option value="Night" selected>Night (Zero Daylight)</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <!-- Room Headcounts -->
-                        <div class="space-y-2">
-                            <div class="flex justify-between items-center">
-                                <span class="text-xs font-mono uppercase" style="color:#8E9297; font-weight:700;">Room Headcounts</span>
-                                <button onclick="clearAllOccupants()" class="text-xs font-mono" style="color:#8E9297; cursor:pointer;" onmouseover="this.style.color='#FFC93C'" onmouseout="this.style.color='#8E9297'">Clear All</button>
-                            </div>
-
-                            <div class="grid grid-cols-2 gap-2 text-xs font-mono" style="color:#8E9297;">
-                                <div class="p-2 gs-inset">
-                                    <div class="flex justify-between mb-1">
-                                        <span>B-101 (W1)</span>
-                                        <span id="val_r1" class="font-bold" style="color:#FFFFFF;">0</span>
-                                    </div>
-                                    <input type="range" id="occ_r1" min="0" max="60" value="0" oninput="onParamChange()">
-                                </div>
-                                <div class="p-2 gs-inset">
-                                    <div class="flex justify-between mb-1">
-                                        <span>B-105 (E1)</span>
-                                        <span id="val_r5" class="font-bold" style="color:#FFFFFF;">0</span>
-                                    </div>
-                                    <input type="range" id="occ_r5" min="0" max="60" value="0" oninput="onParamChange()">
-                                </div>
-                                <div class="p-2 gs-inset">
-                                    <div class="flex justify-between mb-1">
-                                        <span>B-102 (W2)</span>
-                                        <span id="val_r2" class="font-bold" style="color:#FFFFFF;">0</span>
-                                    </div>
-                                    <input type="range" id="occ_r2" min="0" max="60" value="0" oninput="onParamChange()">
-                                </div>
-                                <div class="p-2 gs-inset">
-                                    <div class="flex justify-between mb-1">
-                                        <span>B-106 (E2)</span>
-                                        <span id="val_r6" class="font-bold" style="color:#FFFFFF;">0</span>
-                                    </div>
-                                    <input type="range" id="occ_r6" min="0" max="60" value="0" oninput="onParamChange()">
-                                </div>
-                                <div class="p-2 gs-inset">
-                                    <div class="flex justify-between mb-1">
-                                        <span>B-103 (W3)</span>
-                                        <span id="val_r3" class="font-bold" style="color:#FFFFFF;">0</span>
-                                    </div>
-                                    <input type="range" id="occ_r3" min="0" max="60" value="0" oninput="onParamChange()">
-                                </div>
-                                <div class="p-2 gs-inset">
-                                    <div class="flex justify-between mb-1">
-                                        <span>B-107 (E3)</span>
-                                        <span id="val_r7" class="font-bold" style="color:#FFFFFF;">0</span>
-                                    </div>
-                                    <input type="range" id="occ_r7" min="0" max="60" value="0" oninput="onParamChange()">
-                                </div>
-                                <div class="p-2 gs-inset">
-                                    <div class="flex justify-between mb-1">
-                                        <span>B-104 (W4)</span>
-                                        <span id="val_r4" class="font-bold" style="color:#FFFFFF;">0</span>
-                                    </div>
-                                    <input type="range" id="occ_r4" min="0" max="60" value="0" oninput="onParamChange()">
-                                </div>
-                                <div class="p-2 gs-inset" style="border-color:rgba(255,201,60,0.2);">
-                                    <div class="flex justify-between mb-1">
-                                        <span style="color:#FFC93C;">B-108 (E4)</span>
-                                        <span id="val_r8" class="font-bold" style="color:#FFC93C;">25</span>
-                                    </div>
-                                    <input type="range" id="occ_r8" min="0" max="60" value="25" oninput="onParamChange()">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- TIMETABLE MODE PANEL -->
-                    <div id="panelTimetable" class="p-4 space-y-3" style="display:none;">
-                        <div class="flex justify-between items-center">
-                            <span class="text-xs font-mono uppercase" style="color:#8E9297; font-weight:700;">Academic Day Schedule</span>
-                            <span class="text-xs font-mono" style="color:#FFC93C;">Block B</span>
-                        </div>
-                        <p class="text-xs" style="color:#8E9297;">Select a time slot to auto-fill room occupancy from the timetable. Rooms not listed are empty (0).</p>
-
-                        <div class="space-y-2" id="timetableSlots">
-                            <!-- Slots injected by JS -->
-                        </div>
+                <!-- 1. MODE SWITCHER (VARIABLE MODE vs SET TIMETABLE MODE) -->
+                <div class="card p-3">
+                    <div class="text-[11px] font-semibold uppercase tracking-wider mb-2" style="color: #8E9297;">Simulation Operating Mode</div>
+                    <div class="flex gap-1.5 p-1 rounded-lg" style="background: #2B2D31;">
+                        <button id="tabVariable" onclick="switchMode('variable')" class="mode-tab active">
+                            Mode 1: Variable Mode
+                        </button>
+                        <button id="tabTimetable" onclick="switchMode('timetable')" class="mode-tab">
+                            Mode 2: Set Timetable
+                        </button>
                     </div>
                 </div>
 
-                <!-- TELEGRAM CONFIG -->
-                <div class="gs-card p-4 space-y-2">
-                    <div class="flex justify-between items-center">
-                        <span class="text-xs font-mono uppercase" style="color:#8E9297; font-weight:700;">Mobile Dispatch (Telegram)</span>
-                        <span class="flex items-center gap-1.5 text-xs font-mono" style="color:#FFC93C;">
-                            <span style="width:6px; height:6px; border-radius:50%; background:#FFC93C; display:inline-block;"></span>
-                            Auto-Push
+                <!-- 2. ENVIRONMENTAL VARIABLES (TIME IN 12H AM/PM & OUTSIDE TEMP) -->
+                <div class="card p-4 space-y-3.5">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-semibold uppercase tracking-wider" style="color: #8E9297;">1. Time &amp; Weather Variables</span>
+                        <span id="daylightBadge" class="text-[11px] font-data px-2 py-0.5 rounded" style="background: #2B2D31; color: #FFC93C;">Daylight</span>
+                    </div>
+
+                    <!-- Time of Day (12-Hour AM/PM) -->
+                    <div>
+                        <div class="flex justify-between items-center text-xs mb-1.5">
+                            <span style="color: #D9DAD0;">Time of Day (12-Hr AM/PM)</span>
+                            <span id="timeDisplay12h" class="font-data font-bold text-sm" style="color: #FFC93C;">02:00 PM</span>
+                        </div>
+                        <input type="range" id="timeSlider" min="6" max="23" step="0.5" value="14.0" oninput="onVariableInputChanged()" class="w-full">
+                        <div class="flex justify-between text-[10px] font-data mt-1" style="color: #8E9297;">
+                            <span>06:00 AM</span>
+                            <span>12:00 PM</span>
+                            <span>06:00 PM</span>
+                            <span>11:00 PM</span>
+                        </div>
+                    </div>
+
+                    <!-- Outside Temperature -->
+                    <div>
+                        <div class="flex justify-between items-center text-xs mb-1.5">
+                            <span style="color: #D9DAD0;">Outside Temperature</span>
+                            <span id="tempDisplay" class="font-data font-bold text-sm text-white">33°C</span>
+                        </div>
+                        <input type="range" id="tempSlider" min="20" max="40" step="1" value="33" oninput="onVariableInputChanged()" class="w-full">
+                        <div class="flex justify-between text-[10px] font-data mt-1" style="color: #8E9297;">
+                            <span>20°C (Cool)</span>
+                            <span>30°C (Warm)</span>
+                            <span>40°C (Peak Heat)</span>
+                        </div>
+                    </div>
+
+                    <!-- Sky Condition -->
+                    <div>
+                        <label class="block text-xs mb-1" style="color: #D9DAD0;">Outside Sky Condition</label>
+                        <select id="weatherSelect" onchange="onVariableInputChanged()" class="w-full p-2 rounded-lg text-xs font-medium outline-none" style="background: #2B2D31; color: #FFFFFF; border: 1px solid rgba(255,255,255,0.08);">
+                            <option value="Sunny / Daylight" selected>Sunny / Clear Sky (High Natural Sunlight)</option>
+                            <option value="Overcast / Rainy">Overcast / Cloudy (Low Natural Lux)</option>
+                            <option value="Night">Night / Dark Outside</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- 3A. VARIABLE MODE: ACTIVE CLASSES & LABS (ON/OFF TOGGLE + PEOPLE SLIDER) -->
+                <div id="panelVariable" class="card p-4 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <div class="text-xs font-semibold uppercase tracking-wider" style="color: #8E9297;">2. Active Classes &amp; Labs</div>
+                            <div class="text-[11px] mt-0.5" style="color: #8E9297;">Toggle ON any room to set student headcount</div>
+                        </div>
+                        <div class="flex gap-1.5">
+                            <button onclick="loadDemoScenario('wing_consolidate')" class="px-2 py-1 rounded text-[10px] font-semibold" style="background: #2B2D31; color: #FFC93C; border: 1px solid rgba(255,201,60,0.3);">
+                                3 Left + 1 Right
+                            </button>
+                            <button onclick="clearAllRooms()" class="px-2 py-1 rounded text-[10px] font-semibold" style="background: #2B2D31; color: #8E9297;">
+                                All Off
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Live Wing Summary Bar -->
+                    <div class="grid grid-cols-3 gap-2 p-2 rounded-lg text-center font-data text-[11px]" style="background: #2B2D31;">
+                        <div>
+                            <span style="color: #8E9297;">Active:</span>
+                            <span id="summaryActiveCount" class="font-bold text-white ml-1">4</span>
+                        </div>
+                        <div>
+                            <span style="color: #8E9297;">Left Wing:</span>
+                            <span id="summaryLeftPop" class="font-bold" style="color: #FFC93C;">83p</span>
+                        </div>
+                        <div>
+                            <span style="color: #8E9297;">Right Wing:</span>
+                            <span id="summaryRightPop" class="font-bold" style="color: #FFC93C;">22p</span>
+                        </div>
+                    </div>
+
+                    <!-- Left Wing Rooms -->
+                    <div>
+                        <div class="text-[11px] font-bold uppercase tracking-wider mb-1.5" style="color: #D9DAD0;">Left Wing (West // Lifts L1 &amp; L2)</div>
+                        <div id="leftWingControls" class="space-y-1.5"></div>
+                    </div>
+
+                    <!-- Right Wing Rooms -->
+                    <div class="pt-1">
+                        <div class="text-[11px] font-bold uppercase tracking-wider mb-1.5" style="color: #D9DAD0;">Right Wing (East // Lifts L3 &amp; L4)</div>
+                        <div id="rightWingControls" class="space-y-1.5"></div>
+                    </div>
+                </div>
+
+                <!-- 3B. SET TIMETABLE MODE: GENERATED SCHEDULE SLOTS -->
+                <div id="panelTimetable" class="card p-4 space-y-3" style="display: none;">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <div class="text-xs font-semibold uppercase tracking-wider" style="color: #8E9297;">Generated Day Timetable</div>
+                            <div class="text-[11px] mt-0.5" style="color: #8E9297;">Peak morning sessions, afternoon classes &amp; evening labs</div>
+                        </div>
+                        <button onclick="regenerateTimetable()" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold" style="background: #FFC93C; color: #2B2D31;">
+                            Regenerate
+                        </button>
+                    </div>
+                    <div id="timetableSlotsList" class="space-y-2 max-h-[430px] overflow-y-auto pr-1"></div>
+                </div>
+
+                <!-- 4. PRIMARY ACTION: SIMULATE BUTTON -->
+                <div class="card p-4 space-y-2.5">
+                    <div class="flex items-center justify-between text-xs">
+                        <span style="color: #8E9297;">Floor View State:</span>
+                        <span id="viewStateBadge" class="font-data font-bold px-2 py-0.5 rounded text-[11px]" style="background: rgba(245,158,11,0.15); color: #F59E0B;">
+                            UNMANAGED BASELINE
                         </span>
                     </div>
-                    <input type="text" id="tgToken" placeholder="Bot Token (e.g. 7829...)" class="w-full p-2 gs-inset text-xs font-mono outline-none" style="color:#D9DAD0;">
-                    <input type="text" id="tgChatId" placeholder="Chat ID (e.g. 9821...)" class="w-full p-2 gs-inset text-xs font-mono outline-none" style="color:#D9DAD0;">
-                    <button onclick="saveAndTestTelegram()" class="w-full py-2 gs-btn text-xs font-mono font-bold" style="color:#FFC93C;">
-                        Connect Phone + Test Alert
-                    </button>
-                    <div id="tgStatus" class="text-xs font-mono text-center" style="color:#8E9297; font-size:10px;">
-                        Configuration saved locally. Actions dispatch live to your device.
+                    <div class="flex gap-2">
+                        <button onclick="runSimulation()" class="flex-1 py-3 px-4 rounded-xl font-bold text-sm tracking-wide transition-all" style="background: #FFC93C; color: #2B2D31; box-shadow: 0 4px 14px rgba(255,201,60,0.25);">
+                            SIMULATE &amp; OPTIMIZE
+                        </button>
+                        <button onclick="showBaselinePreview()" class="py-3 px-3.5 rounded-xl font-semibold text-xs transition-all" style="background: #2B2D31; color: #D9DAD0; border: 1px solid rgba(255,255,255,0.08);" title="View Unmanaged State Before Simulation">
+                            Reset View
+                        </button>
+                    </div>
+                    <div id="autoPingStatus" class="text-[11px] font-data text-center" style="color: #8E9297;">
+                        Clicking Simulate optimizes floor, logs suggestions &amp; auto-dispatches alert.
                     </div>
                 </div>
+
+                <!-- 5. ONE-TIME SERVER AUTO-PING SETUP (COLLAPSIBLE, NEVER NAGS) -->
+                <details class="card p-3.5 text-xs">
+                    <summary class="cursor-pointer font-semibold flex items-center justify-between" style="color: #D9DAD0;">
+                        <span>Auto-Webhook / Mobile Alert Setup (One-Time)</span>
+                        <span class="text-[10px] font-data px-2 py-0.5 rounded" style="background: #2B2D31; color: #FFC93C;">Free n8n / Telegram</span>
+                    </summary>
+                    <div class="mt-3 space-y-2 pt-2" style="border-top: 1px solid rgba(255,255,255,0.06);">
+                        <p class="text-[11px]" style="color: #8E9297;">
+                            Save once on the server. Every click on <b>Simulate</b> will push automatically in the background without asking again.
+                        </p>
+                        <input type="text" id="cfgWebhook" placeholder="n8n or Power Automate Webhook URL (Optional)" class="w-full p-2 rounded text-xs font-data outline-none" style="background: #2B2D31; color: #FFFFFF; border: 1px solid rgba(255,255,255,0.07);">
+                        <input type="text" id="cfgTgToken" placeholder="Telegram Bot Token (Optional)" class="w-full p-2 rounded text-xs font-data outline-none" style="background: #2B2D31; color: #FFFFFF; border: 1px solid rgba(255,255,255,0.07);">
+                        <input type="text" id="cfgTgChat" placeholder="Telegram Chat ID (Optional)" class="w-full p-2 rounded text-xs font-data outline-none" style="background: #2B2D31; color: #FFFFFF; border: 1px solid rgba(255,255,255,0.07);">
+                        <button onclick="saveServerNotifyConfig()" class="w-full py-2 rounded-lg font-semibold text-xs" style="background: #2B2D31; color: #FFC93C; border: 1px solid rgba(255,201,60,0.35);">
+                            Save Permanently &amp; Send Test Ping
+                        </button>
+                        <div id="cfgSaveMsg" class="text-[10px] font-data text-center" style="color: #8E9297;"></div>
+                    </div>
+                </details>
 
             </div>
 
-            <!-- RIGHT PANEL -->
+            <!-- ================= RIGHT COLUMN: METERS, BLUEPRINT & REPORT (8 COLS) ================= -->
             <div class="lg:col-span-8 space-y-4">
 
-                <!-- STAT GAUGES -->
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <div class="gs-card p-3">
-                        <div class="text-xs font-mono uppercase" style="color:#8E9297; font-size:10px;">Unmanaged Baseline</div>
-                        <div id="baselineMeter" class="text-xl font-bold mt-1" style="color:#ED4245;">28.40 kW</div>
-                        <div class="text-xs font-mono" style="color:#8E9297; font-size:10px;">Blind Power Draw (Zero Sensing)</div>
+                <!-- 1. TOP KPI METERS (GLANCEABLE) -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div class="card p-4">
+                        <div class="text-[11px] font-semibold uppercase tracking-wider" style="color: #8E9297;">Unmanaged Baseline Draw</div>
+                        <div id="meterBaseline" class="text-2xl font-bold font-data text-white mt-1">41.74 kW</div>
+                        <div class="text-[11px] mt-1" style="color: #8E9297;">Random lights &amp; all 4 lifts running</div>
                     </div>
-                    <div class="gs-card p-3">
-                        <div class="text-xs font-mono uppercase" style="color:#8E9297; font-size:10px;">GridSense Optimized</div>
-                        <div id="optimizedMeter" class="text-xl font-bold mt-1" style="color:#57F287;">6.25 kW</div>
-                        <div class="text-xs font-mono" style="color:#8E9297; font-size:10px;">Adaptive HVAC + Corridor Cutoffs</div>
+
+                    <div class="card p-4">
+                        <div class="text-[11px] font-semibold uppercase tracking-wider" style="color: #8E9297;">Simulated Optimized Draw</div>
+                        <div id="meterOptimized" class="text-2xl font-bold font-data mt-1" style="color: #8E9297;">Click Simulate</div>
+                        <div id="meterLiftSub" class="text-[11px] mt-1" style="color: #8E9297;">Awaiting simulation run</div>
                     </div>
-                    <div class="gs-card p-3">
-                        <div class="text-xs font-mono uppercase" style="color:#8E9297; font-size:10px;">Savings Rate</div>
-                        <div id="savingsMeter" class="text-xl font-bold mt-1" style="color:#FFC93C;">22.15 kW (78.0%)</div>
-                        <div id="inrMeter" class="text-xs font-mono" style="color:#FFC93C; font-size:10px;">INR 199.35 / Hour Saved</div>
+
+                    <div class="card p-4">
+                        <div class="text-[11px] font-semibold uppercase tracking-wider" style="color: #8E9297;">Savings Rate (Post-Simulation)</div>
+                        <div id="meterSavings" class="text-2xl font-bold font-data mt-1" style="color: #8E9297;">--</div>
+                        <div id="meterInr" class="text-[11px] font-data mt-1" style="color: #8E9297;">Press Simulate to calculate</div>
                     </div>
                 </div>
 
-                <!-- CONSOLIDATION BANNER -->
-                <div id="alertCard" class="gs-card p-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3" style="border-left: 3px solid #FFC93C;">
-                    <div class="space-y-1">
-                        <div class="flex items-center gap-2 text-xs font-mono font-bold uppercase" style="color:#FFC93C;">
-                            <span style="width:8px; height:8px; border-radius:50%; background:#FFC93C; display:inline-block; animation: pulse 2s infinite;"></span>
-                            Spatial Consolidation Nudge Triggered
+                <!-- 2. 3-PART SIMULATION OUTPUT & MESSAGE DISPATCH TEMPLATE -->
+                <div id="simulationReportCard" class="card p-5" style="display: none; border-left: 4px solid #FFC93C;">
+                    <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                        <div class="flex items-center gap-2">
+                            <span class="px-2.5 py-0.5 rounded text-xs font-bold font-data" style="background: #FFC93C; color: #2B2D31;">SIMULATION COMPLETE</span>
+                            <span id="reportTimeHeader" class="text-sm font-bold text-white">JIT Block B @ 02:00 PM</span>
                         </div>
-                        <p id="alertText" class="text-xs font-mono" style="color:#D9DAD0;">
-                            Isolated class in CR B-108 (Far East Wing). Relocate to CR B-101 (near main stairs) to shut down East Corridor and cut 3.8 kW.
-                        </p>
+                        <span id="reportDispatchBadge" class="text-xs font-data px-2.5 py-0.5 rounded" style="background: #2B2D31; color: #FFC93C;">
+                            Auto-Logged &amp; Dispatched
+                        </span>
                     </div>
-                    <button onclick="applyConsolidation()" class="px-4 py-2 gs-btn text-xs font-mono font-bold shrink-0" style="color:#FFC93C; border-color:#FFC93C;">
-                        Apply Relocation
-                    </button>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+                        <div class="p-3.5 rounded-lg" style="background: #2B2D31;">
+                            <div class="font-bold uppercase text-[10px] tracking-wider mb-1.5" style="color: #FFC93C;">1. Relocation Suggestion</div>
+                            <p id="repPart1" class="leading-relaxed" style="color: #D9DAD0;"></p>
+                        </div>
+                        <div class="p-3.5 rounded-lg" style="background: #2B2D31;">
+                            <div class="font-bold uppercase text-[10px] tracking-wider mb-1.5 text-white">2. Actions Taken (Lifts &amp; Lights)</div>
+                            <p id="repPart2" class="leading-relaxed" style="color: #D9DAD0;"></p>
+                        </div>
+                        <div class="p-3.5 rounded-lg" style="background: #2B2D31;">
+                            <div class="font-bold uppercase text-[10px] tracking-wider mb-1.5" style="color: #FFC93C;">3. Energy &amp; Cost Saved</div>
+                            <p id="repPart3" class="leading-relaxed font-data font-semibold" style="color: #FFC93C;"></p>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- BLUEPRINT CANVAS -->
-                <div class="gs-card p-4 space-y-2">
-                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 pb-2" style="border-bottom:1px solid rgba(255,255,255,0.06);">
+                <!-- 3. ALIGNED VECTOR ARCHITECTURAL FLOOR PLAN (BLOCK B) -->
+                <div class="card p-4 space-y-3">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 pb-2" style="border-bottom: 1px solid rgba(255,255,255,0.06);">
                         <div>
                             <div class="flex items-center gap-2">
-                                <span class="px-2 py-0.5 rounded font-mono text-xs font-bold" style="background:#FFC93C; color:#2B2D31;">BLOCK B</span>
-                                <span class="text-xs font-bold uppercase tracking-wider font-mono" style="color:#FFFFFF;">Architectural CAD Blueprint</span>
+                                <span class="text-sm font-bold text-white">Block B Architectural Vector Blueprint (G+4 // 7,500 m²)</span>
+                                <span id="blueprintTimeTag" class="text-xs font-data font-bold px-2 py-0.5 rounded" style="background: #2B2D31; color: #FFC93C;">02:00 PM</span>
                             </div>
-                            <p class="text-xs font-mono mt-0.5" style="color:#8E9297; font-size:10px;">
-                                Built-up Area: ~7,500 m2 | G+4 | Radial Arc Geometry with Desks, Luminaires + Relays
+                            <p id="elevatorBannerText" class="text-xs font-data mt-0.5" style="color: #8E9297;">
+                                Baseline View: All 4 Lifts Running | Random Unmanaged Room Lights ON
                             </p>
                         </div>
-                        <div id="elevState" class="text-xs font-mono font-bold gs-inset px-3 py-1" style="color:#FFC93C; font-size:10px;">
-                            Lifts 1 + 2 Active | Lifts 3 + 4 Deep Sleep
+                        <!-- Legend -->
+                        <div class="flex flex-wrap items-center gap-3 text-[11px] font-medium" style="color: #D9DAD0;">
+                            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full inline-block" style="background: #FFC93C;"></span> Light ON</span>
+                            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full inline-block" style="background: #1E2024; border: 1px solid #4F545C;"></span> Light OFF</span>
+                            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded inline-block" style="background: #353022; border: 1.5px solid #FFC93C;"></span> Active Zone</span>
                         </div>
                     </div>
 
-                    <!-- SVG BLUEPRINT -->
-                    <div class="blueprint-board p-2 sm:p-3 overflow-x-auto">
-                        <svg viewBox="0 0 1100 920" class="w-full h-auto min-w-[750px]">
-                            <defs>
-                                <filter id="luminaireGlow" x="-50%" y="-50%" width="200%" height="200%">
-                                    <feGaussianBlur stdDeviation="7" result="blur" />
-                                    <feMerge>
-                                        <feMergeNode in="blur" />
-                                        <feMergeNode in="SourceGraphic" />
-                                    </feMerge>
-                                </filter>
+                    <!-- SVG FLOOR PLAN -->
+                    <div class="blueprint-wrap p-3 overflow-x-auto">
+                        <svg viewBox="0 0 1120 860" class="w-full h-auto min-w-[780px]">
 
-                                <pattern id="stairTreads" width="8" height="8" patternUnits="userSpaceOnUse">
-                                    <line x1="0" y1="4" x2="8" y2="4" stroke="#8E9297" stroke-width="0.8" opacity="0.3" />
-                                </pattern>
+                            <!-- TOP WING HEADERS -->
+                            <g>
+                                <rect x="25" y="12" width="310" height="28" rx="5" fill="#27292E" stroke="#40444B" />
+                                <text id="svgLeftWingHeader" x="180" y="30" fill="#FFC93C" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700" text-anchor="middle">
+                                    LEFT WING (WEST) // 83 PEOPLE
+                                </text>
 
-                                <pattern id="tilePattern" width="12" height="12" patternUnits="userSpaceOnUse">
-                                    <rect width="12" height="12" fill="none" stroke="#4A4D52" stroke-width="0.6" />
-                                </pattern>
-                            </defs>
+                                <rect x="430" y="12" width="260" height="28" rx="5" fill="#FFC93C" />
+                                <text x="560" y="30" fill="#2B2D31" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="800" text-anchor="middle">
+                                    JIT BLOCK B - FLOOR PLAN
+                                </text>
 
-                            <!-- TITLE BLOCK -->
-                            <g transform="translate(420, 20)">
-                                <rect width="260" height="28" rx="6" fill="#FFC93C" />
-                                <text x="130" y="19" fill="#2B2D31" font-family="'JetBrains Mono'" font-size="11" font-weight="bold" text-anchor="middle" letter-spacing="1">
-                                    BLOCK B - FLOOR PLAN (G+4)
+                                <rect x="785" y="12" width="310" height="28" rx="5" fill="#27292E" stroke="#40444B" />
+                                <text id="svgRightWingHeader" x="940" y="30" fill="#FFC93C" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700" text-anchor="middle">
+                                    RIGHT WING (EAST) // 22 PEOPLE
                                 </text>
                             </g>
 
-                            <!-- ================= 1. CENTRAL ATRIUM ================= -->
-                            <g id="central_atrium">
-                                <circle cx="550" cy="490" r="165" fill="#1E2025" stroke="#4A4D52" stroke-width="2" />
-                                <circle cx="550" cy="490" r="140" fill="#2B2D31" stroke="#4A4D52" stroke-width="1" stroke-dasharray="6 4" />
-                                <circle cx="550" cy="490" r="95" fill="#1E2025" stroke="#8E9297" stroke-width="1.5" />
-
-                                <!-- Skylight Radial Spokes -->
-                                <line x1="455" y1="490" x2="645" y2="490" stroke="#4A4D52" stroke-width="1" />
-                                <line x1="550" y1="395" x2="550" y2="585" stroke="#4A4D52" stroke-width="1" />
-                                <line x1="483" y1="423" x2="617" y2="557" stroke="#4A4D52" stroke-width="1" />
-                                <line x1="483" y1="557" x2="617" y2="423" stroke="#4A4D52" stroke-width="1" />
-
-                                <text x="550" y="485" fill="#D9DAD0" font-family="'JetBrains Mono'" font-size="13" font-weight="bold" text-anchor="middle">
-                                    Central Atrium
-                                </text>
-                                <text x="550" y="505" fill="#8E9297" font-family="'JetBrains Mono'" font-size="9.5" text-anchor="middle">
-                                    (Open to Above)
-                                </text>
-
-                                <!-- Curved Seating -->
-                                <path d="M 445 440 A 120 120 0 0 1 445 540" fill="none" stroke="#4A4D52" stroke-width="6" stroke-linecap="round" />
-                                <path d="M 655 440 A 120 120 0 0 0 655 540" fill="none" stroke="#4A4D52" stroke-width="6" stroke-linecap="round" />
-
-                                <!-- Planters -->
-                                <circle cx="465" cy="415" r="9" fill="#2B2D31" stroke="#8E9297" stroke-width="1" />
-                                <circle cx="635" cy="415" r="9" fill="#2B2D31" stroke="#8E9297" stroke-width="1" />
-                                <circle cx="465" cy="565" r="9" fill="#2B2D31" stroke="#8E9297" stroke-width="1" />
-                                <circle cx="635" cy="565" r="9" fill="#2B2D31" stroke="#8E9297" stroke-width="1" />
+                            <!-- NORTH MAIN STAIRCASE (CENTER TOP) -->
+                            <g id="grp_main_stairs">
+                                <rect id="box_main_stairs" x="490" y="55" width="140" height="135" rx="6" class="zone-box-on" />
+                                <text x="560" y="80" fill="#FFFFFF" font-family="Inter, sans-serif" font-size="11.5" font-weight="700" text-anchor="middle">MAIN STAIRS</text>
+                                <text id="status_main_stairs" x="560" y="96" fill="#FFC93C" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="700" text-anchor="middle">LIGHTS: ON</text>
+                                <!-- Stair Treads -->
+                                <line x1="515" y1="112" x2="605" y2="112" stroke="#8E9297" stroke-width="1.5" />
+                                <line x1="515" y1="124" x2="605" y2="124" stroke="#8E9297" stroke-width="1.5" />
+                                <line x1="515" y1="136" x2="605" y2="136" stroke="#8E9297" stroke-width="1.5" />
+                                <line x1="515" y1="148" x2="605" y2="148" stroke="#8E9297" stroke-width="1.5" />
+                                <line x1="515" y1="160" x2="605" y2="160" stroke="#8E9297" stroke-width="1.5" />
+                                <circle id="lum_main_stairs" cx="560" cy="175" r="5.5" class="luminaire lum-on" />
                             </g>
 
-                            <!-- ================= 2. CORRIDOR LIGHTING RELAYS ================= -->
-                            <path id="corridor_west_arc" d="M 330 260 A 250 250 0 0 0 280 730" fill="none" class="corridor-path-dark" />
-                            <path id="corridor_east_arc" d="M 770 260 A 250 250 0 0 1 820 730" fill="none" class="corridor-path-lit" />
-                            <line x1="330" y1="260" x2="770" y2="260" stroke="#4A4D52" stroke-width="1.5" stroke-dasharray="4 4" />
+                            <!-- CORRIDOR LIGHTING ARCS (LEFT WING CORRIDOR vs RIGHT WING CORRIDOR) -->
+                            <g>
+                                <!-- Left Wing Corridor Path -->
+                                <path id="corridor_left" d="M 350 210 L 245 210 L 245 685 L 350 685" class="corridor-line corridor-on" />
+                                <text id="label_corridor_left" x="255" y="204" fill="#FFC93C" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="700">LEFT CORRIDOR: ON</text>
+                                <circle id="cl_lum1" cx="245" cy="280" r="5" class="luminaire lum-on" />
+                                <circle id="cl_lum2" cx="245" cy="410" r="5" class="luminaire lum-on" />
+                                <circle id="cl_lum3" cx="245" cy="540" r="5" class="luminaire lum-on" />
+                                <circle id="cl_lum4" cx="245" cy="660" r="5" class="luminaire lum-on" />
 
-                            <!-- Corridor Luminaires (West) -->
-                            <circle cx="315" cy="340" r="3" class="light-glow light-off" id="cw1" />
-                            <circle cx="285" cy="450" r="3" class="light-glow light-off" id="cw2" />
-                            <circle cx="275" cy="560" r="3" class="light-glow light-off" id="cw3" />
-                            <circle cx="290" cy="670" r="3" class="light-glow light-off" id="cw4" />
-
-                            <!-- Corridor Luminaires (East) -->
-                            <circle cx="785" cy="340" r="3.5" class="light-glow light-on" id="ce1" />
-                            <circle cx="815" cy="450" r="3.5" class="light-glow light-on" id="ce2" />
-                            <circle cx="825" cy="560" r="3.5" class="light-glow light-on" id="ce3" />
-                            <circle cx="810" cy="670" r="3.5" class="light-glow light-on" id="ce4" />
-
-                            <!-- ================= 3. NORTH WING ================= -->
-                            <!-- MAIN STAIRS -->
-                            <g transform="translate(500, 70)">
-                                <rect width="100" height="150" fill="#1E2025" stroke="#8E9297" stroke-width="1.5" rx="4" />
-                                <rect width="100" height="150" fill="url(#stairTreads)" />
-                                <line x1="50" y1="10" x2="50" y2="140" stroke="#8E9297" stroke-width="1" />
-                                <text x="50" y="80" fill="#8E9297" font-family="'JetBrains Mono'" font-size="10" font-weight="bold" text-anchor="middle">
-                                    MAIN STAIRS
-                                </text>
-                                <path d="M 50 120 L 50 40 L 45 48 M 50 40 L 55 48" stroke="#8E9297" stroke-width="1.5" fill="none" stroke-linecap="round" />
+                                <!-- Right Wing Corridor Path -->
+                                <path id="corridor_right" d="M 770 210 L 875 210 L 875 685 L 770 685" class="corridor-line corridor-on" />
+                                <text id="label_corridor_right" x="865" y="204" fill="#FFC93C" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="700" text-anchor="end">RIGHT CORRIDOR: ON</text>
+                                <circle id="cr_lum1" cx="875" cy="280" r="5" class="luminaire lum-on" />
+                                <circle id="cr_lum2" cx="875" cy="410" r="5" class="luminaire lum-on" />
+                                <circle id="cr_lum3" cx="875" cy="540" r="5" class="luminaire lum-on" />
+                                <circle id="cr_lum4" cx="875" cy="660" r="5" class="luminaire lum-on" />
                             </g>
 
-                            <!-- LAB B-1 (NORTH-WEST) -->
-                            <g id="group_lab1">
-                                <path d="M 240 80 L 480 80 L 480 230 L 240 250 Z" class="room-bg room-dark-bg" id="poly_lab1" />
-                                <text x="350" y="115" fill="#D9DAD0" font-family="'JetBrains Mono'" font-size="12" font-weight="bold" text-anchor="middle">
-                                    Lab B-1 (150 m2)
-                                </text>
-                                <text x="350" y="132" fill="#8E9297" font-family="'JetBrains Mono'" font-size="9" text-anchor="middle">
-                                    Hardware + Embedded Systems
-                                </text>
-                                <rect x="270" y="150" width="85" height="16" class="cad-desk" />
-                                <rect x="375" y="150" width="85" height="16" class="cad-desk" />
-                                <rect x="270" y="185" width="85" height="16" class="cad-desk" />
-                                <rect x="375" y="185" width="85" height="16" class="cad-desk" />
-                                <circle cx="310" cy="115" r="4.5" class="light-glow light-off" />
-                                <circle cx="410" cy="115" r="4.5" class="light-glow light-off" />
-                                <circle cx="310" cy="215" r="4.5" class="light-glow light-off" />
-                                <circle cx="410" cy="215" r="4.5" class="light-glow light-off" />
+                            <!-- LEFT ELEVATOR BANK (LIFT 1 & LIFT 2 + RESTROOMS) -->
+                            <g transform="translate(270, 290)">
+                                <rect x="0" y="0" width="115" height="295" rx="6" fill="#232529" stroke="#40444B" stroke-width="1.5" />
+                                <text x="57" y="20" fill="#FFFFFF" font-family="Inter, sans-serif" font-size="10.5" font-weight="700" text-anchor="middle">LEFT LIFTS</text>
+
+                                <!-- LIFT 1 -->
+                                <rect id="lift_box_L1" x="10" y="30" width="44" height="62" rx="4" class="lift-car-on" />
+                                <text x="32" y="56" fill="#FFFFFF" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700" text-anchor="middle">L-1</text>
+                                <text id="lift_txt_L1" x="32" y="76" fill="#FFC93C" font-family="JetBrains Mono, monospace" font-size="9" font-weight="700" text-anchor="middle">ON</text>
+
+                                <!-- LIFT 2 -->
+                                <rect id="lift_box_L2" x="61" y="30" width="44" height="62" rx="4" class="lift-car-on" />
+                                <text x="83" y="56" fill="#FFFFFF" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700" text-anchor="middle">L-2</text>
+                                <text id="lift_txt_L2" x="83" y="76" fill="#FFC93C" font-family="JetBrains Mono, monospace" font-size="9" font-weight="700" text-anchor="middle">ON</text>
+
+                                <!-- Left Bank Status Pill -->
+                                <rect x="10" y="100" width="95" height="22" rx="4" fill="#1E2024" />
+                                <text id="left_bank_badge" x="57" y="115" fill="#FFC93C" font-family="JetBrains Mono, monospace" font-size="9" font-weight="700" text-anchor="middle">2 ACTIVE</text>
+
+                                <!-- Restrooms (Left) -->
+                                <rect x="10" y="135" width="95" height="68" rx="4" fill="#1E2024" stroke="#36393F" />
+                                <text x="57" y="165" fill="#D9DAD0" font-family="Inter, sans-serif" font-size="10" font-weight="600" text-anchor="middle">Toilet (M)</text>
+                                <text x="57" y="182" fill="#8E9297" font-family="JetBrains Mono, monospace" font-size="8.5" text-anchor="middle">Exhaust Sensor</text>
+
+                                <rect x="10" y="212" width="95" height="68" rx="4" fill="#1E2024" stroke="#36393F" />
+                                <text x="57" y="242" fill="#D9DAD0" font-family="Inter, sans-serif" font-size="10" font-weight="600" text-anchor="middle">Toilet (F)</text>
+                                <text x="57" y="259" fill="#8E9297" font-family="JetBrains Mono, monospace" font-size="8.5" text-anchor="middle">Exhaust Sensor</text>
                             </g>
 
-                            <!-- LAB B-2 (NORTH-EAST) -->
-                            <g id="group_lab2">
-                                <path d="M 620 80 L 860 80 L 860 250 L 620 230 Z" class="room-bg room-dark-bg" id="poly_lab2" />
-                                <text x="750" y="115" fill="#D9DAD0" font-family="'JetBrains Mono'" font-size="12" font-weight="bold" text-anchor="middle">
-                                    Lab B-2 (150 m2)
-                                </text>
-                                <text x="750" y="132" fill="#8E9297" font-family="'JetBrains Mono'" font-size="9" text-anchor="middle">
-                                    RF + Communication Lab
-                                </text>
-                                <rect x="640" y="150" width="85" height="16" class="cad-desk" />
-                                <rect x="745" y="150" width="85" height="16" class="cad-desk" />
-                                <rect x="640" y="185" width="85" height="16" class="cad-desk" />
-                                <rect x="745" y="185" width="85" height="16" class="cad-desk" />
-                                <circle cx="680" cy="115" r="4.5" class="light-glow light-off" />
-                                <circle cx="780" cy="115" r="4.5" class="light-glow light-off" />
-                                <circle cx="680" cy="215" r="4.5" class="light-glow light-off" />
-                                <circle cx="780" cy="215" r="4.5" class="light-glow light-off" />
+                            <!-- CENTRAL CIRCULAR ATRIUM -->
+                            <g>
+                                <circle cx="560" cy="440" r="145" fill="#1A1C20" stroke="#40444B" stroke-width="2" />
+                                <circle cx="560" cy="440" r="110" fill="#1E2024" stroke="#36393F" stroke-width="1.5" stroke-dasharray="6 4" />
+                                <circle cx="560" cy="440" r="70" fill="#16181B" stroke="#FFC93C" stroke-width="1.2" opacity="0.85" />
+                                <line x1="450" y1="440" x2="670" y2="440" stroke="#2E3136" stroke-width="1" />
+                                <line x1="560" y1="330" x2="560" y2="550" stroke="#2E3136" stroke-width="1" />
+                                <text x="560" y="432" fill="#FFFFFF" font-family="Inter, sans-serif" font-size="13" font-weight="700" text-anchor="middle">CENTRAL ATRIUM</text>
+                                <text x="560" y="450" fill="#8E9297" font-family="JetBrains Mono, monospace" font-size="9.5" text-anchor="middle">Open to Sky // Natural Lux</text>
+                                <text id="atriumRelocArrow" x="560" y="472" fill="#FFC93C" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700" text-anchor="middle"></text>
                             </g>
 
-                            <!-- ================= 4. WEST WING CLASSROOMS ================= -->
-                            <!-- CR B-101 (WEST 1) -->
-                            <g id="grp_r1">
-                                <path d="M 40 230 L 220 250 L 210 360 L 30 340 Z" class="room-bg room-dark-bg" id="poly_r1" />
-                                <text x="125" y="260" fill="#D9DAD0" font-family="'JetBrains Mono'" font-size="11" font-weight="bold">CR B-101 (96 m2)</text>
+                            <!-- RIGHT ELEVATOR BANK (LIFT 3 & LIFT 4 + RESTROOMS) -->
+                            <g transform="translate(735, 290)">
+                                <rect x="0" y="0" width="115" height="295" rx="6" fill="#232529" stroke="#40444B" stroke-width="1.5" />
+                                <text x="57" y="20" fill="#FFFFFF" font-family="Inter, sans-serif" font-size="10.5" font-weight="700" text-anchor="middle">RIGHT LIFTS</text>
 
-                                <line x1="185" y1="275" x2="185" y2="325" stroke="#8E9297" stroke-width="3" stroke-linecap="round" />
-                                <rect x="175" y="295" width="8" height="10" fill="#36393F" stroke="#8E9297" stroke-width="1" />
+                                <!-- LIFT 3 -->
+                                <rect id="lift_box_L3" x="10" y="30" width="44" height="62" rx="4" class="lift-car-on" />
+                                <text x="32" y="56" fill="#FFFFFF" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700" text-anchor="middle">L-3</text>
+                                <text id="lift_txt_L3" x="32" y="76" fill="#FFC93C" font-family="JetBrains Mono, monospace" font-size="9" font-weight="700" text-anchor="middle">ON</text>
 
-                                <g transform="translate(60, 275)">
-                                    <rect x="0" y="0" width="45" height="12" class="cad-desk" id="d1_r1" rx="2" />
-                                    <rect x="55" y="0" width="45" height="12" class="cad-desk" id="d2_r1" rx="2" />
-                                    <rect x="0" y="20" width="45" height="12" class="cad-desk" id="d3_r1" rx="2" />
-                                    <rect x="55" y="20" width="45" height="12" class="cad-desk" id="d4_r1" rx="2" />
-                                    <rect x="0" y="40" width="45" height="12" class="cad-desk" id="d5_r1" rx="2" />
-                                    <rect x="55" y="40" width="45" height="12" class="cad-desk" id="d6_r1" rx="2" />
+                                <!-- LIFT 4 -->
+                                <rect id="lift_box_L4" x="61" y="30" width="44" height="62" rx="4" class="lift-car-on" />
+                                <text x="83" y="56" fill="#FFFFFF" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700" text-anchor="middle">L-4</text>
+                                <text id="lift_txt_L4" x="83" y="76" fill="#FFC93C" font-family="JetBrains Mono, monospace" font-size="9" font-weight="700" text-anchor="middle">ON</text>
 
-                                    <circle cx="12" cy="6" r="3.5" class="cad-student-dot" id="dot1_r1" opacity="0" />
-                                    <circle cx="33" cy="6" r="3.5" class="cad-student-dot" id="dot2_r1" opacity="0" />
-                                    <circle cx="67" cy="6" r="3.5" class="cad-student-dot" id="dot3_r1" opacity="0" />
-                                    <circle cx="88" cy="6" r="3.5" class="cad-student-dot" id="dot4_r1" opacity="0" />
-                                    <circle cx="12" cy="26" r="3.5" class="cad-student-dot" id="dot5_r1" opacity="0" />
-                                    <circle cx="33" cy="26" r="3.5" class="cad-student-dot" id="dot6_r1" opacity="0" />
-                                </g>
+                                <!-- Right Bank Status Pill -->
+                                <rect x="10" y="100" width="95" height="22" rx="4" fill="#1E2024" />
+                                <text id="right_bank_badge" x="57" y="115" fill="#FFC93C" font-family="JetBrains Mono, monospace" font-size="9" font-weight="700" text-anchor="middle">2 ACTIVE</text>
 
-                                <circle cx="85" cy="255" r="5" class="light-glow light-off" id="l1_r1" />
-                                <circle cx="165" cy="260" r="5" class="light-glow light-off" id="l2_r1" />
-                                <circle cx="80" cy="330" r="5" class="light-glow light-off" id="l3_r1" />
-                                <circle cx="160" cy="335" r="5" class="light-glow light-off" id="l4_r1" />
+                                <!-- Restrooms (Right) -->
+                                <rect x="10" y="135" width="95" height="68" rx="4" fill="#1E2024" stroke="#36393F" />
+                                <text x="57" y="165" fill="#D9DAD0" font-family="Inter, sans-serif" font-size="10" font-weight="600" text-anchor="middle">Toilet (M)</text>
+                                <text x="57" y="182" fill="#8E9297" font-family="JetBrains Mono, monospace" font-size="8.5" text-anchor="middle">Exhaust Sensor</text>
 
-                                <text x="195" y="352" fill="#8E9297" font-family="'JetBrains Mono'" font-size="9" font-weight="bold" text-anchor="end" id="ac_r1">AC: OFF</text>
+                                <rect x="10" y="212" width="95" height="68" rx="4" fill="#1E2024" stroke="#36393F" />
+                                <text x="57" y="242" fill="#D9DAD0" font-family="Inter, sans-serif" font-size="10" font-weight="600" text-anchor="middle">Toilet (F)</text>
+                                <text x="57" y="259" fill="#8E9297" font-family="JetBrains Mono, monospace" font-size="8.5" text-anchor="middle">Exhaust Sensor</text>
                             </g>
 
-                            <!-- CR B-102 (WEST 2) -->
-                            <g id="grp_r2">
-                                <path d="M 30 355 L 210 375 L 200 485 L 20 465 Z" class="room-bg room-dark-bg" id="poly_r2" />
-                                <text x="115" y="385" fill="#D9DAD0" font-family="'JetBrains Mono'" font-size="11" font-weight="bold">CR B-102 (84 m2)</text>
+                            <!-- ALL 8 CLASSROOMS + 3 LABS (PRECISION GENERATED) -->
+                            {all_svg_rooms_str}
 
-                                <line x1="175" y1="400" x2="175" y2="450" stroke="#8E9297" stroke-width="3" stroke-linecap="round" />
-                                <rect x="165" y="420" width="8" height="10" fill="#36393F" stroke="#8E9297" stroke-width="1" />
-
-                                <g transform="translate(50, 400)">
-                                    <rect x="0" y="0" width="45" height="12" class="cad-desk" id="d1_r2" rx="2" />
-                                    <rect x="55" y="0" width="45" height="12" class="cad-desk" id="d2_r2" rx="2" />
-                                    <rect x="0" y="20" width="45" height="12" class="cad-desk" id="d3_r2" rx="2" />
-                                    <rect x="55" y="20" width="45" height="12" class="cad-desk" id="d4_r2" rx="2" />
-                                    <rect x="0" y="40" width="45" height="12" class="cad-desk" id="d5_r2" rx="2" />
-                                    <rect x="55" y="40" width="45" height="12" class="cad-desk" id="d6_r2" rx="2" />
-
-                                    <circle cx="12" cy="6" r="3.5" class="cad-student-dot" id="dot1_r2" opacity="0" />
-                                    <circle cx="33" cy="6" r="3.5" class="cad-student-dot" id="dot2_r2" opacity="0" />
-                                    <circle cx="67" cy="6" r="3.5" class="cad-student-dot" id="dot3_r2" opacity="0" />
-                                    <circle cx="88" cy="6" r="3.5" class="cad-student-dot" id="dot4_r2" opacity="0" />
-                                </g>
-
-                                <circle cx="75" cy="380" r="5" class="light-glow light-off" id="l1_r2" />
-                                <circle cx="155" cy="385" r="5" class="light-glow light-off" id="l2_r2" />
-                                <circle cx="70" cy="455" r="5" class="light-glow light-off" id="l3_r2" />
-                                <circle cx="150" cy="460" r="5" class="light-glow light-off" id="l4_r2" />
-
-                                <text x="185" y="477" fill="#8E9297" font-family="'JetBrains Mono'" font-size="9" font-weight="bold" text-anchor="end" id="ac_r2">AC: OFF</text>
+                            <!-- SOUTH WING: SW STAIRS, FACULTY LOUNGE, SEMINAR HALL, SE STAIRS -->
+                            <!-- SW STAIRS -->
+                            <g id="grp_sw_stairs">
+                                <rect id="box_sw_stairs" x="95" y="775" width="130" height="65" rx="6" class="zone-box-on" />
+                                <text x="160" y="800" fill="#FFFFFF" font-family="Inter, sans-serif" font-size="10.5" font-weight="700" text-anchor="middle">STAIRS SW</text>
+                                <text id="status_sw_stairs" x="160" y="818" fill="#FFC93C" font-family="JetBrains Mono, monospace" font-size="9" font-weight="700" text-anchor="middle">LIGHTS: ON</text>
+                                <circle id="lum_sw_stairs" cx="115" cy="805" r="5" class="luminaire lum-on" />
                             </g>
 
-                            <!-- CR B-103 (WEST 3) -->
-                            <g id="grp_r3">
-                                <path d="M 20 480 L 200 500 L 190 610 L 10 590 Z" class="room-bg room-dark-bg" id="poly_r3" />
-                                <text x="105" y="510" fill="#D9DAD0" font-family="'JetBrains Mono'" font-size="11" font-weight="bold">CR B-103 (84 m2)</text>
-
-                                <line x1="165" y1="525" x2="165" y2="575" stroke="#8E9297" stroke-width="3" stroke-linecap="round" />
-                                <rect x="155" y="545" width="8" height="10" fill="#36393F" stroke="#8E9297" stroke-width="1" />
-
-                                <g transform="translate(40, 525)">
-                                    <rect x="0" y="0" width="45" height="12" class="cad-desk" id="d1_r3" rx="2" />
-                                    <rect x="55" y="0" width="45" height="12" class="cad-desk" id="d2_r3" rx="2" />
-                                    <rect x="0" y="20" width="45" height="12" class="cad-desk" id="d3_r3" rx="2" />
-                                    <rect x="55" y="20" width="45" height="12" class="cad-desk" id="d4_r3" rx="2" />
-                                    <rect x="0" y="40" width="45" height="12" class="cad-desk" id="d5_r3" rx="2" />
-                                    <rect x="55" y="40" width="45" height="12" class="cad-desk" id="d6_r3" rx="2" />
-
-                                    <circle cx="12" cy="6" r="3.5" class="cad-student-dot" id="dot1_r3" opacity="0" />
-                                    <circle cx="33" cy="6" r="3.5" class="cad-student-dot" id="dot2_r3" opacity="0" />
-                                </g>
-
-                                <circle cx="65" cy="505" r="5" class="light-glow light-off" id="l1_r3" />
-                                <circle cx="145" cy="510" r="5" class="light-glow light-off" id="l2_r3" />
-                                <circle cx="60" cy="580" r="5" class="light-glow light-off" id="l3_r3" />
-                                <circle cx="140" cy="585" r="5" class="light-glow light-off" id="l4_r3" />
-
-                                <text x="175" y="602" fill="#8E9297" font-family="'JetBrains Mono'" font-size="9" font-weight="bold" text-anchor="end" id="ac_r3">AC: OFF</text>
+                            <!-- FACULTY LOUNGE (80 m²) -->
+                            <g id="grp_faculty_lounge">
+                                <rect id="box_faculty_lounge" x="235" y="705" width="185" height="135" rx="6" class="zone-box-on" />
+                                <rect x="236" y="706" width="183" height="26" rx="5" fill="#1E2024" opacity="0.85" />
+                                <text x="246" y="723" fill="#FFFFFF" font-family="Inter, sans-serif" font-size="11" font-weight="700">Faculty Lounge</text>
+                                <text id="status_faculty_lounge" x="410" y="723" fill="#FFC93C" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="700" text-anchor="end">ON</text>
+                                <text x="246" y="744" fill="#8E9297" font-family="Inter, sans-serif" font-size="9.5">Staff Seating (80 m²)</text>
+                                <circle id="lum1_faculty" cx="295" cy="765" r="5.5" class="luminaire lum-on" />
+                                <circle id="lum2_faculty" cx="360" cy="765" r="5.5" class="luminaire lum-on" />
+                                <rect x="275" y="782" width="105" height="16" rx="3" class="desk-box desk-on" id="desk_faculty" />
+                                <text id="ac_faculty" x="327" y="825" fill="#FFC93C" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="600" text-anchor="middle">AC: 25°C (Daytime)</text>
                             </g>
 
-                            <!-- CR B-104 (WEST 4) -->
-                            <g id="grp_r4">
-                                <path d="M 10 605 L 190 625 L 180 735 L 0 715 Z" class="room-bg room-dark-bg" id="poly_r4" />
-                                <text x="95" y="635" fill="#D9DAD0" font-family="'JetBrains Mono'" font-size="11" font-weight="bold">CR B-104 (96 m2)</text>
-
-                                <line x1="155" y1="650" x2="155" y2="700" stroke="#8E9297" stroke-width="3" stroke-linecap="round" />
-                                <rect x="145" y="670" width="8" height="10" fill="#36393F" stroke="#8E9297" stroke-width="1" />
-
-                                <g transform="translate(30, 650)">
-                                    <rect x="0" y="0" width="45" height="12" class="cad-desk" id="d1_r4" rx="2" />
-                                    <rect x="55" y="0" width="45" height="12" class="cad-desk" id="d2_r4" rx="2" />
-                                    <rect x="0" y="20" width="45" height="12" class="cad-desk" id="d3_r4" rx="2" />
-                                    <rect x="55" y="20" width="45" height="12" class="cad-desk" id="d4_r4" rx="2" />
-                                    <rect x="0" y="40" width="45" height="12" class="cad-desk" id="d5_r4" rx="2" />
-                                    <rect x="55" y="40" width="45" height="12" class="cad-desk" id="d6_r4" rx="2" />
-                                </g>
-
-                                <circle cx="55" cy="630" r="5" class="light-glow light-off" id="l1_r4" />
-                                <circle cx="135" cy="635" r="5" class="light-glow light-off" id="l2_r4" />
-                                <circle cx="50" cy="705" r="5" class="light-glow light-off" id="l3_r4" />
-                                <circle cx="130" cy="710" r="5" class="light-glow light-off" id="l4_r4" />
-
-                                <text x="165" y="727" fill="#8E9297" font-family="'JetBrains Mono'" font-size="9" font-weight="bold" text-anchor="end" id="ac_r4">AC: OFF</text>
+                            <!-- SEMINAR HALL (180 m²) -->
+                            <g id="grp_seminar_hall">
+                                <rect x="430" y="705" width="245" height="135" rx="6" class="zone-box-off" />
+                                <rect x="431" y="706" width="243" height="26" rx="5" fill="#1E2024" opacity="0.85" />
+                                <text x="442" y="723" fill="#FFFFFF" font-family="Inter, sans-serif" font-size="11" font-weight="700">Seminar Hall (180 m²)</text>
+                                <text x="664" y="723" fill="#8E9297" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="700" text-anchor="end">STANDBY</text>
+                                <text x="552" y="758" fill="#8E9297" font-family="Inter, sans-serif" font-size="10" text-anchor="middle">120-Seat Auditorium // Event Interlock</text>
+                                <rect x="470" y="772" width="165" height="10" rx="2" fill="#2E3136" />
+                                <rect x="480" y="790" width="145" height="10" rx="2" fill="#2E3136" />
+                                <text x="552" y="825" fill="#8E9297" font-family="JetBrains Mono, monospace" font-size="9.5" text-anchor="middle">Circuit Isolated (0.0 kW)</text>
                             </g>
 
-                            <!-- ================= 5. EAST WING CLASSROOMS ================= -->
-                            <!-- CR B-105 (EAST 1) -->
-                            <g id="grp_r5">
-                                <path d="M 880 250 L 1060 230 L 1070 340 L 890 360 Z" class="room-bg room-dark-bg" id="poly_r5" />
-                                <text x="980" y="260" fill="#D9DAD0" font-family="'JetBrains Mono'" font-size="11" font-weight="bold" text-anchor="middle">CR B-105 (96 m2)</text>
-
-                                <line x1="915" y1="275" x2="915" y2="325" stroke="#8E9297" stroke-width="3" stroke-linecap="round" />
-                                <rect x="918" y="295" width="8" height="10" fill="#36393F" stroke="#8E9297" stroke-width="1" />
-
-                                <g transform="translate(940, 275)">
-                                    <rect x="0" y="0" width="45" height="12" class="cad-desk" id="d1_r5" rx="2" />
-                                    <rect x="55" y="0" width="45" height="12" class="cad-desk" id="d2_r5" rx="2" />
-                                    <rect x="0" y="20" width="45" height="12" class="cad-desk" id="d3_r5" rx="2" />
-                                    <rect x="55" y="20" width="45" height="12" class="cad-desk" id="d4_r5" rx="2" />
-                                    <rect x="0" y="40" width="45" height="12" class="cad-desk" id="d5_r5" rx="2" />
-                                    <rect x="55" y="40" width="45" height="12" class="cad-desk" id="d6_r5" rx="2" />
-
-                                    <circle cx="12" cy="6" r="3.5" class="cad-student-dot" id="dot1_r5" opacity="0" />
-                                    <circle cx="33" cy="6" r="3.5" class="cad-student-dot" id="dot2_r5" opacity="0" />
-                                </g>
-
-                                <circle cx="940" cy="260" r="5" class="light-glow light-off" id="l1_r5" />
-                                <circle cx="1020" cy="255" r="5" class="light-glow light-off" id="l2_r5" />
-                                <circle cx="945" cy="335" r="5" class="light-glow light-off" id="l3_r5" />
-                                <circle cx="1025" cy="330" r="5" class="light-glow light-off" id="l4_r5" />
-
-                                <text x="1055" y="352" fill="#8E9297" font-family="'JetBrains Mono'" font-size="9" font-weight="bold" text-anchor="end" id="ac_r5">AC: OFF</text>
-                            </g>
-
-                            <!-- CR B-106 (EAST 2) -->
-                            <g id="grp_r6">
-                                <path d="M 890 375 L 1070 355 L 1080 465 L 900 485 Z" class="room-bg room-dark-bg" id="poly_r6" />
-                                <text x="990" y="385" fill="#D9DAD0" font-family="'JetBrains Mono'" font-size="11" font-weight="bold" text-anchor="middle">CR B-106 (84 m2)</text>
-
-                                <line x1="925" y1="400" x2="925" y2="450" stroke="#8E9297" stroke-width="3" stroke-linecap="round" />
-                                <rect x="928" y="420" width="8" height="10" fill="#36393F" stroke="#8E9297" stroke-width="1" />
-
-                                <g transform="translate(950, 400)">
-                                    <rect x="0" y="0" width="45" height="12" class="cad-desk" id="d1_r6" rx="2" />
-                                    <rect x="55" y="0" width="45" height="12" class="cad-desk" id="d2_r6" rx="2" />
-                                    <rect x="0" y="20" width="45" height="12" class="cad-desk" id="d3_r6" rx="2" />
-                                    <rect x="55" y="20" width="45" height="12" class="cad-desk" id="d4_r6" rx="2" />
-                                    <rect x="0" y="40" width="45" height="12" class="cad-desk" id="d5_r6" rx="2" />
-                                    <rect x="55" y="40" width="45" height="12" class="cad-desk" id="d6_r6" rx="2" />
-                                </g>
-
-                                <circle cx="950" cy="385" r="5" class="light-glow light-off" id="l1_r6" />
-                                <circle cx="1030" cy="380" r="5" class="light-glow light-off" id="l2_r6" />
-                                <circle cx="955" cy="460" r="5" class="light-glow light-off" id="l3_r6" />
-                                <circle cx="1035" cy="455" r="5" class="light-glow light-off" id="l4_r6" />
-
-                                <text x="1065" y="477" fill="#8E9297" font-family="'JetBrains Mono'" font-size="9" font-weight="bold" text-anchor="end" id="ac_r6">AC: OFF</text>
-                            </g>
-
-                            <!-- CR B-107 (EAST 3) -->
-                            <g id="grp_r7">
-                                <path d="M 900 500 L 1080 480 L 1090 590 L 910 610 Z" class="room-bg room-dark-bg" id="poly_r7" />
-                                <text x="1000" y="510" fill="#D9DAD0" font-family="'JetBrains Mono'" font-size="11" font-weight="bold" text-anchor="middle">CR B-107 (84 m2)</text>
-
-                                <line x1="935" y1="525" x2="935" y2="575" stroke="#8E9297" stroke-width="3" stroke-linecap="round" />
-                                <rect x="938" y="545" width="8" height="10" fill="#36393F" stroke="#8E9297" stroke-width="1" />
-
-                                <g transform="translate(960, 525)">
-                                    <rect x="0" y="0" width="45" height="12" class="cad-desk" id="d1_r7" rx="2" />
-                                    <rect x="55" y="0" width="45" height="12" class="cad-desk" id="d2_r7" rx="2" />
-                                    <rect x="0" y="20" width="45" height="12" class="cad-desk" id="d3_r7" rx="2" />
-                                    <rect x="55" y="20" width="45" height="12" class="cad-desk" id="d4_r7" rx="2" />
-                                    <rect x="0" y="40" width="45" height="12" class="cad-desk" id="d5_r7" rx="2" />
-                                    <rect x="55" y="40" width="45" height="12" class="cad-desk" id="d6_r7" rx="2" />
-                                </g>
-
-                                <circle cx="960" cy="510" r="5" class="light-glow light-off" id="l1_r7" />
-                                <circle cx="1040" cy="505" r="5" class="light-glow light-off" id="l2_r7" />
-                                <circle cx="965" cy="585" r="5" class="light-glow light-off" id="l3_r7" />
-                                <circle cx="1045" cy="580" r="5" class="light-glow light-off" id="l4_r7" />
-
-                                <text x="1075" y="602" fill="#8E9297" font-family="'JetBrains Mono'" font-size="9" font-weight="bold" text-anchor="end" id="ac_r7">AC: OFF</text>
-                            </g>
-
-                            <!-- CR B-108 (EAST 4) -->
-                            <g id="grp_r8">
-                                <path d="M 910 625 L 1090 605 L 1100 715 L 920 735 Z" class="room-bg room-lit-bg" id="poly_r8" />
-                                <text x="1010" y="635" fill="#FFC93C" font-family="'JetBrains Mono'" font-size="11" font-weight="bold" text-anchor="middle">CR B-108 (96 m2)</text>
-
-                                <line x1="945" y1="650" x2="945" y2="700" stroke="#FFC93C" stroke-width="3" stroke-linecap="round" />
-                                <rect x="948" y="670" width="8" height="10" fill="rgba(255,201,60,0.15)" stroke="#FFC93C" stroke-width="1" />
-
-                                <g transform="translate(970, 650)">
-                                    <rect x="0" y="0" width="45" height="12" class="cad-desk cad-desk-lit" id="d1_r8" rx="2" />
-                                    <rect x="55" y="0" width="45" height="12" class="cad-desk cad-desk-lit" id="d2_r8" rx="2" />
-                                    <rect x="0" y="20" width="45" height="12" class="cad-desk cad-desk-lit" id="d3_r8" rx="2" />
-                                    <rect x="55" y="20" width="45" height="12" class="cad-desk cad-desk-lit" id="d4_r8" rx="2" />
-                                    <rect x="0" y="40" width="45" height="12" class="cad-desk cad-desk-lit" id="d5_r8" rx="2" />
-                                    <rect x="55" y="40" width="45" height="12" class="cad-desk cad-desk-lit" id="d6_r8" rx="2" />
-
-                                    <circle cx="12" cy="6" r="3.5" class="cad-student-dot" id="dot1_r8" opacity="1" />
-                                    <circle cx="33" cy="6" r="3.5" class="cad-student-dot" id="dot2_r8" opacity="1" />
-                                    <circle cx="67" cy="6" r="3.5" class="cad-student-dot" id="dot3_r8" opacity="1" />
-                                    <circle cx="88" cy="6" r="3.5" class="cad-student-dot" id="dot4_r8" opacity="1" />
-                                    <circle cx="12" cy="26" r="3.5" class="cad-student-dot" id="dot5_r8" opacity="1" />
-                                    <circle cx="33" cy="26" r="3.5" class="cad-student-dot" id="dot6_r8" opacity="1" />
-                                </g>
-
-                                <circle cx="970" cy="635" r="5.5" class="light-glow light-on" id="l1_r8" />
-                                <circle cx="1050" cy="630" r="5.5" class="light-glow light-on" id="l2_r8" />
-                                <circle cx="975" cy="710" r="5.5" class="light-glow light-on" id="l3_r8" />
-                                <circle cx="1055" cy="705" r="5.5" class="light-glow light-on" id="l4_r8" />
-
-                                <text x="1085" y="727" fill="#FFC93C" font-family="'JetBrains Mono'" font-size="9" font-weight="bold" text-anchor="end" id="ac_r8">AC: 26 C</text>
-                            </g>
-
-                            <!-- ================= 6. ELEVATOR BANKS + RESTROOMS ================= -->
-                            <!-- WEST CORE -->
-                            <g transform="translate(270, 410)">
-                                <rect width="100" height="210" fill="#1E2025" stroke="#4A4D52" stroke-width="1.5" rx="4" />
-
-                                <rect x="8" y="8" width="40" height="52" fill="rgba(255,201,60,0.08)" stroke="#FFC93C" stroke-width="1.5" rx="2" id="box_lift1" />
-                                <line x1="28" y1="8" x2="28" y2="60" stroke="rgba(255,201,60,0.3)" stroke-width="1" />
-                                <text x="28" y="38" fill="#FFC93C" font-family="'JetBrains Mono'" font-size="10" font-weight="bold" text-anchor="middle">L-1</text>
-
-                                <rect x="52" y="8" width="40" height="52" fill="rgba(255,201,60,0.08)" stroke="#FFC93C" stroke-width="1.5" rx="2" id="box_lift2" />
-                                <line x1="72" y1="8" x2="72" y2="60" stroke="rgba(255,201,60,0.3)" stroke-width="1" />
-                                <text x="72" y="38" fill="#FFC93C" font-family="'JetBrains Mono'" font-size="10" font-weight="bold" text-anchor="middle">L-2</text>
-
-                                <rect x="8" y="65" width="84" height="20" fill="#2B2D31" stroke="#FFC93C" rx="3" stroke-width="1" />
-                                <text x="50" y="79" fill="#FFC93C" font-family="'JetBrains Mono'" font-size="8" font-weight="bold" text-anchor="middle" id="lift_west_label">ACTIVE STANDBY</text>
-
-                                <rect x="8" y="95" width="84" height="50" fill="#2B2D31" stroke="#4A4D52" rx="2" />
-                                <rect x="8" y="95" width="84" height="50" fill="url(#tilePattern)" opacity="0.2" />
-                                <text x="50" y="125" fill="#8E9297" font-family="'JetBrains Mono'" font-size="9" font-weight="bold" text-anchor="middle">Toilet (M)</text>
-
-                                <rect x="8" y="152" width="84" height="50" fill="#2B2D31" stroke="#4A4D52" rx="2" />
-                                <rect x="8" y="152" width="84" height="50" fill="url(#tilePattern)" opacity="0.2" />
-                                <text x="50" y="182" fill="#8E9297" font-family="'JetBrains Mono'" font-size="9" font-weight="bold" text-anchor="middle">Toilet (F)</text>
-                            </g>
-
-                            <!-- EAST CORE -->
-                            <g transform="translate(730, 410)">
-                                <rect width="100" height="210" fill="#1E2025" stroke="#4A4D52" stroke-width="1.5" rx="4" />
-
-                                <rect x="8" y="8" width="40" height="52" fill="#2B2D31" stroke="#4A4D52" stroke-width="1" stroke-dasharray="3 3" rx="2" id="box_lift3" />
-                                <line x1="28" y1="8" x2="28" y2="60" stroke="#4A4D52" stroke-width="1" />
-                                <text x="28" y="38" fill="#8E9297" font-family="'JetBrains Mono'" font-size="10" font-weight="bold" text-anchor="middle">L-3</text>
-
-                                <rect x="52" y="8" width="40" height="52" fill="#2B2D31" stroke="#4A4D52" stroke-width="1" stroke-dasharray="3 3" rx="2" id="box_lift4" />
-                                <line x1="72" y1="8" x2="72" y2="60" stroke="#4A4D52" stroke-width="1" />
-                                <text x="72" y="38" fill="#8E9297" font-family="'JetBrains Mono'" font-size="10" font-weight="bold" text-anchor="middle">L-4</text>
-
-                                <rect x="8" y="65" width="84" height="20" fill="#2B2D31" stroke="#4A4D52" rx="3" stroke-width="1" />
-                                <text x="50" y="79" fill="#8E9297" font-family="'JetBrains Mono'" font-size="8" font-weight="bold" text-anchor="middle" id="lift_east_label">DEEP SLEEP (0 W)</text>
-
-                                <rect x="8" y="95" width="84" height="50" fill="#2B2D31" stroke="#4A4D52" rx="2" />
-                                <rect x="8" y="95" width="84" height="50" fill="url(#tilePattern)" opacity="0.2" />
-                                <text x="50" y="125" fill="#8E9297" font-family="'JetBrains Mono'" font-size="9" font-weight="bold" text-anchor="middle">Toilet (M)</text>
-
-                                <rect x="8" y="152" width="84" height="50" fill="#2B2D31" stroke="#4A4D52" rx="2" />
-                                <rect x="8" y="152" width="84" height="50" fill="url(#tilePattern)" opacity="0.2" />
-                                <text x="50" y="182" fill="#8E9297" font-family="'JetBrains Mono'" font-size="9" font-weight="bold" text-anchor="middle">Toilet (F)</text>
-                            </g>
-
-                            <!-- ================= 7. SOUTH WING ================= -->
-                            <!-- STAIRS SW -->
-                            <g transform="translate(60, 760)">
-                                <rect width="110" height="95" fill="#1E2025" stroke="#8E9297" stroke-width="1.5" rx="4" />
-                                <rect width="110" height="95" fill="url(#stairTreads)" />
-                                <line x1="55" y1="10" x2="55" y2="85" stroke="#8E9297" stroke-width="1" />
-                                <text x="55" y="52" fill="#8E9297" font-family="'JetBrains Mono'" font-size="9.5" font-weight="bold" text-anchor="middle">
-                                    STAIRS SW
-                                </text>
-                                <path d="M 55 20 L 55 75 L 50 67 M 55 75 L 60 67" stroke="#8E9297" stroke-width="1.5" fill="none" />
-                            </g>
-
-                            <!-- FACULTY LOUNGE -->
-                            <g transform="translate(190, 760)">
-                                <rect width="160" height="100" fill="#1E2025" stroke="#4A4D52" stroke-width="1.5" rx="4" />
-                                <text x="80" y="40" fill="#D9DAD0" font-family="'JetBrains Mono'" font-size="11" font-weight="bold" text-anchor="middle">Faculty Lounge</text>
-                                <text x="80" y="58" fill="#8E9297" font-family="'JetBrains Mono'" font-size="9" text-anchor="middle">(80 m2)</text>
-
-                                <rect x="35" y="70" width="90" height="20" rx="4" class="cad-desk" />
-                                <circle cx="50" cy="65" r="4" class="cad-chair" />
-                                <circle cx="80" cy="65" r="4" class="cad-chair" />
-                                <circle cx="110" cy="65" r="4" class="cad-chair" />
-                                <circle cx="50" cy="95" r="4" class="cad-chair" />
-                                <circle cx="80" cy="95" r="4" class="cad-chair" />
-                                <circle cx="110" cy="95" r="4" class="cad-chair" />
-                            </g>
-
-                            <!-- SEMINAR HALL -->
-                            <g transform="translate(370, 750)">
-                                <rect width="360" height="120" fill="#1E2025" stroke="#4A4D52" stroke-width="1.5" rx="4" />
-                                <text x="180" y="32" fill="#FFFFFF" font-family="'JetBrains Mono'" font-size="13" font-weight="bold" text-anchor="middle">
-                                    Seminar Hall (180 m2)
-                                </text>
-                                <text x="180" y="48" fill="#8E9297" font-family="'JetBrains Mono'" font-size="9" text-anchor="middle">
-                                    120-Seat Auditorium // Standby Cutoff Active
-                                </text>
-
-                                <rect x="130" y="60" width="100" height="16" fill="#36393F" stroke="#8E9297" rx="2" />
-                                <rect x="172" y="62" width="16" height="12" fill="#8E9297" rx="2" />
-
-                                <path d="M 50 90 Q 180 115 310 90" fill="none" stroke="#4A4D52" stroke-width="4" stroke-linecap="round" />
-                                <path d="M 60 105 Q 180 130 300 105" fill="none" stroke="#4A4D52" stroke-width="4" stroke-linecap="round" />
-                                <path d="M 70 120 Q 180 145 290 120" fill="none" stroke="#4A4D52" stroke-width="4" stroke-linecap="round" />
-                            </g>
-
-                            <!-- COMPUTER LAB B-3 -->
-                            <g transform="translate(750, 760)">
-                                <rect width="170" height="100" fill="#1E2025" stroke="#4A4D52" stroke-width="1.5" rx="4" />
-                                <text x="85" y="38" fill="#D9DAD0" font-family="'JetBrains Mono'" font-size="11" font-weight="bold" text-anchor="middle">Computer Lab B-3</text>
-                                <text x="85" y="54" fill="#8E9297" font-family="'JetBrains Mono'" font-size="9" text-anchor="middle">(150 m2)</text>
-
-                                <g transform="translate(25, 68)">
-                                    <rect x="0" y="0" width="55" height="10" class="cad-desk" />
-                                    <rect x="65" y="0" width="55" height="10" class="cad-desk" />
-                                    <rect x="0" y="16" width="55" height="10" class="cad-desk" />
-                                    <rect x="65" y="16" width="55" height="10" class="cad-desk" />
-                                </g>
-                            </g>
-
-                            <!-- STAIRS SE -->
-                            <g transform="translate(940, 760)">
-                                <rect width="110" height="95" fill="#1E2025" stroke="#8E9297" stroke-width="1.5" rx="4" />
-                                <rect width="110" height="95" fill="url(#stairTreads)" />
-                                <line x1="55" y1="10" x2="55" y2="85" stroke="#8E9297" stroke-width="1" />
-                                <text x="55" y="52" fill="#8E9297" font-family="'JetBrains Mono'" font-size="9.5" font-weight="bold" text-anchor="middle">
-                                    STAIRS SE
-                                </text>
-                                <path d="M 55 20 L 55 75 L 50 67 M 55 75 L 60 67" stroke="#8E9297" stroke-width="1.5" fill="none" />
-                            </g>
-
-                            <!-- ================= 8. STRUCTURAL COLUMNS ================= -->
-                            <g id="structural_columns">
-                                <rect x="235" y="75" width="10" height="10" class="cad-column" />
-                                <rect x="475" y="75" width="10" height="10" class="cad-column" />
-                                <rect x="615" y="75" width="10" height="10" class="cad-column" />
-                                <rect x="855" y="75" width="10" height="10" class="cad-column" />
-
-                                <rect x="35" y="225" width="10" height="10" class="cad-column" />
-                                <rect x="215" y="245" width="10" height="10" class="cad-column" />
-                                <rect x="205" y="355" width="10" height="10" class="cad-column" />
-                                <rect x="195" y="480" width="10" height="10" class="cad-column" />
-                                <rect x="185" y="605" width="10" height="10" class="cad-column" />
-                                <rect x="175" y="730" width="10" height="10" class="cad-column" />
-
-                                <rect x="875" y="245" width="10" height="10" class="cad-column" />
-                                <rect x="885" y="370" width="10" height="10" class="cad-column" />
-                                <rect x="895" y="495" width="10" height="10" class="cad-column" />
-                                <rect x="905" y="620" width="10" height="10" class="cad-column" />
-                                <rect x="915" y="730" width="10" height="10" class="cad-column" />
+                            <!-- SE STAIRS -->
+                            <g id="grp_se_stairs">
+                                <rect id="box_se_stairs" x="895" y="775" width="130" height="65" rx="6" class="zone-box-on" />
+                                <text x="960" y="800" fill="#FFFFFF" font-family="Inter, sans-serif" font-size="10.5" font-weight="700" text-anchor="middle">STAIRS SE</text>
+                                <text id="status_se_stairs" x="960" y="818" fill="#FFC93C" font-family="JetBrains Mono, monospace" font-size="9" font-weight="700" text-anchor="middle">LIGHTS: ON</text>
+                                <circle id="lum_se_stairs" cx="915" cy="805" r="5" class="luminaire lum-on" />
                             </g>
 
                         </svg>
                     </div>
                 </div>
 
+                <!-- 4. SESSION SUGGESTIONS LOG (BY TIME) -->
+                <div class="card p-5">
+                    <div class="flex items-center justify-between mb-3">
+                        <div>
+                            <h3 class="text-sm font-bold text-white">Session Suggestions Log (By Time)</h3>
+                            <p class="text-xs" style="color: #8E9297;">Chronological log of spatial relocations, wing shutdowns, and Block C sunlight harvesting advisories</p>
+                        </div>
+                        <span class="text-xs font-data px-2.5 py-1 rounded" style="background: #2B2D31; color: #FFC93C;">Synced with Dashboard</span>
+                    </div>
+                    <div id="sandboxSuggestionsLog" class="space-y-2.5 max-h-[320px] overflow-y-auto pr-1"></div>
+                </div>
+
             </div>
-
         </div>
-    </div>
+    </main>
 
-    <style>
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.3; }
-        }
-    </style>
-
-    <!-- JAVASCRIPT -->
+    <!-- JAVASCRIPT SIMULATION & UI CONTROLLER -->
     <script>
-        let currentRelocation = null;
-        let currentMode = 'variable';
-        let activeTTSlot = null;
-
-        // ============================================================
-        // TIMETABLE DATA
-        // ============================================================
-        const TIMETABLE = [
-            {
-                label: '08:00 - 09:00',
-                hour: 8,
-                temp: 27,
-                weather: 'Sunny / Daylight',
-                tag: 'Morning Session 1',
-                rooms: { B101: 48, B102: 42, B103: 0, B104: 0, B105: 45, B106: 0, B107: 0, B108: 0 }
-            },
-            {
-                label: '09:00 - 10:00',
-                hour: 9,
-                temp: 27,
-                weather: 'Sunny / Daylight',
-                tag: 'Morning Session 2',
-                rooms: { B101: 50, B102: 0, B103: 38, B104: 0, B105: 0, B106: 44, B107: 40, B108: 0 }
-            },
-            {
-                label: '10:00 - 11:00',
-                hour: 10,
-                temp: 30,
-                weather: 'Sunny / Daylight',
-                tag: 'Mid-Morning',
-                rooms: { B101: 0, B102: 46, B103: 0, B104: 35, B105: 50, B106: 0, B107: 0, B108: 42 }
-            },
-            {
-                label: '11:00 - 12:00',
-                hour: 11,
-                temp: 32,
-                weather: 'Sunny / Daylight',
-                tag: 'Late Morning',
-                rooms: { B101: 45, B102: 0, B103: 40, B104: 0, B105: 0, B106: 38, B107: 0, B108: 0 }
-            },
-            {
-                label: '12:00 - 13:00',
-                hour: 12,
-                temp: 34,
-                weather: 'Sunny / Daylight',
-                tag: 'LUNCH BREAK',
-                rooms: { B101: 0, B102: 0, B103: 0, B104: 0, B105: 0, B106: 0, B107: 0, B108: 0 }
-            },
-            {
-                label: '13:00 - 14:00',
-                hour: 13,
-                temp: 34,
-                weather: 'Sunny / Daylight',
-                tag: 'Afternoon Session 1',
-                rooms: { B101: 0, B102: 42, B103: 0, B104: 0, B105: 48, B106: 0, B107: 36, B108: 0 }
-            },
-            {
-                label: '14:00 - 15:00',
-                hour: 14,
-                temp: 32,
-                weather: 'Sunny / Daylight',
-                tag: 'Afternoon Session 2',
-                rooms: { B101: 44, B102: 0, B103: 0, B104: 38, B105: 0, B106: 42, B107: 0, B108: 40 }
-            },
-            {
-                label: '15:00 - 16:00',
-                hour: 15,
-                temp: 32,
-                weather: 'Sunny / Daylight',
-                tag: 'Winding Down',
-                rooms: { B101: 0, B102: 0, B103: 35, B104: 0, B105: 40, B106: 0, B107: 0, B108: 0 }
-            },
-            {
-                label: '16:00 - 17:00',
-                hour: 16,
-                temp: 30,
-                weather: 'Overcast / Rainy',
-                tag: 'Late Afternoon',
-                rooms: { B101: 0, B102: 0, B103: 0, B104: 0, B105: 0, B106: 0, B107: 0, B108: 25 }
-            },
-            {
-                label: '17:00 - 18:00',
-                hour: 17,
-                temp: 28,
-                weather: 'Night',
-                tag: 'After Hours',
-                rooms: { B101: 0, B102: 0, B103: 0, B104: 0, B105: 0, B106: 0, B107: 0, B108: 0 }
-            },
-            {
-                label: '18:00 - 19:00',
-                hour: 18,
-                temp: 28,
-                weather: 'Night',
-                tag: 'After Hours',
-                rooms: { B101: 0, B102: 0, B103: 0, B104: 0, B105: 0, B106: 0, B107: 0, B108: 0 }
-            },
-            {
-                label: '19:00 - 20:00',
-                hour: 19,
-                temp: 28,
-                weather: 'Night',
-                tag: 'Evening Study Group',
-                rooms: { B101: 0, B102: 0, B103: 0, B104: 0, B105: 0, B106: 0, B107: 0, B108: 20 }
-            }
+        const LEFT_ROOMS = [
+            {{ id: 'B101', label: 'CR B-101', cap: 60 }},
+            {{ id: 'B102', label: 'CR B-102', cap: 60 }},
+            {{ id: 'B103', label: 'CR B-103', cap: 60 }},
+            {{ id: 'B104', label: 'CR B-104', cap: 60 }},
+            {{ id: 'LAB1', label: 'Lab B-1 (HW)', cap: 45 }}
         ];
+        const RIGHT_ROOMS = [
+            {{ id: 'B105', label: 'CR B-105', cap: 60 }},
+            {{ id: 'B106', label: 'CR B-106', cap: 60 }},
+            {{ id: 'B107', label: 'CR B-107', cap: 60 }},
+            {{ id: 'B108', label: 'CR B-108', cap: 60 }},
+            {{ id: 'LAB2', label: 'Lab B-2 (Comm)', cap: 45 }},
+            {{ id: 'LAB3', label: 'Comp Lab B-3', cap: 50 }}
+        ];
+        const ALL_ROOMS = [...LEFT_ROOMS, ...RIGHT_ROOMS];
 
-        // ============================================================
-        // MODE SWITCHING
-        // ============================================================
-        function switchMode(mode) {
-            currentMode = mode;
-            const tabVar = document.getElementById('tabVariable');
-            const tabTT = document.getElementById('tabTimetable');
-            const panelVar = document.getElementById('panelVariable');
-            const panelTT = document.getElementById('panelTimetable');
+        // State for each room: {{ active: bool, count: int }}
+        const roomState = {{
+            B101: {{ active: true, count: 30 }},
+            B102: {{ active: true, count: 28 }},
+            B103: {{ active: true, count: 25 }},
+            B104: {{ active: false, count: 25 }},
+            LAB1: {{ active: false, count: 25 }},
+            B105: {{ active: false, count: 25 }},
+            B106: {{ active: false, count: 25 }},
+            B107: {{ active: false, count: 25 }},
+            B108: {{ active: true, count: 22 }},
+            LAB2: {{ active: false, count: 25 }},
+            LAB3: {{ active: false, count: 30 }}
+        }};
 
-            if (mode === 'variable') {
-                tabVar.classList.add('active');
-                tabTT.classList.remove('active');
-                panelVar.style.display = 'block';
-                panelTT.style.display = 'none';
-            } else {
-                tabVar.classList.remove('active');
-                tabTT.classList.add('active');
-                panelVar.style.display = 'none';
-                panelTT.style.display = 'block';
-            }
-        }
+        let currentMode = 'variable';
+        let latestEvalData = null;
+        let timetableSchedule = [];
+        let selectedTimetableIdx = 0;
 
-        // ============================================================
-        // BUILD TIMETABLE SLOTS
-        // ============================================================
-        function buildTimetableSlots() {
-            const container = document.getElementById('timetableSlots');
-            container.innerHTML = '';
+        function formatFloatTo12h(val) {{
+            const totalMins = Math.round(parseFloat(val) * 60);
+            const h24 = Math.floor(totalMins / 60) % 24;
+            const mins = totalMins % 60;
+            const period = h24 >= 12 ? 'PM' : 'AM';
+            let h12 = h24 % 12;
+            if (h12 === 0) h12 = 12;
+            const hStr = h12 < 10 ? '0' + h12 : '' + h12;
+            const mStr = mins < 10 ? '0' + mins : '' + mins;
+            return `${{hStr}}:${{mStr}} ${{period}}`;
+        }}
 
-            TIMETABLE.forEach(function(slot, idx) {
-                const el = document.createElement('div');
-                el.className = 'tt-slot';
-                el.setAttribute('data-idx', idx);
-                el.onclick = function() { applyTimetableSlot(idx); };
+        function buildRoomControlRow(rm) {{
+            const st = roomState[rm.id];
+            return `
+            <div class="sub-box p-2.5">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <button id="toggle_${{rm.id}}" onclick="toggleRoomActive('${{rm.id}}')"
+                            class="px-2.5 py-1 rounded text-[11px] font-data font-bold transition-all"
+                            style="${{st.active ? 'background: #FFC93C; color: #2B2D31;' : 'background: #36393F; color: #8E9297;'}}">
+                            ${{st.active ? 'ON' : 'OFF'}}
+                        </button>
+                        <span class="text-xs font-semibold text-white">${{rm.label}}</span>
+                    </div>
+                    <span id="lbl_count_${{rm.id}}" class="text-xs font-data font-bold" style="color: ${{st.active ? '#FFC93C' : '#8E9297'}};">
+                        ${{st.active ? st.count + ' People' : 'Vacant'}}
+                    </span>
+                </div>
+                <div id="slider_wrap_${{rm.id}}" class="mt-2 pt-1.5" style="display: ${{st.active ? 'block' : 'none'}}; border-top: 1px solid rgba(255,255,255,0.05);">
+                    <div class="flex items-center gap-2">
+                        <span class="text-[10px] font-data" style="color: #8E9297;">People:</span>
+                        <input type="range" id="slider_${{rm.id}}" min="5" max="${{rm.cap}}" value="${{st.count}}"
+                            oninput="onRoomSliderInput('${{rm.id}}', this.value)" class="flex-1">
+                    </div>
+                </div>
+            </div>`;
+        }}
 
-                const activeRooms = [];
-                const roomKeys = ['B101','B102','B103','B104','B105','B106','B107','B108'];
-                roomKeys.forEach(function(rk) {
-                    if (slot.rooms[rk] > 0) {
-                        activeRooms.push(rk + '=' + slot.rooms[rk]);
-                    }
-                });
+        function renderVariableControls() {{
+            document.getElementById('leftWingControls').innerHTML = LEFT_ROOMS.map(buildRoomControlRow).join('');
+            document.getElementById('rightWingControls').innerHTML = RIGHT_ROOMS.map(buildRoomControlRow).join('');
+            updateWingSummaryCounters();
+        }}
 
-                const isLunch = slot.tag === 'LUNCH BREAK';
-                const isEmpty = activeRooms.length === 0 && !isLunch;
+        function toggleRoomActive(rid) {{
+            roomState[rid].active = !roomState[rid].active;
+            if (roomState[rid].active && roomState[rid].count <= 0) {{
+                roomState[rid].count = 25;
+            }}
+            renderVariableControls();
+            fetchPreviewEvaluation();
+        }}
 
-                let roomsStr = '';
-                if (isLunch) {
-                    roomsStr = '<span style="color:#FFC93C;">All rooms empty (break)</span>';
-                } else if (isEmpty) {
-                    roomsStr = '<span style="color:#8E9297;">All rooms empty</span>';
-                } else {
-                    roomsStr = '<span style="color:#D9DAD0;">' + activeRooms.join(', ') + '</span>';
-                }
+        function onRoomSliderInput(rid, val) {{
+            roomState[rid].count = parseInt(val, 10) || 0;
+            const lbl = document.getElementById(`lbl_count_${{rid}}`);
+            if (lbl) lbl.innerText = `${{roomState[rid].count}} People`;
+            updateWingSummaryCounters();
+            fetchPreviewEvaluation();
+        }}
 
-                el.innerHTML =
-                    '<div class="flex justify-between items-center mb-1">' +
-                        '<span class="font-mono font-bold" style="color:#FFFFFF; font-size:12px;">' + slot.label + '</span>' +
-                        '<span class="font-mono" style="color:' + (isLunch ? '#FFC93C' : '#8E9297') + '; font-size:10px;">' + slot.tag + '</span>' +
-                    '</div>' +
-                    '<div class="font-mono" style="font-size:10px; line-height:1.5;">' + roomsStr + '</div>';
+        function updateWingSummaryCounters() {{
+            let activeCount = 0;
+            let leftPop = 0;
+            let rightPop = 0;
+            LEFT_ROOMS.forEach(r => {{
+                if (roomState[r.id].active) {{
+                    activeCount++;
+                    leftPop += roomState[r.id].count;
+                }}
+            }});
+            RIGHT_ROOMS.forEach(r => {{
+                if (roomState[r.id].active) {{
+                    activeCount++;
+                    rightPop += roomState[r.id].count;
+                }}
+            }});
+            document.getElementById('summaryActiveCount').innerText = activeCount;
+            document.getElementById('summaryLeftPop').innerText = `${{leftPop}}p`;
+            document.getElementById('summaryRightPop').innerText = `${{rightPop}}p`;
+        }}
 
-                container.appendChild(el);
-            });
-        }
-
-        // ============================================================
-        // APPLY TIMETABLE SLOT
-        // ============================================================
-        function applyTimetableSlot(idx) {
-            const slot = TIMETABLE[idx];
-            activeTTSlot = idx;
-
-            // Highlight active slot
-            const allSlots = document.querySelectorAll('.tt-slot');
-            allSlots.forEach(function(s) { s.classList.remove('active'); });
-            allSlots[idx].classList.add('active');
-
-            // Set time slider
-            document.getElementById('timeSlider').value = slot.hour;
-
-            // Set temperature
-            document.getElementById('tempSlider').value = slot.temp;
-
-            // Set weather
-            document.getElementById('weatherSelect').value = slot.weather;
-
-            // Set all 8 room occupancy sliders
-            const roomKeys = ['B101','B102','B103','B104','B105','B106','B107','B108'];
-            roomKeys.forEach(function(rk, i) {
-                document.getElementById('occ_r' + (i + 1)).value = slot.rooms[rk];
-            });
-
-            onParamChange();
-        }
-
-        // ============================================================
-        // INIT
-        // ============================================================
-        window.addEventListener('DOMContentLoaded', function() {
-            const savedToken = localStorage.getItem('gridsense_tg_token') || '';
-            const savedChat = localStorage.getItem('gridsense_tg_chat') || '';
-            if (savedToken) document.getElementById('tgToken').value = savedToken;
-            if (savedChat) document.getElementById('tgChatId').value = savedChat;
-
-            buildTimetableSlots();
-            onParamChange(false);
-        });
-
-        // ============================================================
-        // PARAM CHANGE
-        // ============================================================
-        function onParamChange(triggerPing) {
-            if (triggerPing === undefined) triggerPing = false;
-
+        function onVariableInputChanged() {{
             const timeVal = parseFloat(document.getElementById('timeSlider').value);
-            const hours = Math.floor(timeVal);
-            const mins = (timeVal % 1 === 0.5) ? '30' : '00';
-            const timeStr = (hours < 10 ? '0' + hours : hours) + ':' + mins;
-            document.getElementById('timeVal').innerText = timeStr;
+            const time12h = formatFloatTo12h(timeVal);
+            document.getElementById('timeDisplay12h').innerText = time12h;
+            document.getElementById('blueprintTimeTag').innerText = time12h;
 
             const temp = document.getElementById('tempSlider').value;
-            document.getElementById('tempVal').innerText = temp + ' C';
+            document.getElementById('tempDisplay').innerText = `${{temp}}°C`;
 
+            // Automatically sync sky condition if night hours
+            const weatherSel = document.getElementById('weatherSelect');
+            if (timeVal >= 18.0 || timeVal < 6.5) {{
+                weatherSel.value = 'Night';
+            }} else if (weatherSel.value === 'Night') {{
+                weatherSel.value = 'Sunny / Daylight';
+            }}
+
+            const isDay = (timeVal >= 7.0 && timeVal <= 17.5 && weatherSel.value !== 'Night');
+            const badge = document.getElementById('daylightBadge');
+            badge.innerText = isDay ? 'Daylight Window' : 'Night / Off-Peak';
+            badge.style.color = isDay ? '#FFC93C' : '#8E9297';
+
+            fetchPreviewEvaluation();
+        }}
+
+        function buildPayload(isSimulate) {{
+            const timeVal = parseFloat(document.getElementById('timeSlider').value);
+            const time12h = formatFloatTo12h(timeVal);
+            const temp = parseFloat(document.getElementById('tempSlider').value);
             const weather = document.getElementById('weatherSelect').value;
 
-            const roomsPayload = {};
-            for (let i = 1; i <= 8; i++) {
-                const occ = parseInt(document.getElementById('occ_r' + i).value);
-                document.getElementById('val_r' + i).innerText = occ;
-                roomsPayload['B10' + i] = occ;
-            }
+            const roomsPayload = {{}};
+            ALL_ROOMS.forEach(r => {{
+                roomsPayload[r.id] = roomState[r.id].active ? roomState[r.id].count : 0;
+            }});
 
-            const payload = {
-                floor: 1,
-                time: timeStr,
-                temperature: parseFloat(temp),
+            const localNotifyCfg = {{
+                webhook_url: localStorage.getItem('gs_webhook_url') || '',
+                telegram_bot_token: localStorage.getItem('gs_tg_token') || '',
+                telegram_chat_id: localStorage.getItem('gs_tg_chat') || ''
+            }};
+
+            return {{
+                time: time12h,
+                temperature: temp,
                 weather: weather,
-                rooms: roomsPayload
-            };
+                rooms: roomsPayload,
+                simulate: isSimulate,
+                mode: currentMode === 'timetable' ? 'Set Timetable Mode' : 'Variable Mode',
+                notify_config: localNotifyCfg
+            }};
+        }}
 
-            fetch('/api/sandbox/evaluate', {
+        // Fetch evaluation and show UNMANAGED BASELINE first (or Simulated if in Set Timetable Mode / Simulate clicked)
+        function fetchPreviewEvaluation() {{
+            const payload = buildPayload(false);
+            fetch('/api/sandbox/evaluate', {{
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {{ 'Content-Type': 'application/json' }},
                 body: JSON.stringify(payload)
-            })
-            .then(function(res) { return res.json(); })
-            .then(function(data) {
-                renderVectorState(data);
-                if (triggerPing) triggerAutoTelegramPing(data);
-            })
-            .catch(function(err) { console.error(err); });
-        }
+            }})
+            .then(res => res.json())
+            .then(data => {{
+                latestEvalData = data;
+                if (currentMode === 'timetable') {{
+                    // In Set Timetable Mode, immediately show active scheduled rooms & stairs
+                    renderFloorPlanState(data, 'simulated', false);
+                }} else {{
+                    // In Variable Mode, show realistic Unmanaged Baseline until user clicks Simulate
+                    renderFloorPlanState(data, 'baseline', false);
+                }}
+            }})
+            .catch(err => console.error(err));
+        }}
 
-        // ============================================================
-        // RENDER VECTOR STATE
-        // ============================================================
-        function renderVectorState(data) {
-            document.getElementById('baselineMeter').innerText = data.total_baseline_kw + ' kW';
-            document.getElementById('optimizedMeter').innerText = data.total_optimized_kw + ' kW';
-            document.getElementById('savingsMeter').innerText = data.kw_saved + ' kW (' + data.savings_percentage + '%)';
-            document.getElementById('inrMeter').innerText = 'INR ' + data.inr_per_hour_saved + ' / Hour Saved';
-            document.getElementById('elevState').innerText = data.elevator_mode;
-
-            var rooms = data.rooms;
-            for (let i = 1; i <= 8; i++) {
-                const r_id = 'B10' + i;
-                const r = rooms[r_id];
-                if (!r) continue;
-
-                const poly = document.getElementById('poly_r' + i);
-                const ac = document.getElementById('ac_r' + i);
-                const occCount = parseInt(document.getElementById('occ_r' + i).value);
-
-                if (r.lighting_glow) {
-                    if (poly) poly.setAttribute('class', 'room-bg room-lit-bg');
-                    for (let l = 1; l <= 4; l++) {
-                        const light = document.getElementById('l' + l + '_r' + i);
-                        if (light) light.setAttribute('class', 'light-glow light-on');
-                    }
-                    for (let d = 1; d <= 6; d++) {
-                        const desk = document.getElementById('d' + d + '_r' + i);
-                        if (desk) desk.setAttribute('class', 'cad-desk cad-desk-lit');
-                    }
-                    for (let dt = 1; dt <= 6; dt++) {
-                        const dot = document.getElementById('dot' + dt + '_r' + i);
-                        if (dot) dot.setAttribute('opacity', (occCount > (dt - 1) * 7) ? '1' : '0');
-                    }
-                    if (ac) {
-                        ac.textContent = 'AC: ' + r.ac_setpoint;
-                        ac.setAttribute('fill', '#FFC93C');
-                    }
-                } else {
-                    if (poly) poly.setAttribute('class', 'room-bg room-dark-bg');
-                    for (let l = 1; l <= 4; l++) {
-                        const light = document.getElementById('l' + l + '_r' + i);
-                        if (light) light.setAttribute('class', 'light-glow light-off');
-                    }
-                    for (let d = 1; d <= 6; d++) {
-                        const desk = document.getElementById('d' + d + '_r' + i);
-                        if (desk) desk.setAttribute('class', 'cad-desk');
-                    }
-                    for (let dt = 1; dt <= 6; dt++) {
-                        const dot = document.getElementById('dot' + dt + '_r' + i);
-                        if (dot) dot.setAttribute('opacity', '0');
-                    }
-                    if (ac) {
-                        ac.textContent = 'AC: OFF';
-                        ac.setAttribute('fill', '#8E9297');
-                    }
-                }
-            }
-
-            // Corridors
-            const westLit = (rooms['B101'] && rooms['B101'].lighting_glow) || (rooms['B102'] && rooms['B102'].lighting_glow) || (rooms['B103'] && rooms['B103'].lighting_glow) || (rooms['B104'] && rooms['B104'].lighting_glow);
-            const eastLit = (rooms['B105'] && rooms['B105'].lighting_glow) || (rooms['B106'] && rooms['B106'].lighting_glow) || (rooms['B107'] && rooms['B107'].lighting_glow) || (rooms['B108'] && rooms['B108'].lighting_glow);
-
-            const westArc = document.getElementById('corridor_west_arc');
-            const eastArc = document.getElementById('corridor_east_arc');
-
-            if (westArc) westArc.setAttribute('class', westLit ? 'corridor-path-lit' : 'corridor-path-dark');
-            if (eastArc) eastArc.setAttribute('class', eastLit ? 'corridor-path-lit' : 'corridor-path-dark');
-
-            for (let i = 1; i <= 4; i++) {
-                const cw = document.getElementById('cw' + i);
-                const ce = document.getElementById('ce' + i);
-                if (cw) cw.setAttribute('class', westLit ? 'light-glow light-on' : 'light-glow light-off');
-                if (ce) ce.setAttribute('class', eastLit ? 'light-glow light-on' : 'light-glow light-off');
-            }
-
-            // Lifts
-            const b1 = document.getElementById('box_lift1');
-            const b2 = document.getElementById('box_lift2');
-            const b3 = document.getElementById('box_lift3');
-            const b4 = document.getElementById('box_lift4');
-            const wl = document.getElementById('lift_west_label');
-            const el = document.getElementById('lift_east_label');
-
-            if (data.total_optimized_kw > 15) {
-                if (b1) b1.setAttribute('fill', 'rgba(255,201,60,0.08)');
-                if (b2) b2.setAttribute('fill', 'rgba(255,201,60,0.08)');
-                if (b3) b3.setAttribute('fill', 'rgba(255,201,60,0.08)');
-                if (b4) b4.setAttribute('fill', 'rgba(255,201,60,0.08)');
-                if (wl) wl.innerText = 'ACTIVE STANDBY';
-                if (el) el.innerText = 'ACTIVE STANDBY';
-            } else {
-                if (b3) b3.setAttribute('fill', '#2B2D31');
-                if (b4) b4.setAttribute('fill', '#2B2D31');
-                if (el) el.innerText = 'DEEP SLEEP (0 W)';
-            }
-
-            // Relocation nudge
-            const relocs = data.relocations || [];
-            const alertCard = document.getElementById('alertCard');
-            const alertText = document.getElementById('alertText');
-
-            if (relocs.length > 0) {
-                currentRelocation = relocs[0];
-                alertCard.style.display = 'flex';
-                alertText.innerText = currentRelocation.reason;
-            } else {
-                currentRelocation = null;
-                alertCard.style.display = 'none';
-            }
-        }
-
-        // ============================================================
-        // CONSOLIDATION
-        // ============================================================
-        function applyConsolidation() {
-            if (currentRelocation) {
-                const fromId = currentRelocation.from_room;
-                const toId = currentRelocation.to_room;
-                const fromIdx = parseInt(fromId.slice(-1));
-                const toIdx = parseInt(toId.slice(-1));
-
-                const students = parseInt(document.getElementById('occ_r' + fromIdx).value);
-                document.getElementById('occ_r' + fromIdx).value = 0;
-                document.getElementById('occ_r' + toIdx).value = students;
-                onParamChange(true);
-            }
-        }
-
-        // ============================================================
-        // PRESETS
-        // ============================================================
-        function applyPreset(type) {
-            if (type === 'morning') {
-                document.getElementById('timeSlider').value = 9.0;
-                document.getElementById('tempSlider').value = 27;
-                document.getElementById('weatherSelect').value = 'Sunny / Daylight';
-                for (let i = 1; i <= 8; i++) document.getElementById('occ_r' + i).value = (i <= 6) ? 45 : 0;
-            } else if (type === 'afternoon') {
-                document.getElementById('timeSlider').value = 14.5;
-                document.getElementById('tempSlider').value = 35;
-                document.getElementById('weatherSelect').value = 'Sunny / Daylight';
-                for (let i = 1; i <= 8; i++) document.getElementById('occ_r' + i).value = 40;
-            } else if (type === 'night_waste') {
-                document.getElementById('timeSlider').value = 19.5;
-                document.getElementById('tempSlider').value = 32;
-                document.getElementById('weatherSelect').value = 'Night';
-                for (let i = 1; i <= 7; i++) document.getElementById('occ_r' + i).value = 0;
-                document.getElementById('occ_r8').value = 25;
-            } else if (type === 'lockdown') {
-                document.getElementById('timeSlider').value = 22.0;
-                document.getElementById('tempSlider').value = 25;
-                document.getElementById('weatherSelect').value = 'Night';
-                for (let i = 1; i <= 8; i++) document.getElementById('occ_r' + i).value = 0;
-            }
-            onParamChange(false);
-        }
-
-        function clearAllOccupants() {
-            for (let i = 1; i <= 8; i++) document.getElementById('occ_r' + i).value = 0;
-            onParamChange(false);
-        }
-
-        // ============================================================
-        // TELEGRAM
-        // ============================================================
-        function saveAndTestTelegram() {
-            const token = document.getElementById('tgToken').value.trim();
-            const chatId = document.getElementById('tgChatId').value.trim();
-
-            if (!token || !chatId) {
-                alert('Please enter both Bot Token and Chat ID to connect your phone.');
+        function showBaselinePreview() {{
+            if (!latestEvalData) {{
+                fetchPreviewEvaluation();
                 return;
-            }
+            }}
+            renderFloorPlanState(latestEvalData, 'baseline', false);
+        }}
 
-            localStorage.setItem('gridsense_tg_token', token);
-            localStorage.setItem('gridsense_tg_chat', chatId);
+        function runSimulation() {{
+            const payload = buildPayload(true);
+            const statusEl = document.getElementById('autoPingStatus');
+            statusEl.innerText = 'Running Python optimization engine & dispatching report...';
+            statusEl.style.color = '#FFC93C';
 
-            const st = document.getElementById('tgStatus');
-            st.innerText = 'Dispatching test handshake ping...';
-
-            fetch('/api/sandbox/notify-telegram', {
+            fetch('/api/sandbox/evaluate', {{
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    token: token,
-                    chat_id: chatId,
-                    message: 'GridSense Connected: JIT Block B Digital Twin linked to your mobile. Automatic optimization nudges active.'
-                })
-            })
-            .then(function(res) { return res.json(); })
-            .then(function(data) {
-                if (data.status === 'success') {
-                    st.innerText = 'Verified! Connected to your mobile phone.';
-                    st.style.color = '#57F287';
-                } else {
-                    st.innerText = 'Telegram Error: ' + data.message;
-                    st.style.color = '#ED4245';
-                }
-            })
-            .catch(function(err) {
-                st.innerText = 'Network Error: ' + err;
-                st.style.color = '#ED4245';
-            });
-        }
+                headers: {{ 'Content-Type': 'application/json' }},
+                body: JSON.stringify(payload)
+            }})
+            .then(res => res.json())
+            .then(data => {{
+                latestEvalData = data;
+                renderFloorPlanState(data, 'simulated', true);
+                loadSuggestionsLog();
+                const ch = (data.dispatch && data.dispatch.channels && data.dispatch.channels.length > 0)
+                    ? `Dispatched to ${{data.dispatch.channels.join(', ')}}`
+                    : 'Logged to Session Suggestions & Dashboard';
+                statusEl.innerText = `Simulation Complete (${{data.time_12h}}) // ${{ch}}`;
+                statusEl.style.color = '#FFC93C';
+            }})
+            .catch(err => {{
+                console.error(err);
+                statusEl.innerText = 'Simulation evaluated locally.';
+            }});
+        }}
 
-        function triggerAutoTelegramPing(data) {
-            const token = localStorage.getItem('gridsense_tg_token');
-            const chatId = localStorage.getItem('gridsense_tg_chat');
-            if (!token || !chatId) return;
+        function renderFloorPlanState(data, whichState, showFullReport) {{
+            const isSim = (whichState === 'simulated');
+            const stateObj = isSim ? data.simulated_state : data.baseline_state;
+            const roomsMap = stateObj.rooms;
+            const common = stateObj.common;
 
-            var msg = 'GridSense Alert [JIT Block B]: Relocation executed. Total power cut to ' + data.total_optimized_kw + ' kW. Immediate savings: ' + data.kw_saved + ' kW (' + data.savings_percentage + '%). Hourly financial savings: INR ' + data.inr_per_hour_saved + '/hr.';
+            // Update View Badge
+            const viewBadge = document.getElementById('viewStateBadge');
+            if (isSim) {{
+                viewBadge.innerText = 'SIMULATED & OPTIMIZED';
+                viewBadge.style.background = 'rgba(255,201,60,0.18)';
+                viewBadge.style.color = '#FFC93C';
+            }} else {{
+                viewBadge.innerText = 'UNMANAGED BASELINE';
+                viewBadge.style.background = 'rgba(245,158,11,0.15)';
+                viewBadge.style.color = '#F59E0B';
+            }}
 
-            fetch('/api/sandbox/notify-telegram', {
+            // Top KPI Meters
+            document.getElementById('meterBaseline').innerText = `${{data.total_baseline_kw}} kW`;
+            if (isSim) {{
+                document.getElementById('meterOptimized').innerText = `${{data.total_optimized_kw}} kW`;
+                document.getElementById('meterOptimized').style.color = '#FFC93C';
+                document.getElementById('meterLiftSub').innerText = data.elevator_mode;
+                document.getElementById('meterSavings').innerText = `${{data.kw_saved}} kW (${{data.savings_percentage}}%)`;
+                document.getElementById('meterSavings').style.color = '#FFC93C';
+                document.getElementById('meterInr').innerText = `INR ${{data.inr_per_hour_saved}} / Hr Saved`;
+                document.getElementById('meterInr').style.color = '#D9DAD0';
+            }} else {{
+                document.getElementById('meterOptimized').innerText = 'Click Simulate';
+                document.getElementById('meterOptimized').style.color = '#8E9297';
+                document.getElementById('meterLiftSub').innerText = 'Baseline has all 4 lifts & corridors ON';
+                document.getElementById('meterSavings').innerText = 'Ready';
+                document.getElementById('meterSavings').style.color = '#8E9297';
+                document.getElementById('meterInr').innerText = 'Press Simulate to view savings';
+                document.getElementById('meterInr').style.color = '#8E9297';
+            }}
+
+            // Wing Headers in SVG
+            document.getElementById('svgLeftWingHeader').innerText = `LEFT WING (WEST) // ${{data.left_wing_people}} PEOPLE`;
+            document.getElementById('svgRightWingHeader').innerText = `RIGHT WING (EAST) // ${{data.right_wing_people}} PEOPLE`;
+            document.getElementById('blueprintTimeTag').innerText = data.time_12h;
+
+            document.getElementById('elevatorBannerText').innerText = isSim
+                ? `Simulated State (${{data.time_12h}}): ${{data.elevator_mode}}`
+                : `Unmanaged Baseline (${{data.time_12h}}): All 4 Lifts Running | Vacant Rooms Wasting Power`;
+
+            // Center Atrium Relocation Indicator
+            const relocArrow = document.getElementById('atriumRelocArrow');
+            if (isSim && data.relocations && data.relocations.length > 0) {{
+                const r0 = data.relocations[0];
+                relocArrow.textContent = `RELOCATED: ${{r0.from_label}} -> ${{r0.to_label}}`;
+            }} else {{
+                relocArrow.textContent = '';
+            }}
+
+            // Render each of the 11 Rooms
+            ALL_ROOMS.forEach(rm => {{
+                const rid = rm.id;
+                const rData = roomsMap[rid];
+                if (!rData) return;
+
+                const poly = document.getElementById(`poly_${{rid}}`);
+                const occBadge = document.getElementById(`occ_badge_${{rid}}`);
+                const subBadge = document.getElementById(`sub_badge_${{rid}}`);
+                const acText = document.getElementById(`ac_${{rid}}`);
+                const kwText = document.getElementById(`kw_${{rid}}`);
+
+                // Box styling
+                if (rData.is_occupied) {{
+                    poly.setAttribute('class', 'room-box room-lit');
+                    occBadge.textContent = `${{rData.occupancy}} PPL`;
+                    occBadge.setAttribute('fill', '#FFC93C');
+                }} else if (rData.relocated_to) {{
+                    poly.setAttribute('class', 'room-box room-relocated');
+                    occBadge.textContent = `MOVED -> ${{rData.relocated_to}}`;
+                    occBadge.setAttribute('fill', '#38BDF8');
+                }} else if (!isSim && rData.lights_on_count > 0) {{
+                    poly.setAttribute('class', 'room-box room-wasted');
+                    occBadge.textContent = `VACANT (${{rData.lights_on_count}}/4 LIT)`;
+                    occBadge.setAttribute('fill', '#F59E0B');
+                }} else {{
+                    poly.setAttribute('class', 'room-box room-unlit');
+                    occBadge.textContent = 'VACANT (OFF)';
+                    occBadge.setAttribute('fill', '#8E9297');
+                }}
+
+                // Relocation subtitle note
+                if (isSim && rData.relocated_from) {{
+                    subBadge.textContent = `Consolidated from ${{rData.relocated_from}}`;
+                    subBadge.setAttribute('fill', '#FFC93C');
+                }} else if (isSim && rData.relocated_to) {{
+                    subBadge.textContent = `Relocated to ${{rData.relocated_to}} (Wing Shutoff)`;
+                    subBadge.setAttribute('fill', '#38BDF8');
+                }} else {{
+                    subBadge.textContent = `${{rData.wing}} Wing // ${{rData.lights_on_count}}/4 Lights ON`;
+                    subBadge.setAttribute('fill', '#8E9297');
+                }}
+
+                // 4 Individual Luminaires
+                for (let idx = 0; idx < 4; idx++) {{
+                    const lumEl = document.getElementById(`l${{idx+1}}_${{rid}}`);
+                    if (lumEl) {{
+                        const isOn = rData.lights[idx];
+                        lumEl.setAttribute('class', isOn ? 'luminaire lum-on' : 'luminaire lum-off');
+                    }}
+                }}
+
+                // 4 Desks
+                for (let d = 1; d <= 4; d++) {{
+                    const deskEl = document.getElementById(`d${{d}}_${{rid}}`);
+                    if (deskEl) {{
+                        deskEl.setAttribute('class', rData.is_occupied ? 'desk-box desk-on' : 'desk-box desk-off');
+                    }}
+                }}
+
+                // AC & kW Readout
+                acText.textContent = `AC: ${{rData.ac_setpoint}}`;
+                acText.setAttribute('fill', rData.ac_setpoint === 'OFF' ? '#8E9297' : '#FFC93C');
+                kwText.textContent = `${{rData.kw}} kW`;
+                kwText.setAttribute('fill', rData.is_occupied ? '#FFFFFF' : '#8E9297');
+            }});
+
+            // Render 4 Lifts (L1, L2 in Left Wing; L3, L4 in Right Wing)
+            ['L1', 'L2', 'L3', 'L4'].forEach(lid => {{
+                const isOn = common.lifts[lid];
+                const box = document.getElementById(`lift_box_${{lid}}`);
+                const txt = document.getElementById(`lift_txt_${{lid}}`);
+                if (box) box.setAttribute('class', isOn ? 'lift-car-on' : 'lift-car-off');
+                if (txt) {{
+                    txt.textContent = isOn ? 'ON' : 'OFF';
+                    txt.setAttribute('fill', isOn ? '#FFC93C' : '#8E9297');
+                }}
+            }});
+
+            const leftLiftsCount = (common.lifts.L1 ? 1 : 0) + (common.lifts.L2 ? 1 : 0);
+            const rightLiftsCount = (common.lifts.L3 ? 1 : 0) + (common.lifts.L4 ? 1 : 0);
+            const lbBadge = document.getElementById('left_bank_badge');
+            const rbBadge = document.getElementById('right_bank_badge');
+            lbBadge.textContent = `${{leftLiftsCount}}/2 ACTIVE`;
+            lbBadge.setAttribute('fill', leftLiftsCount > 0 ? '#FFC93C' : '#8E9297');
+            rbBadge.textContent = `${{rightLiftsCount}}/2 ACTIVE`;
+            rbBadge.setAttribute('fill', rightLiftsCount > 0 ? '#FFC93C' : '#8E9297');
+
+            // Corridors (Left & Right)
+            const cLeft = document.getElementById('corridor_left');
+            const cRight = document.getElementById('corridor_right');
+            const lblLeft = document.getElementById('label_corridor_left');
+            const lblRight = document.getElementById('label_corridor_right');
+
+            cLeft.setAttribute('class', common.left_corridor ? 'corridor-line corridor-on' : 'corridor-line corridor-off');
+            lblLeft.textContent = common.left_corridor ? 'LEFT CORRIDOR: ON' : 'LEFT CORRIDOR: OFF (ISOLATED)';
+            lblLeft.setAttribute('fill', common.left_corridor ? '#FFC93C' : '#8E9297');
+
+            cRight.setAttribute('class', common.right_corridor ? 'corridor-line corridor-on' : 'corridor-line corridor-off');
+            lblRight.textContent = common.right_corridor ? 'RIGHT CORRIDOR: ON' : 'RIGHT CORRIDOR: OFF (ISOLATED)';
+            lblRight.setAttribute('fill', common.right_corridor ? '#FFC93C' : '#8E9297');
+
+            for (let i = 1; i <= 4; i++) {{
+                document.getElementById(`cl_lum${{i}}`).setAttribute('class', common.left_corridor ? 'luminaire lum-on' : 'luminaire lum-off');
+                document.getElementById(`cr_lum${{i}}`).setAttribute('class', common.right_corridor ? 'luminaire lum-on' : 'luminaire lum-off');
+            }}
+
+            // Stairs & Faculty Lounge
+            const setZoneState = (boxId, statusId, lumId, isOn, onText, offText) => {{
+                const bx = document.getElementById(boxId);
+                const st = document.getElementById(statusId);
+                const lm = document.getElementById(lumId);
+                if (bx) bx.setAttribute('class', isOn ? 'zone-box-on' : 'zone-box-off');
+                if (st) {{
+                    st.textContent = isOn ? onText : offText;
+                    st.setAttribute('fill', isOn ? '#FFC93C' : '#8E9297');
+                }}
+                if (lm) lm.setAttribute('class', isOn ? 'luminaire lum-on' : 'luminaire lum-off');
+            }};
+
+            setZoneState('box_main_stairs', 'status_main_stairs', 'lum_main_stairs', common.main_stairs, 'LIGHTS: ON', 'LIGHTS: OFF');
+            setZoneState('box_sw_stairs', 'status_sw_stairs', 'lum_sw_stairs', common.sw_stairs, 'LIGHTS: ON', 'LIGHTS: OFF');
+            setZoneState('box_se_stairs', 'status_se_stairs', 'lum_se_stairs', common.se_stairs, 'LIGHTS: ON', 'LIGHTS: OFF');
+            setZoneState('box_faculty_lounge', 'status_faculty_lounge', 'lum1_faculty', common.faculty_lounge, 'ON', 'OFF');
+            document.getElementById('lum2_faculty').setAttribute('class', common.faculty_lounge ? 'luminaire lum-on' : 'luminaire lum-off');
+            document.getElementById('ac_faculty').textContent = common.faculty_lounge ? 'AC: 25°C (Active)' : 'AC: OFF (After-Hours)';
+            document.getElementById('ac_faculty').setAttribute('fill', common.faculty_lounge ? '#FFC93C' : '#8E9297');
+
+            // 3-Part Simulation Report Card
+            const repCard = document.getElementById('simulationReportCard');
+            if (showFullReport || (currentMode === 'timetable' && isSim)) {{
+                repCard.style.display = 'block';
+                document.getElementById('reportTimeHeader').innerText = `JIT Block B // ${{data.time_12h}} (${{data.temperature}}°C)`;
+                document.getElementById('repPart1').innerText = data.report.suggestion;
+                document.getElementById('repPart2').innerText = data.report.actions_taken;
+                document.getElementById('repPart3').innerText = data.report.energy_saved;
+            }} else {{
+                repCard.style.display = 'none';
+            }}
+        }}
+
+        // ================= MODE SWITCHING & TIMETABLE GENERATOR =================
+        function switchMode(mode) {{
+            currentMode = mode;
+            document.getElementById('tabVariable').className = mode === 'variable' ? 'mode-tab active' : 'mode-tab';
+            document.getElementById('tabTimetable').className = mode === 'timetable' ? 'mode-tab active' : 'mode-tab';
+            document.getElementById('panelVariable').style.display = mode === 'variable' ? 'block' : 'none';
+            document.getElementById('panelTimetable').style.display = mode === 'timetable' ? 'block' : 'none';
+
+            if (mode === 'timetable') {{
+                if (timetableSchedule.length === 0) {{
+                    regenerateTimetable();
+                }} else {{
+                    selectTimetableSlot(selectedTimetableIdx);
+                }}
+            }} else {{
+                fetchPreviewEvaluation();
+            }}
+        }}
+
+        function regenerateTimetable() {{
+            const seed = Math.floor(Math.random() * 10000);
+            fetch(`/api/sandbox/timetable?seed=${{seed}}`)
+                .then(res => res.json())
+                .then(data => {{
+                    timetableSchedule = data.schedule || [];
+                    renderTimetableList();
+                    selectTimetableSlot(0);
+                }});
+        }}
+
+        function renderTimetableList() {{
+            const container = document.getElementById('timetableSlotsList');
+            container.innerHTML = timetableSchedule.map((slot, idx) => {{
+                const isSelected = (idx === selectedTimetableIdx);
+                return `
+                <div onclick="selectTimetableSlot(${{idx}})" class="p-2.5 rounded-lg cursor-pointer transition-all"
+                    style="background: ${{isSelected ? '#353022' : '#2B2D31'}}; border: 1px solid ${{isSelected ? '#FFC93C' : 'rgba(255,255,255,0.05)'}};">
+                    <div class="flex items-center justify-between">
+                        <span class="font-data font-bold text-xs" style="color: ${{isSelected ? '#FFC93C' : '#FFFFFF'}};">${{slot.time_12h}}</span>
+                        <span class="font-data text-[11px] px-2 py-0.5 rounded" style="background: #36393F; color: #D9DAD0;">
+                            ${{slot.active_count}} Classes // ${{slot.total_students}}p // ${{slot.temperature}}°C
+                        </span>
+                    </div>
+                    <div class="text-[11px] mt-1 truncate" style="color: #8E9297;">${{slot.summary}}</div>
+                </div>`;
+            }}).join('');
+        }}
+
+        function selectTimetableSlot(idx) {{
+            selectedTimetableIdx = idx;
+            const slot = timetableSchedule[idx];
+            if (!slot) return;
+
+            document.getElementById('timeSlider').value = slot.time_float;
+            document.getElementById('tempSlider').value = slot.temperature;
+            document.getElementById('weatherSelect').value = slot.weather;
+            document.getElementById('timeDisplay12h').innerText = slot.time_12h;
+            document.getElementById('tempDisplay').innerText = `${{slot.temperature}}°C`;
+
+            ALL_ROOMS.forEach(r => {{
+                const occ = slot.rooms[r.id] || 0;
+                roomState[r.id].active = occ > 0;
+                roomState[r.id].count = occ > 0 ? occ : 25;
+            }});
+
+            renderVariableControls();
+            renderTimetableList();
+            fetchPreviewEvaluation();
+        }}
+
+        // ================= PRESET HELPERS & LOGS =================
+        function loadDemoScenario(type) {{
+            if (type === 'wing_consolidate') {{
+                // 3 classes in Left Wing + 1 class in Right Wing
+                document.getElementById('timeSlider').value = 14.0;
+                document.getElementById('tempSlider').value = 33;
+                document.getElementById('weatherSelect').value = 'Sunny / Daylight';
+                ALL_ROOMS.forEach(r => {{ roomState[r.id].active = false; }});
+                roomState.B101 = {{ active: true, count: 30 }};
+                roomState.B102 = {{ active: true, count: 28 }};
+                roomState.B103 = {{ active: true, count: 25 }};
+                roomState.B108 = {{ active: true, count: 22 }};
+                renderVariableControls();
+                onVariableInputChanged();
+            }}
+        }}
+
+        function clearAllRooms() {{
+            ALL_ROOMS.forEach(r => {{ roomState[r.id].active = false; }});
+            renderVariableControls();
+            fetchPreviewEvaluation();
+        }}
+
+        function loadSuggestionsLog() {{
+            fetch('/api/suggestions')
+                .then(res => res.json())
+                .then(data => {{
+                    const list = data.suggestions || [];
+                    const el = document.getElementById('sandboxSuggestionsLog');
+                    el.innerHTML = list.map(item => `
+                        <div class="p-3 rounded-lg text-xs" style="background: #2B2D31; border: 1px solid rgba(255,255,255,0.05);">
+                            <div class="flex items-center justify-between mb-1.5">
+                                <div class="flex items-center gap-2">
+                                    <span class="px-2 py-0.5 rounded font-data font-bold text-[11px]" style="background: rgba(255,201,60,0.15); color: #FFC93C;">${{item.time_12h}}</span>
+                                    <span class="font-semibold text-white">${{item.title}}</span>
+                                </div>
+                                <span class="text-[10px] font-data" style="color: #8E9297;">${{item.mode}}</span>
+                            </div>
+                            <div style="color: #D9DAD0;" class="mb-1"><b>Suggestion:</b> ${{item.suggestion}}</div>
+                            <div style="color: #8E9297;" class="mb-1"><b>Actions:</b> ${{item.actions_taken}}</div>
+                            <div class="font-data font-semibold" style="color: #FFC93C;">${{item.energy_saved}}</div>
+                        </div>
+                    `).join('');
+                }});
+        }}
+
+        function saveServerNotifyConfig() {{
+            const webhook = document.getElementById('cfgWebhook').value.trim();
+            const token = document.getElementById('cfgTgToken').value.trim();
+            const chat = document.getElementById('cfgTgChat').value.trim();
+
+            if (webhook) localStorage.setItem('gs_webhook_url', webhook);
+            if (token) localStorage.setItem('gs_tg_token', token);
+            if (chat) localStorage.setItem('gs_tg_chat', chat);
+
+            const msgEl = document.getElementById('cfgSaveMsg');
+            msgEl.innerText = 'Saving to server & sending test ping...';
+
+            fetch('/api/sandbox/notify-telegram', {{
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
+                headers: {{ 'Content-Type': 'application/json' }},
+                body: JSON.stringify({{
+                    webhook_url: webhook,
                     token: token,
-                    chat_id: chatId,
-                    message: msg
-                })
-            }).catch(function(e) { console.log('Telegram ping error:', e); });
-        }
+                    chat_id: chat,
+                    message: '[GridSense JIT Block B] Connected! Simulations will now push automatically in 12-hour AM/PM format.'
+                }})
+            }})
+            .then(res => res.json())
+            .then(data => {{
+                msgEl.innerText = data.message || 'Saved permanently!';
+                msgEl.style.color = '#FFC93C';
+            }})
+            .catch(() => {{
+                msgEl.innerText = 'Saved in local storage.';
+            }});
+        }}
+
+        window.addEventListener('DOMContentLoaded', () => {{
+            document.getElementById('cfgWebhook').value = localStorage.getItem('gs_webhook_url') || '';
+            document.getElementById('cfgTgToken').value = localStorage.getItem('gs_tg_token') || '';
+            document.getElementById('cfgTgChat').value = localStorage.getItem('gs_tg_chat') || '';
+            renderVariableControls();
+            onVariableInputChanged();
+            loadSuggestionsLog();
+        }});
     </script>
 </body>
-</html>"""
+</html>
+"""
