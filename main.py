@@ -22,9 +22,9 @@ SUPABASE_KEY = os.getenv("SUPABASE_KEY", "sb_publishable_LPVQ_Mzxl8AK8c_JLhMNAw_
 # Server-persisted / env-backed notification credentials (zero-prompt auto-dispatch)
 CONFIG_FILE = "notification_config.json"
 DEFAULT_NOTIFY_CONFIG = {
-    "telegram_bot_token": os.getenv("TELEGRAM_BOT_TOKEN", ""),
-    "telegram_chat_id": os.getenv("TELEGRAM_CHAT_ID", ""),
-    "webhook_url": os.getenv("WEBHOOK_URL", ""),
+    "telegram_bot_token": os.getenv("TELEGRAM_BOT_TOKEN", "9222503668:AAER9GfSgmqEQ3s-maK9Ljx1eTfBXM5NRg8"),
+    "telegram_chat_id": os.getenv("TELEGRAM_CHAT_ID", "7308787759"),
+    "webhook_url": os.getenv("WEBHOOK_URL", "https://theone14.app.n8n.cloud/webhook/gridsense-alert"),
     "whatsapp_phone": os.getenv("WHATSAPP_PHONE", ""),
     "whatsapp_apikey": os.getenv("WHATSAPP_APIKEY", "")
 }
