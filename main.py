@@ -411,72 +411,68 @@ def home():
         .kv-row + .kv-row {{
             border-top: 1px solid rgba(255,255,255,0.04);
         }}
-        @keyframes gsLogoZoomGlow {{
+        @keyframes gsLogoZoomPass {{
             0% {{
                 opacity: 0;
-                transform: scale(0.52);
-                filter: drop-shadow(0 0 8px rgba(83, 49, 251, 0.3));
+                transform: scale(0.35);
+                filter: drop-shadow(0 0 18px rgba(107, 251, 206, 0.75));
             }}
-            55% {{
+            35% {{
                 opacity: 1;
-                transform: scale(1.07);
-                filter: drop-shadow(0 0 42px rgba(83, 49, 251, 0.95)) drop-shadow(0 0 22px rgba(107, 251, 206, 0.7));
+                transform: scale(1.1);
+                filter: drop-shadow(0 0 48px rgba(107, 251, 206, 0.95)) drop-shadow(0 0 90px rgba(107, 251, 206, 0.55));
+            }}
+            75% {{
+                opacity: 0.9;
+                transform: scale(6);
+                filter: drop-shadow(0 0 65px rgba(107, 251, 206, 0.85));
             }}
             100% {{
-                opacity: 1;
-                transform: scale(1);
-                filter: drop-shadow(0 0 26px rgba(83, 49, 251, 0.75)) drop-shadow(0 0 14px rgba(107, 251, 206, 0.45));
+                opacity: 0;
+                transform: scale(18);
+                filter: drop-shadow(0 0 90px rgba(107, 251, 206, 0));
             }}
         }}
-        @keyframes gsSplashFadeOut {{
-            0% {{ opacity: 1; visibility: visible; }}
-            100% {{ opacity: 0; visibility: hidden; pointer-events: none; }}
+        @keyframes gsTurquoiseScreenGlow {{
+            0% {{ opacity: 0; }}
+            35% {{ opacity: 1; }}
+            100% {{ opacity: 0; }}
         }}
         #gsIntroSplash {{
             position: fixed;
             inset: 0;
             z-index: 9999;
-            background: radial-gradient(circle at 50% 48%, rgba(83, 49, 251, 0.30) 0%, rgba(107, 251, 206, 0.08) 28%, #01010D 66%);
-            background-color: #01010D;
+            pointer-events: none;
+            overflow: hidden;
+            background: radial-gradient(circle at center, rgba(107, 251, 206, 0.34) 0%, rgba(107, 251, 206, 0.14) 45%, rgba(107, 251, 206, 0.04) 80%);
+            box-shadow: inset 0 0 140px rgba(107, 251, 206, 0.45);
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
+            animation: gsTurquoiseScreenGlow 1.35s ease-out forwards;
         }}
         .gs-splash-logo {{
-            animation: gsLogoZoomGlow 1.05s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-        }}
-        #gsIntroSplash.gs-hide {{
-            animation: gsSplashFadeOut 0.48s ease forwards;
+            animation: gsLogoZoomPass 1.35s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+            will-change: transform, opacity;
         }}
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
 
     <div id="gsIntroSplash">
-        <img src="/static/gridsense_logo.jpg" alt="GridSense" class="gs-splash-logo w-32 h-32 rounded-2xl object-cover" style="border: 1px solid rgba(107, 251, 206, 0.35);">
-        <div class="mt-5 text-2xl font-bold tracking-tight text-white font-heading" style="text-shadow: 0 0 20px rgba(107, 251, 206, 0.45);">GridSense</div>
-        <div class="mt-1 text-xs uppercase tracking-widest" style="color: #6BFBCE;">Campus Energy Intelligence</div>
+        <img src="/static/gridsense_logo.png" alt="GridSense" class="gs-splash-logo w-40 h-40 object-contain">
     </div>
     <script>
-        (function() {{
+        setTimeout(() => {{
             const splash = document.getElementById('gsIntroSplash');
-            if (sessionStorage.getItem('gs_intro_played')) {{
-                if (splash) splash.style.display = 'none';
-            }} else {{
-                sessionStorage.setItem('gs_intro_played', '1');
-                setTimeout(() => {{
-                    if (splash) splash.classList.add('gs-hide');
-                    setTimeout(() => {{ if (splash) splash.style.display = 'none'; }}, 500);
-                }}, 1250);
-            }}
-        }})();
+            if (splash) splash.style.display = 'none';
+        }}, 1400);
     </script>
 
     <header class="border-b" style="border-color: rgba(255,255,255,0.06); background: #01010D;">
         <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
             <div class="flex items-center gap-3">
-                <img src="/static/gridsense_logo.jpg" alt="GridSense Logo" class="w-9 h-9 rounded-lg object-cover" style="box-shadow: 0 0 14px rgba(83,49,251,0.55); border: 1px solid rgba(107,251,206,0.28);">
+                <img src="/static/gridsense_logo.png" alt="GridSense Logo" class="w-9 h-9 object-contain" style="filter: drop-shadow(0 0 10px rgba(107,251,206,0.45));">
                 <span class="text-lg font-bold text-white tracking-tight">GridSense</span>
             </div>
 

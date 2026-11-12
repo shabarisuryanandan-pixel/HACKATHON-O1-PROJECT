@@ -303,7 +303,7 @@ def render_cad_sandbox_html():
     <header style="background: #01010D; border-bottom: 1px solid rgba(255,255,255,0.07);">
         <div class="max-w-[1560px] mx-auto px-5 h-14 flex items-center justify-between">
             <div class="flex items-center gap-3">
-                <img src="/static/gridsense_logo.jpg" alt="GridSense Logo" class="w-8 h-8 rounded-lg object-cover" style="box-shadow: 0 0 14px rgba(83,49,251,0.55); border: 1px solid rgba(107,251,206,0.28);">
+                <img src="/static/gridsense_logo.png" alt="GridSense Logo" class="w-8 h-8 object-contain" style="filter: drop-shadow(0 0 10px rgba(107,251,206,0.45));">
                 <span class="text-base font-bold text-white tracking-tight">GridSense</span>
                 <span class="text-xs px-2 py-0.5 rounded font-medium" style="background: #12102E; color: #9499B8;">JIT Block B Simulator</span>
             </div>
