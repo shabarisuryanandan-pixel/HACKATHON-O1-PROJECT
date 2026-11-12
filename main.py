@@ -21,7 +21,7 @@ CONFIG_FILE = "notification_config.json"
 DEFAULT_NOTIFY_CONFIG = {
     "telegram_bot_token": os.getenv("TELEGRAM_BOT_TOKEN", ""),
     "telegram_chat_id": os.getenv("TELEGRAM_CHAT_ID", ""),
-    "webhook_url": os.getenv("WEBHOOK_URL", ""),  # For n8n / Power Automate / Make
+    "webhook_url": os.getenv("WEBHOOK_URL", "https://theone14.app.n8n.cloud/webhook/gridsense-alert"),  # For n8n / Power Automate / Make
     "whatsapp_phone": os.getenv("WHATSAPP_PHONE", ""),
     "whatsapp_apikey": os.getenv("WHATSAPP_APIKEY", "")
 }
@@ -225,6 +225,8 @@ async def api_sandbox_eval(request: Request):
         }
         SESSION_SUGGESTIONS.insert(0, entry)
         del SESSION_SUGGESTIONS[15:]  # Keep latest 15 entries
+
+        result["dispatch"] = dispatch_auto_notification(result["report"], result["time_12h"])
 
     return result
 
