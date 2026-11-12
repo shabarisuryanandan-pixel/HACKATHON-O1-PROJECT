@@ -481,19 +481,103 @@ def home():
             </div>
         </div>
 
-        <div id="blockNodesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-8 transition-opacity duration-300">
+        <div id="blockNodesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-5 transition-opacity duration-300">
+        </div>
+
+        <!-- STANDARD CAMPUS-WIDE TELEMETRY NODES -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-8">
+
+            <div class="card p-5 flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-xs font-semibold font-data" style="color: #8E9297;">HOSTEL // 120 ROOMS</span>
+                        <span class="text-[11px] font-data font-medium px-2 py-0.5 rounded-md" style="background: rgba(255,201,60,0.1); color: #FFC93C;">WIS: 15</span>
+                    </div>
+                    <div class="text-sm font-semibold text-white mb-3">Hostel Block and Geyser Grid</div>
+                    <div class="rounded-lg p-3" style="background: #2B2D31;">
+                        <div class="kv-row">
+                            <span style="color: #8E9297;">Vacant Room Mode</span>
+                            <span class="font-data text-xs" style="color: #D9DAD0;">Sensor Auto-Kill</span>
+                        </div>
+                        <div class="kv-row">
+                            <span style="color: #8E9297;">Occupied Rooms</span>
+                            <span class="font-data text-xs" style="color: #D9DAD0;">100% Manual Control</span>
+                        </div>
+                        <div class="kv-row">
+                            <span style="color: #8E9297;">Geyser Staggering</span>
+                            <span class="font-data text-xs" style="color: #D9DAD0;">W1 05:30 AM / W2 06:30 AM</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-4 pt-3 flex justify-between items-center text-xs" style="border-top: 1px solid rgba(255,255,255,0.06);">
+                    <span style="color: #8E9297;">Demand Breach</span>
+                    <span class="font-data font-semibold" style="color: #D9DAD0;">Zero Violations</span>
+                </div>
+            </div>
+
+            <div class="card p-5 flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-xs font-semibold font-data" style="color: #8E9297;">CAMPUS // 15 COOLERS</span>
+                        <span class="text-[11px] font-data font-medium px-2 py-0.5 rounded-md" style="background: rgba(255,201,60,0.1); color: #FFC93C;">WIS: 05</span>
+                    </div>
+                    <div class="text-sm font-semibold text-white mb-3">Commercial Cooling Units</div>
+                    <div class="rounded-lg p-3" style="background: #2B2D31;">
+                        <div class="kv-row">
+                            <span style="color: #8E9297;">Night Cut-off</span>
+                            <span class="font-data text-xs" style="color: #D9DAD0;">07:00 PM - 07:00 AM Daily</span>
+                        </div>
+                        <div class="kv-row">
+                            <span style="color: #8E9297;">Sunday Policy</span>
+                            <span class="font-data text-xs" style="color: #D9DAD0;">100% Locked OFF</span>
+                        </div>
+                        <div class="kv-row">
+                            <span style="color: #8E9297;">Thermal Buffer</span>
+                            <span class="font-data text-xs" style="color: #D9DAD0;">2+ Hours Retention</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-4 pt-3 flex justify-between items-center text-xs" style="border-top: 1px solid rgba(255,255,255,0.06);">
+                    <span style="color: #8E9297;">Monthly Savings</span>
+                    <span class="font-data font-semibold" style="color: #FFC93C;">1,620 kWh (INR 14.5K)</span>
+                </div>
+            </div>
+
+            <div class="card p-5 flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-xs font-semibold font-data" style="color: #8E9297;">NETWORK // 150 APs</span>
+                        <span class="text-[11px] font-data font-medium px-2 py-0.5 rounded-md" style="background: rgba(255,201,60,0.1); color: #FFC93C;">WIS: 10</span>
+                    </div>
+                    <div class="text-sm font-semibold text-white mb-3">Enterprise WiFi Grid</div>
+                    <div class="rounded-lg p-3" style="background: #2B2D31;">
+                        <div class="kv-row">
+                            <span style="color: #8E9297;">Academic APs</span>
+                            <span class="font-data text-xs" style="color: #FFC93C;">5 GHz Radios Off</span>
+                        </div>
+                        <div class="kv-row">
+                            <span style="color: #8E9297;">Off-Hours Mode</span>
+                            <span class="font-data text-xs" style="color: #D9DAD0;">Low-Power Eco (&lt;5W)</span>
+                        </div>
+                        <div class="kv-row">
+                            <span style="color: #8E9297;">Hostel APs</span>
+                            <span class="font-data text-xs" style="color: #D9DAD0;">Full 24/7 Bandwidth</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-4 pt-3 flex justify-between items-center text-xs" style="border-top: 1px solid rgba(255,255,255,0.06);">
+                    <span style="color: #8E9297;">Monthly Potential</span>
+                    <span class="font-data font-semibold" style="color: #FFC93C;">2,700 kWh</span>
+                </div>
+            </div>
+
         </div>
 
         <!-- SESSION SUGGESTIONS & SPATIAL OPTIMIZATION LOG (BY TIME) -->
         <section class="card p-6 mb-8">
-            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-5">
-                <div>
-                    <h2 class="text-base font-semibold text-white">Session Suggestions &amp; Spatial Optimization Log (By Time)</h2>
-                    <p class="text-xs mt-0.5" style="color: #8E9297;">Live time-indexed spatial consolidation, wing shutdowns, and Block C natural daylight harvesting logs</p>
-                </div>
-                <a href="/sandbox" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold" style="background: #FFC93C; color: #2B2D31;">
-                    Open Interactive Simulator
-                </a>
+            <div class="mb-5">
+                <h2 class="text-base font-semibold text-white">Session Suggestions &amp; Spatial Optimization Log (By Time)</h2>
+                <p class="text-xs mt-0.5" style="color: #8E9297;">Live time-indexed spatial consolidation, wing shutdowns, and Block C natural daylight harvesting logs</p>
             </div>
             <div id="dashboardSuggestionsLog" class="space-y-3"></div>
         </section>
@@ -614,14 +698,14 @@ def home():
                 clearInterval(telemetryTimer);
                 telemetryTimer = setInterval(() => {{
                     renderTelemetryBlock((currentTelemetryIdx + 1) % 3);
-                }}, 4500);
+                }}, 9000);
             }}
         }}
 
         renderTelemetryBlock(0);
         telemetryTimer = setInterval(() => {{
             renderTelemetryBlock((currentTelemetryIdx + 1) % 3);
-        }}, 4500);
+        }}, 9000);
 
         function formatTo12Hour(time24) {{
             if (!time24) return '';
