@@ -1,7 +1,8 @@
 """
-CAD Architectural Floor Plan View for Block B (8 Classrooms per floor)
-Renders real-life desks, lighting luminaires, 4-lift elevator bank,
-fire staircase, and 3-zone arterial corridor in Neumorphic style.
+Interactive CAD Architectural Blueprint Sandbox View for Block B
+Overlays authentic radial-arc floor plan image (CR B-101 to B-108,
+Lab B-1/B-2, Seminar Hall, Computer Lab B-3, 4 Lifts, and Central Atrium)
+with dynamic luminaire illumination, spatial consolidation, and automatic Telegram mobile alerts.
 """
 
 def render_cad_sandbox_html():
@@ -10,7 +11,7 @@ def render_cad_sandbox_html():
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GridSense // Architectural CAD Blueprint & Testing Sandbox</title>
+    <title>GridSense // Block B Architectural Blueprint Sandbox</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
     <style>
@@ -41,96 +42,72 @@ def render_cad_sandbox_html():
             transition: all 0.15s ease;
         }
         .neu-btn:hover { color: #10b981; }
-        .neu-btn:active {
-            box-shadow: inset 3px 3px 6px #08090b, inset -3px -3px 6px #1a1c22;
-        }
 
-        /* CAD Architectural Styling */
-        .cad-room {
-            background: #14161c;
-            border: 1.5px solid #232733;
-            border-radius: 8px;
+        /* Blueprint Interactive Overlay */
+        .blueprint-container {
             position: relative;
+            width: 100%;
+            max-width: 820px;
+            margin: 0 auto;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 0 24px rgba(0, 0, 0, 0.8);
+        }
+        .blueprint-img {
+            width: 100%;
+            display: block;
+            filter: contrast(1.1) brightness(0.92);
+        }
+
+        /* SVG Hot-Zone Polygons */
+        .zone-poly {
             transition: all 0.3s ease;
+            cursor: pointer;
         }
-        .cad-room-lit {
-            background: radial-gradient(circle at center, rgba(251, 191, 36, 0.15) 0%, rgba(20, 22, 28, 0.95) 85%);
-            border: 1.5px solid rgba(251, 191, 36, 0.45) !important;
-            box-shadow: 0 0 16px rgba(251, 191, 36, 0.12), inset 0 0 14px rgba(251, 191, 36, 0.05);
+        .poly-lit {
+            fill: rgba(251, 191, 36, 0.38);
+            stroke: #fbbf24;
+            stroke-width: 2.5;
+            filter: drop-shadow(0 0 8px rgba(251, 191, 36, 0.7));
         }
-        .cad-room-dark {
-            background: #0f1014;
-            border: 1px solid #1a1c24 !important;
-            opacity: 0.6;
+        .poly-dark {
+            fill: rgba(10, 12, 16, 0.78);
+            stroke: rgba(255, 255, 255, 0.1);
+            stroke-width: 1;
         }
-
-        .cad-desk {
-            background: #1d212b;
-            border: 1px solid #2d3342;
-            border-radius: 2px;
+        .lift-active {
+            fill: rgba(16, 185, 129, 0.55);
+            stroke: #10b981;
+            stroke-width: 2;
         }
-        .cad-desk-lit {
-            background: #2b261a;
-            border: 1px solid rgba(251, 191, 36, 0.4);
-        }
-        .cad-light {
-            width: 7px;
-            height: 7px;
-            border-radius: 50%;
-            background: #333a4a;
-        }
-        .cad-light-lit {
-            background: #fbbf24;
-            box-shadow: 0 0 8px #fbbf24, 0 0 14px rgba(251, 191, 36, 0.6);
-        }
-
-        .corridor-lit {
-            background: rgba(251, 191, 36, 0.08);
-            border: 1px solid rgba(251, 191, 36, 0.25);
-        }
-        .corridor-dark {
-            background: #0b0c0f;
-            border: 1px dashed rgba(255, 255, 255, 0.05);
-            opacity: 0.4;
+        .lift-sleep {
+            fill: rgba(20, 22, 28, 0.85);
+            stroke: rgba(255, 255, 255, 0.15);
+            stroke-width: 1;
         }
     </style>
 </head>
 <body class="min-h-screen p-4 sm:p-8 max-w-7xl mx-auto">
 
-    <!-- HEADER NAVIGATION -->
+    <!-- HEADER -->
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 pb-4 border-b border-white/5">
         <div>
-            <div class="text-xs font-mono-code font-bold text-emerald-400 uppercase tracking-widest">Architectural CAD Blueprint // Digital Twin</div>
-            <h1 class="text-2xl sm:text-3xl font-bold text-white tracking-tight mt-1">Block B: 8-Classroom Floor Plan</h1>
-            <p class="text-xs text-zinc-400 font-mono-code mt-0.5">Real-life architectural layout with physical desks, luminaires, 4-lift bank, and zoned hallway relays</p>
+            <div class="text-xs font-mono-code font-bold text-emerald-400 uppercase tracking-widest">Architectural Floor Plan // Digital Twin</div>
+            <h1 class="text-2xl sm:text-3xl font-bold text-white tracking-tight mt-1">Block B: 7,500 m² Interactive Floor Plan</h1>
+            <p class="text-xs text-zinc-400 font-mono-code mt-0.5">Live visual illumination overlays on the real radial architectural CAD layout</p>
         </div>
-        <div class="flex items-center gap-3">
-            <a href="/" class="px-4 py-2 neu-btn font-mono-code text-xs font-semibold text-zinc-300">
-                Back to Dashboard
-            </a>
-        </div>
+        <a href="/" class="px-4 py-2 neu-btn font-mono-code text-xs font-semibold text-zinc-300">
+            Back to Dashboard
+        </a>
     </div>
 
-    <!-- MAIN TWO-COLUMN LAYOUT -->
+    <!-- MAIN GRID -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
 
         <!-- LEFT COLUMN: CONTROLS & TEST PARAMS (4 COLS) -->
         <div class="lg:col-span-4 space-y-5">
 
-            <!-- FLOOR SELECTOR -->
-            <div class="p-4 neu-card">
-                <div class="text-xs font-mono-code uppercase text-zinc-400 mb-2 font-bold">Floor Level</div>
-                <div class="grid grid-cols-2 gap-3">
-                    <button id="btnFloor1" onclick="switchFloor(1)" class="py-2.5 neu-btn text-xs font-mono-code font-bold text-emerald-400 text-center">
-                        Floor 1 (B101 - B108)
-                    </button>
-                    <button id="btnFloor2" onclick="switchFloor(2)" class="py-2.5 neu-btn text-xs font-mono-code font-bold text-zinc-400 text-center">
-                        Floor 2 (B201 - B208)
-                    </button>
-                </div>
-            </div>
-
-            <!-- PRESET QUICK SELECTOR -->
+            <!-- SCENARIO PRESETS -->
             <div class="p-4 neu-card">
                 <div class="text-xs font-mono-code uppercase text-zinc-400 mb-2 font-bold">Scenario Presets</div>
                 <div class="grid grid-cols-3 gap-2">
@@ -146,7 +123,7 @@ def render_cad_sandbox_html():
                 </div>
             </div>
 
-            <!-- TIME & ENVIRONMENT SLIDERS -->
+            <!-- ENVIRONMENTAL INPUTS -->
             <div class="p-4 neu-card space-y-3">
                 <div class="text-xs font-mono-code uppercase text-zinc-400 font-bold">Environmental Controls</div>
                 
@@ -176,62 +153,62 @@ def render_cad_sandbox_html():
                 </div>
             </div>
 
-            <!-- 8-ROOM OCCUPANCY INPUTS -->
+            <!-- OCCUPANCY SLIDERS -->
             <div class="p-4 neu-card space-y-2">
-                <div class="text-xs font-mono-code uppercase text-zinc-400 font-bold mb-1">Headcount per Room (Max 60)</div>
+                <div class="text-xs font-mono-code uppercase text-zinc-400 font-bold mb-1">Classroom Occupancies</div>
                 <div class="grid grid-cols-2 gap-2 text-[11px] font-mono-code text-zinc-400">
                     <div>
                         <div class="flex justify-between">
-                            <span id="lbl_r1">B101 (Entrance):</span>
+                            <span>CR B-101 (West):</span>
                             <span id="val_r1" class="text-white font-bold">0</span>
                         </div>
                         <input type="range" id="occ_r1" min="0" max="60" value="0" oninput="onParamChange()" class="w-full accent-blue-500 cursor-pointer">
                     </div>
                     <div>
                         <div class="flex justify-between">
-                            <span id="lbl_r5">B105 (Entrance):</span>
+                            <span>CR B-105 (East):</span>
                             <span id="val_r5" class="text-white font-bold">0</span>
                         </div>
                         <input type="range" id="occ_r5" min="0" max="60" value="0" oninput="onParamChange()" class="w-full accent-blue-500 cursor-pointer">
                     </div>
                     <div>
                         <div class="flex justify-between">
-                            <span id="lbl_r2">B102 (Mid):</span>
+                            <span>CR B-102 (Mid):</span>
                             <span id="val_r2" class="text-white font-bold">0</span>
                         </div>
                         <input type="range" id="occ_r2" min="0" max="60" value="0" oninput="onParamChange()" class="w-full accent-blue-500 cursor-pointer">
                     </div>
                     <div>
                         <div class="flex justify-between">
-                            <span id="lbl_r6">B106 (Mid):</span>
+                            <span>CR B-106 (Mid):</span>
                             <span id="val_r6" class="text-white font-bold">0</span>
                         </div>
                         <input type="range" id="occ_r6" min="0" max="60" value="0" oninput="onParamChange()" class="w-full accent-blue-500 cursor-pointer">
                     </div>
                     <div>
                         <div class="flex justify-between">
-                            <span id="lbl_r3">B103 (Mid-Far):</span>
+                            <span>CR B-103:</span>
                             <span id="val_r3" class="text-white font-bold">0</span>
                         </div>
                         <input type="range" id="occ_r3" min="0" max="60" value="0" oninput="onParamChange()" class="w-full accent-blue-500 cursor-pointer">
                     </div>
                     <div>
                         <div class="flex justify-between">
-                            <span id="lbl_r7">B107 (Mid-Far):</span>
+                            <span>CR B-107:</span>
                             <span id="val_r7" class="text-white font-bold">0</span>
                         </div>
                         <input type="range" id="occ_r7" min="0" max="60" value="0" oninput="onParamChange()" class="w-full accent-blue-500 cursor-pointer">
                     </div>
                     <div>
                         <div class="flex justify-between">
-                            <span id="lbl_r4">B104 (Far End):</span>
+                            <span>CR B-104 (Far End):</span>
                             <span id="val_r4" class="text-white font-bold">0</span>
                         </div>
                         <input type="range" id="occ_r4" min="0" max="60" value="0" oninput="onParamChange()" class="w-full accent-blue-500 cursor-pointer">
                     </div>
                     <div>
                         <div class="flex justify-between">
-                            <span id="lbl_r8">B108 (Far End):</span>
+                            <span>CR B-108 (Far End):</span>
                             <span id="val_r8" class="text-amber-400 font-bold">25</span>
                         </div>
                         <input type="range" id="occ_r8" min="0" max="60" value="25" oninput="onParamChange()" class="w-full accent-amber-500 cursor-pointer">
@@ -239,34 +216,42 @@ def render_cad_sandbox_html():
                 </div>
             </div>
 
-            <!-- TELEGRAM BOT ALERT CONFIG -->
+            <!-- AUTOMATIC TELEGRAM PING SETUP -->
             <div class="p-4 neu-card space-y-2.5">
-                <div class="text-xs font-mono-code uppercase text-zinc-400 font-bold">Telegram Mobile Alerts</div>
+                <div class="flex justify-between items-center">
+                    <span class="text-xs font-mono-code uppercase text-zinc-400 font-bold">Automatic Mobile Alert</span>
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                </div>
+                <p class="text-[11px] text-zinc-500 font-mono-code leading-relaxed">
+                    Enter Bot Token & Chat ID once. Any slider change or relocation will <strong>auto-ping your phone</strong> in the background.
+                </p>
                 <input type="text" id="tgToken" placeholder="Bot Token from @BotFather" class="w-full p-2 neu-inset text-[11px] font-mono-code text-zinc-200 outline-none">
                 <input type="text" id="tgChatId" placeholder="Chat ID from @userinfobot" class="w-full p-2 neu-inset text-[11px] font-mono-code text-zinc-200 outline-none">
-                <button onclick="sendTelegramAlert()" class="w-full py-2 neu-btn text-xs font-mono-code font-bold text-emerald-400">
-                    Send Live Test Ping to Mobile
-                </button>
+                <div class="flex gap-2">
+                    <button onclick="saveAndTestTelegram()" class="w-full py-2 neu-btn text-xs font-mono-code font-bold text-emerald-400">
+                        Test Mobile Ping
+                    </button>
+                </div>
                 <div id="tgStatus" class="text-[10px] font-mono-code text-zinc-500 text-center"></div>
             </div>
 
         </div>
 
-        <!-- RIGHT COLUMN: CAD ARCHITECTURAL BLUEPRINT & GAUGES (8 COLS) -->
+        <!-- RIGHT COLUMN: AUTHENTIC ARCHITECTURAL BLUEPRINT (8 COLS) -->
         <div class="lg:col-span-8 space-y-5">
 
-            <!-- COMPARISON METERS -->
+            <!-- GAUGES ROW -->
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div class="p-4 neu-card">
                     <div class="text-[11px] font-mono-code uppercase text-zinc-500">Unmanaged Baseline</div>
                     <div id="baselineMeter" class="text-2xl font-bold text-red-400 mt-1">28.40 kW</div>
-                    <div class="text-[11px] text-zinc-500 font-mono-code mt-0.5">All Lights + Fixed AC</div>
+                    <div class="text-[11px] text-zinc-500 font-mono-code mt-0.5">Blind Power Draw</div>
                 </div>
 
                 <div class="p-4 neu-card">
                     <div class="text-[11px] font-mono-code uppercase text-zinc-500">GridSense Optimized</div>
                     <div id="optimizedMeter" class="text-2xl font-bold text-emerald-400 mt-1">6.25 kW</div>
-                    <div class="text-[11px] text-zinc-500 font-mono-code mt-0.5">Zoned Cutoffs + Adaptive AC</div>
+                    <div class="text-[11px] text-zinc-500 font-mono-code mt-0.5">Adaptive Cooling & Cutoffs</div>
                 </div>
 
                 <div class="p-4 neu-card">
@@ -276,7 +261,7 @@ def render_cad_sandbox_html():
                 </div>
             </div>
 
-            <!-- AUTOMATION CONSOLIDATION POPUP CARD -->
+            <!-- RELOCATION NUDGE CARD -->
             <div id="alertCard" class="p-4 neu-card border-l-4 border-l-yellow-400 flex items-start justify-between gap-4">
                 <div>
                     <div class="flex items-center gap-2 text-xs font-mono-code font-bold text-yellow-400 uppercase">
@@ -284,7 +269,7 @@ def render_cad_sandbox_html():
                         Spatial Consolidation Nudge Triggered
                     </div>
                     <p id="alertText" class="text-xs font-mono-code text-zinc-300 mt-1">
-                        Isolated class in B108 (Far End). Relocate to B101 near staircase to shut down 40m of corridor lighting.
+                        Isolated class in CR B-108 (Far End). Relocate to CR B-101 near main stairs to shut down East Corridor.
                     </p>
                 </div>
                 <button onclick="applyConsolidation()" class="px-3.5 py-1.5 neu-btn text-xs font-mono-code font-bold text-emerald-400 shrink-0">
@@ -292,252 +277,68 @@ def render_cad_sandbox_html():
                 </button>
             </div>
 
-            <!-- THE ARCHITECTURAL CAD 2D FLOOR BLUEPRINT -->
-            <div class="p-6 neu-card space-y-4">
-                <div class="flex justify-between items-center border-b border-white/5 pb-3">
+            <!-- AUTHENTIC CAD BLUEPRINT DISPLAY -->
+            <div class="p-6 neu-card">
+                <div class="flex justify-between items-center mb-4 pb-2 border-b border-white/5">
                     <div>
-                        <h2 id="blueprintTitle" class="text-sm font-bold text-white uppercase tracking-wider font-mono-code">
-                            BLOCK B // FLOOR 1 CAD ARCHITECTURAL BLUEPRINT
+                        <h2 class="text-sm font-bold text-white uppercase tracking-wider font-mono-code">
+                            BLOCK B // RADIAL ARCHITECTURAL BLUEPRINT
                         </h2>
-                        <p class="text-[11px] text-zinc-500 font-mono-code">8 Classrooms | 80m Arterial Hallway | 4-Lift Elevator Bank | Fire Staircase</p>
+                        <p class="text-[11px] text-zinc-500 font-mono-code">Built-up Area: ~7,500 m² | G+4 Floor Plan with Dynamic Luminaire & HVAC Overlays</p>
                     </div>
                     <div id="elevState" class="text-[10px] font-mono-code text-zinc-400 neu-inset px-2.5 py-1">
-                        Lifts: 2 Active (Mandatory Safety Floor)
+                        Lifts 1 & 2 Active | Lifts 3 & 4 Deep Sleep
                     </div>
                 </div>
 
-                <!-- CAD DRAWING CONTAINER -->
-                <div class="neu-inset p-4 rounded-xl space-y-3 overflow-x-auto">
+                <!-- OVERLAY CONTAINER -->
+                <div class="blueprint-container">
+                    <img src="/block_b_floorplan.png" alt="Block B Floor Plan" class="blueprint-img">
                     
-                    <!-- NORTH WING: 4 CLASSROOMS (x01 to x04) -->
-                    <div class="grid grid-cols-4 gap-3 min-w-[620px]">
-                        <!-- ROOM 1 -->
-                        <div id="cad_r1" class="cad-room p-3 cad-room-dark">
-                            <div class="flex justify-between items-start">
-                                <span class="text-xs font-mono-code font-bold text-white" id="name_r1">B101</span>
-                                <span class="text-[9px] font-mono-code font-bold px-1.5 py-0.5 rounded bg-black/50 text-zinc-500" id="badge_r1">OFF</span>
-                            </div>
-                            <div class="grid grid-cols-3 gap-1.5 my-2.5">
-                                <div class="cad-desk h-3" id="d1_r1"></div>
-                                <div class="cad-desk h-3" id="d2_r1"></div>
-                                <div class="cad-desk h-3" id="d3_r1"></div>
-                                <div class="cad-desk h-3" id="d4_r1"></div>
-                                <div class="cad-desk h-3" id="d5_r1"></div>
-                                <div class="cad-desk h-3" id="d6_r1"></div>
-                            </div>
-                            <div class="flex justify-between items-center pt-1 border-t border-white/5">
-                                <div class="flex gap-1.5">
-                                    <div class="cad-light" id="l1_r1"></div>
-                                    <div class="cad-light" id="l2_r1"></div>
-                                </div>
-                                <span class="text-[9px] font-mono-code text-zinc-400" id="ac_r1">AC: OFF</span>
-                            </div>
-                        </div>
-
-                        <!-- ROOM 2 -->
-                        <div id="cad_r2" class="cad-room p-3 cad-room-dark">
-                            <div class="flex justify-between items-start">
-                                <span class="text-xs font-mono-code font-bold text-white" id="name_r2">B102</span>
-                                <span class="text-[9px] font-mono-code font-bold px-1.5 py-0.5 rounded bg-black/50 text-zinc-500" id="badge_r2">OFF</span>
-                            </div>
-                            <div class="grid grid-cols-3 gap-1.5 my-2.5">
-                                <div class="cad-desk h-3" id="d1_r2"></div>
-                                <div class="cad-desk h-3" id="d2_r2"></div>
-                                <div class="cad-desk h-3" id="d3_r2"></div>
-                                <div class="cad-desk h-3" id="d4_r2"></div>
-                                <div class="cad-desk h-3" id="d5_r2"></div>
-                                <div class="cad-desk h-3" id="d6_r2"></div>
-                            </div>
-                            <div class="flex justify-between items-center pt-1 border-t border-white/5">
-                                <div class="flex gap-1.5">
-                                    <div class="cad-light" id="l1_r2"></div>
-                                    <div class="cad-light" id="l2_r2"></div>
-                                </div>
-                                <span class="text-[9px] font-mono-code text-zinc-400" id="ac_r2">AC: OFF</span>
-                            </div>
-                        </div>
-
-                        <!-- ROOM 3 -->
-                        <div id="cad_r3" class="cad-room p-3 cad-room-dark">
-                            <div class="flex justify-between items-start">
-                                <span class="text-xs font-mono-code font-bold text-white" id="name_r3">B103</span>
-                                <span class="text-[9px] font-mono-code font-bold px-1.5 py-0.5 rounded bg-black/50 text-zinc-500" id="badge_r3">OFF</span>
-                            </div>
-                            <div class="grid grid-cols-3 gap-1.5 my-2.5">
-                                <div class="cad-desk h-3" id="d1_r3"></div>
-                                <div class="cad-desk h-3" id="d2_r3"></div>
-                                <div class="cad-desk h-3" id="d3_r3"></div>
-                                <div class="cad-desk h-3" id="d4_r3"></div>
-                                <div class="cad-desk h-3" id="d5_r3"></div>
-                                <div class="cad-desk h-3" id="d6_r3"></div>
-                            </div>
-                            <div class="flex justify-between items-center pt-1 border-t border-white/5">
-                                <div class="flex gap-1.5">
-                                    <div class="cad-light" id="l1_r3"></div>
-                                    <div class="cad-light" id="l2_r3"></div>
-                                </div>
-                                <span class="text-[9px] font-mono-code text-zinc-400" id="ac_r3">AC: OFF</span>
-                            </div>
-                        </div>
-
-                        <!-- ROOM 4 (FAR END) -->
-                        <div id="cad_r4" class="cad-room p-3 cad-room-dark">
-                            <div class="flex justify-between items-start">
-                                <span class="text-xs font-mono-code font-bold text-white" id="name_r4">B104 (Far)</span>
-                                <span class="text-[9px] font-mono-code font-bold px-1.5 py-0.5 rounded bg-black/50 text-zinc-500" id="badge_r4">OFF</span>
-                            </div>
-                            <div class="grid grid-cols-3 gap-1.5 my-2.5">
-                                <div class="cad-desk h-3" id="d1_r4"></div>
-                                <div class="cad-desk h-3" id="d2_r4"></div>
-                                <div class="cad-desk h-3" id="d3_r4"></div>
-                                <div class="cad-desk h-3" id="d4_r4"></div>
-                                <div class="cad-desk h-3" id="d5_r4"></div>
-                                <div class="cad-desk h-3" id="d6_r4"></div>
-                            </div>
-                            <div class="flex justify-between items-center pt-1 border-t border-white/5">
-                                <div class="flex gap-1.5">
-                                    <div class="cad-light" id="l1_r4"></div>
-                                    <div class="cad-light" id="l2_r4"></div>
-                                </div>
-                                <span class="text-[9px] font-mono-code text-zinc-400" id="ac_r4">AC: OFF</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- ARTERIAL 80M CENTRAL CORRIDOR WITH LIFTS & STAIRS -->
-                    <div class="grid grid-cols-12 gap-2 py-2 min-w-[620px]">
+                    <!-- SVG OVERLAY MAP (VIEWBOX 1000 x 860) -->
+                    <svg viewBox="0 0 1000 860" class="absolute inset-0 w-full h-full pointer-events-none">
                         
-                        <!-- STAIRCASE & 4-LIFT SHAFT -->
-                        <div class="col-span-3 p-2 bg-[#171a22] border border-[#2b3140] rounded flex flex-col justify-between">
-                            <div class="flex justify-between items-center text-[10px] font-mono-code text-zinc-400 border-b border-white/5 pb-1">
-                                <span>MAIN STAIRS</span>
-                                <span class="text-emerald-400">4x LIFTS</span>
-                            </div>
-                            <!-- 4 ELEVATOR SHAFTS -->
-                            <div class="grid grid-cols-4 gap-1 my-1.5">
-                                <div class="h-5 bg-[#232836] border border-emerald-500/40 rounded flex items-center justify-center text-[8px] font-mono-code text-emerald-400 font-bold">C1</div>
-                                <div class="h-5 bg-[#232836] border border-emerald-500/40 rounded flex items-center justify-center text-[8px] font-mono-code text-emerald-400 font-bold">C2</div>
-                                <div id="cad_c3" class="h-5 bg-[#161820] border border-zinc-700 rounded flex items-center justify-center text-[8px] font-mono-code text-zinc-500">C3</div>
-                                <div id="cad_c4" class="h-5 bg-[#161820] border border-zinc-700 rounded flex items-center justify-center text-[8px] font-mono-code text-zinc-500">C4</div>
-                            </div>
-                            <div class="text-[8px] font-mono-code text-zinc-500 text-center">Cars 1 & 2 Active | Cars 3 & 4 Sleep</div>
-                        </div>
+                        <!-- CR B-101 (WEST WING TOP) -->
+                        <polygon id="poly_r1" points="60,280 200,290 195,405 50,380" class="zone-poly poly-dark pointer-events-auto" onclick="selectRoom(1)"></polygon>
 
-                        <!-- 3-ZONE SEQUENTIAL CORRIDOR STRIP -->
-                        <div class="col-span-9 grid grid-cols-3 gap-2">
-                            <div id="cad_corridor_z1" class="p-2 rounded flex flex-col justify-center items-center text-center font-mono-code text-[10px] corridor-dark">
-                                <span class="font-bold">Zone 1 (Entrance)</span>
-                                <span id="txt_corridor_z1" class="text-[9px] text-zinc-500">[DARK]</span>
-                            </div>
-                            <div id="cad_corridor_z2" class="p-2 rounded flex flex-col justify-center items-center text-center font-mono-code text-[10px] corridor-dark">
-                                <span class="font-bold">Zone 2 (Mid-Way)</span>
-                                <span id="txt_corridor_z2" class="text-[9px] text-zinc-500">[DARK]</span>
-                            </div>
-                            <div id="cad_corridor_z3" class="p-2 rounded flex flex-col justify-center items-center text-center font-mono-code text-[10px] corridor-dark">
-                                <span class="font-bold">Zone 3 (Far End)</span>
-                                <span id="txt_corridor_z3" class="text-[9px] text-zinc-500">[DARK]</span>
-                            </div>
-                        </div>
+                        <!-- CR B-102 -->
+                        <polygon id="poly_r2" points="50,400 195,420 190,520 40,510" class="zone-poly poly-dark pointer-events-auto" onclick="selectRoom(2)"></polygon>
 
-                    </div>
+                        <!-- CR B-103 -->
+                        <polygon id="poly_r3" points="40,530 190,535 185,635 30,645" class="zone-poly poly-dark pointer-events-auto" onclick="selectRoom(3)"></polygon>
 
-                    <!-- SOUTH WING: 4 CLASSROOMS (x05 to x08) -->
-                    <div class="grid grid-cols-4 gap-3 min-w-[620px]">
-                        <!-- ROOM 5 -->
-                        <div id="cad_r5" class="cad-room p-3 cad-room-dark">
-                            <div class="flex justify-between items-start">
-                                <span class="text-xs font-mono-code font-bold text-white" id="name_r5">B105</span>
-                                <span class="text-[9px] font-mono-code font-bold px-1.5 py-0.5 rounded bg-black/50 text-zinc-500" id="badge_r5">OFF</span>
-                            </div>
-                            <div class="grid grid-cols-3 gap-1.5 my-2.5">
-                                <div class="cad-desk h-3" id="d1_r5"></div>
-                                <div class="cad-desk h-3" id="d2_r5"></div>
-                                <div class="cad-desk h-3" id="d3_r5"></div>
-                                <div class="cad-desk h-3" id="d4_r5"></div>
-                                <div class="cad-desk h-3" id="d5_r5"></div>
-                                <div class="cad-desk h-3" id="d6_r5"></div>
-                            </div>
-                            <div class="flex justify-between items-center pt-1 border-t border-white/5">
-                                <div class="flex gap-1.5">
-                                    <div class="cad-light" id="l1_r5"></div>
-                                    <div class="cad-light" id="l2_r5"></div>
-                                </div>
-                                <span class="text-[9px] font-mono-code text-zinc-400" id="ac_r5">AC: OFF</span>
-                            </div>
-                        </div>
+                        <!-- CR B-104 (WEST WING FAR END) -->
+                        <polygon id="poly_r4" points="30,660 185,650 180,780 20,785" class="zone-poly poly-dark pointer-events-auto" onclick="selectRoom(4)"></polygon>
 
-                        <!-- ROOM 6 -->
-                        <div id="cad_r6" class="cad-room p-3 cad-room-dark">
-                            <div class="flex justify-between items-start">
-                                <span class="text-xs font-mono-code font-bold text-white" id="name_r6">B106</span>
-                                <span class="text-[9px] font-mono-code font-bold px-1.5 py-0.5 rounded bg-black/50 text-zinc-500" id="badge_r6">OFF</span>
-                            </div>
-                            <div class="grid grid-cols-3 gap-1.5 my-2.5">
-                                <div class="cad-desk h-3" id="d1_r6"></div>
-                                <div class="cad-desk h-3" id="d2_r6"></div>
-                                <div class="cad-desk h-3" id="d3_r6"></div>
-                                <div class="cad-desk h-3" id="d4_r6"></div>
-                                <div class="cad-desk h-3" id="d5_r6"></div>
-                                <div class="cad-desk h-3" id="d6_r6"></div>
-                            </div>
-                            <div class="flex justify-between items-center pt-1 border-t border-white/5">
-                                <div class="flex gap-1.5">
-                                    <div class="cad-light" id="l1_r6"></div>
-                                    <div class="cad-light" id="l2_r6"></div>
-                                </div>
-                                <span class="text-[9px] font-mono-code text-zinc-400" id="ac_r6">AC: OFF</span>
-                            </div>
-                        </div>
+                        <!-- CR B-105 (EAST WING TOP) -->
+                        <polygon id="poly_r5" points="800,290 940,280 950,380 805,405" class="zone-poly poly-dark pointer-events-auto" onclick="selectRoom(5)"></polygon>
 
-                        <!-- ROOM 7 -->
-                        <div id="cad_r7" class="cad-room p-3 cad-room-dark">
-                            <div class="flex justify-between items-start">
-                                <span class="text-xs font-mono-code font-bold text-white" id="name_r7">B107</span>
-                                <span class="text-[9px] font-mono-code font-bold px-1.5 py-0.5 rounded bg-black/50 text-zinc-500" id="badge_r7">OFF</span>
-                            </div>
-                            <div class="grid grid-cols-3 gap-1.5 my-2.5">
-                                <div class="cad-desk h-3" id="d1_r7"></div>
-                                <div class="cad-desk h-3" id="d2_r7"></div>
-                                <div class="cad-desk h-3" id="d3_r7"></div>
-                                <div class="cad-desk h-3" id="d4_r7"></div>
-                                <div class="cad-desk h-3" id="d5_r7"></div>
-                                <div class="cad-desk h-3" id="d6_r7"></div>
-                            </div>
-                            <div class="flex justify-between items-center pt-1 border-t border-white/5">
-                                <div class="flex gap-1.5">
-                                    <div class="cad-light" id="l1_r7"></div>
-                                    <div class="cad-light" id="l2_r7"></div>
-                                </div>
-                                <span class="text-[9px] font-mono-code text-zinc-400" id="ac_r7">AC: OFF</span>
-                            </div>
-                        </div>
+                        <!-- CR B-106 -->
+                        <polygon id="poly_r6" points="805,420 950,400 960,510 810,520" class="zone-poly poly-dark pointer-events-auto" onclick="selectRoom(6)"></polygon>
 
-                        <!-- ROOM 8 (FAR END) -->
-                        <div id="cad_r8" class="cad-room p-3 cad-room-lit">
-                            <div class="flex justify-between items-start">
-                                <span class="text-xs font-mono-code font-bold text-white" id="name_r8">B108 (Far)</span>
-                                <span class="text-[9px] font-mono-code font-bold px-1.5 py-0.5 rounded bg-black/50 text-amber-300" id="badge_r8">LIT</span>
-                            </div>
-                            <div class="grid grid-cols-3 gap-1.5 my-2.5">
-                                <div class="cad-desk cad-desk-lit h-3" id="d1_r8"></div>
-                                <div class="cad-desk cad-desk-lit h-3" id="d2_r8"></div>
-                                <div class="cad-desk cad-desk-lit h-3" id="d3_r8"></div>
-                                <div class="cad-desk cad-desk-lit h-3" id="d4_r8"></div>
-                                <div class="cad-desk cad-desk-lit h-3" id="d5_r8"></div>
-                                <div class="cad-desk cad-desk-lit h-3" id="d6_r8"></div>
-                            </div>
-                            <div class="flex justify-between items-center pt-1 border-t border-white/5">
-                                <div class="flex gap-1.5">
-                                    <div class="cad-light cad-light-lit" id="l1_r8"></div>
-                                    <div class="cad-light cad-light-lit" id="l2_r8"></div>
-                                </div>
-                                <span class="text-[9px] font-mono-code text-amber-300" id="ac_r8">AC: 26°C</span>
-                            </div>
-                        </div>
-                    </div>
+                        <!-- CR B-107 -->
+                        <polygon id="poly_r7" points="810,535 960,530 970,645 815,635" class="zone-poly poly-dark pointer-events-auto" onclick="selectRoom(7)"></polygon>
 
+                        <!-- CR B-108 (EAST WING FAR END) -->
+                        <polygon id="poly_r8" points="815,650 970,660 980,785 820,780" class="zone-poly poly-lit pointer-events-auto" onclick="selectRoom(8)"></polygon>
+
+                        <!-- LAB B-1 (NORTH WEST) -->
+                        <polygon id="poly_lab1" points="245,145 440,150 435,320 230,300" class="zone-poly poly-dark"></polygon>
+
+                        <!-- LAB B-2 (NORTH EAST) -->
+                        <polygon id="poly_lab2" points="560,150 755,145 770,300 565,320" class="zone-poly poly-dark"></polygon>
+
+                        <!-- SEMINAR HALL (SOUTH BASE) -->
+                        <polygon id="poly_seminar" points="370,760 630,760 630,940 370,940" class="zone-poly poly-dark"></polygon>
+
+                        <!-- LIFT 1 & 2 (WEST FLANK) -->
+                        <rect id="poly_lift12" x="260" y="425" width="70" height="150" rx="6" class="lift-active"></rect>
+
+                        <!-- LIFT 3 & 4 (EAST FLANK) -->
+                        <rect id="poly_lift34" x="670" y="425" width="70" height="150" rx="6" class="lift-sleep"></rect>
+
+                    </svg>
                 </div>
-
             </div>
 
         </div>
@@ -546,31 +347,9 @@ def render_cad_sandbox_html():
 
     <!-- JAVASCRIPT CONTROLLER -->
     <script>
-        let currentFloor = 1;
         let currentRelocation = null;
 
-        function switchFloor(fl) {
-            currentFloor = fl;
-            document.getElementById('btnFloor1').className = (fl === 1) ? 
-                "py-2.5 neu-btn text-xs font-mono-code font-bold text-emerald-400 text-center" : 
-                "py-2.5 neu-btn text-xs font-mono-code font-bold text-zinc-400 text-center";
-            document.getElementById('btnFloor2').className = (fl === 2) ? 
-                "py-2.5 neu-btn text-xs font-mono-code font-bold text-emerald-400 text-center" : 
-                "py-2.5 neu-btn text-xs font-mono-code font-bold text-zinc-400 text-center";
-
-            document.getElementById('blueprintTitle').innerText = `BLOCK B // FLOOR ${fl} CAD ARCHITECTURAL BLUEPRINT`;
-
-            for (let i = 1; i <= 8; i++) {
-                const rNum = `B${fl}0${i}`;
-                const isFar = (i === 4 || i === 8) ? " (Far)" : "";
-                document.getElementById(`lbl_r${i}`).innerText = `${rNum}${isFar}:`;
-                document.getElementById(`name_r${i}`).innerText = `${rNum}${isFar}`;
-            }
-
-            onParamChange();
-        }
-
-        function onParamChange() {
+        function onParamChange(autoPing = false) {
             const timeVal = parseFloat(document.getElementById('timeSlider').value);
             const hours = Math.floor(timeVal);
             const mins = (timeVal % 1 === 0.5) ? "30" : "00";
@@ -586,11 +365,11 @@ def render_cad_sandbox_html():
             for (let i = 1; i <= 8; i++) {
                 const occ = parseInt(document.getElementById(`occ_r${i}`).value);
                 document.getElementById(`val_r${i}`).innerText = occ;
-                roomsPayload[`B${currentFloor}0${i}`] = occ;
+                roomsPayload[`B10${i}`] = occ;
             }
 
             const payload = {
-                floor: currentFloor,
+                floor: 1,
                 time: timeStr,
                 temperature: parseFloat(temp),
                 weather: weather,
@@ -603,55 +382,34 @@ def render_cad_sandbox_html():
                 body: JSON.stringify(payload)
             })
             .then(res => res.json())
-            .then(data => renderCADState(data))
+            .then(data => {
+                renderFloorplanState(data);
+                if (autoPing) triggerAutoTelegramPing(data);
+            })
             .catch(err => console.error(err));
         }
 
-        function renderCADState(data) {
+        function renderFloorplanState(data) {
             document.getElementById('baselineMeter').innerText = `${data.total_baseline_kw} kW`;
             document.getElementById('optimizedMeter').innerText = `${data.total_optimized_kw} kW`;
             document.getElementById('savingsMeter').innerText = `${data.kw_saved} kW (${data.savings_percentage}%)`;
             document.getElementById('inrMeter').innerText = `INR ${data.inr_per_hour_saved} / Hour`;
             document.getElementById('elevState').innerText = data.elevator_mode;
 
+            // Highlight rooms on the SVG blueprint
             const rooms = data.rooms;
             for (let i = 1; i <= 8; i++) {
-                const r_id = `B${currentFloor}0${i}`;
+                const r_id = `B10${i}`;
                 const r = rooms[r_id];
                 if (!r) continue;
 
-                const card = document.getElementById(`cad_r${i}`);
-                const badge = document.getElementById(`badge_r${i}`);
-                const ac = document.getElementById(`ac_r${i}`);
-
-                if (r.lighting_glow) {
-                    card.className = "cad-room p-3 cad-room-lit";
-                    badge.innerText = `${r.occupancy} OCC / LIT`;
-                    badge.className = "text-[9px] font-mono-code font-bold px-1.5 py-0.5 rounded bg-black/60 text-amber-300";
-                    ac.innerText = `AC: ${r.ac_setpoint}`;
-                    ac.className = "text-[9px] font-mono-code text-amber-300 font-semibold";
-
-                    for (let d = 1; d <= 6; d++) document.getElementById(`d${d}_r${i}`).className = "cad-desk cad-desk-lit h-3";
-                    document.getElementById(`l1_r${i}`).className = "cad-light cad-light-lit";
-                    document.getElementById(`l2_r${i}`).className = "cad-light cad-light-lit";
-                } else {
-                    card.className = "cad-room p-3 cad-room-dark";
-                    badge.innerText = "OFF";
-                    badge.className = "text-[9px] font-mono-code font-bold px-1.5 py-0.5 rounded bg-black/60 text-zinc-500";
-                    ac.innerText = "AC: OFF";
-                    ac.className = "text-[9px] font-mono-code text-zinc-500";
-
-                    for (let d = 1; d <= 6; d++) document.getElementById(`d${d}_r${i}`).className = "cad-desk h-3";
-                    document.getElementById(`l1_r${i}`).className = "cad-light";
-                    document.getElementById(`l2_r${i}`).className = "cad-light";
+                const poly = document.getElementById(`poly_r${i}`);
+                if (poly) {
+                    poly.setAttribute('class', r.lighting_glow ? 'zone-poly poly-lit pointer-events-auto' : 'zone-poly poly-dark pointer-events-auto');
                 }
             }
 
-            const cz = data.corridor_state;
-            updateCorridorUI('cad_corridor_z1', 'txt_corridor_z1', cz.zone1_entrance === "LIT");
-            updateCorridorUI('cad_corridor_z2', 'txt_corridor_z2', cz.zone2_mid === "LIT");
-            updateCorridorUI('cad_corridor_z3', 'txt_corridor_z3', cz.zone3_far === "LIT");
-
+            // Relocation nudge
             const relocs = data.relocations || [];
             const alertCard = document.getElementById('alertCard');
             const alertText = document.getElementById('alertText');
@@ -666,22 +424,6 @@ def render_cad_sandbox_html():
             }
         }
 
-        function updateCorridorUI(elemId, txtId, isLit) {
-            const el = document.getElementById(elemId);
-            const txt = document.getElementById(txtId);
-            if (!el || !txt) return;
-
-            if (isLit) {
-                el.className = "p-2 rounded flex flex-col justify-center items-center text-center font-mono-code text-[10px] corridor-lit text-amber-300 font-bold";
-                txt.innerText = "[LIT]";
-                txt.className = "text-[9px] text-amber-300 font-bold";
-            } else {
-                el.className = "p-2 rounded flex flex-col justify-center items-center text-center font-mono-code text-[10px] corridor-dark text-zinc-600 font-normal";
-                txt.innerText = "[DARK]";
-                txt.className = "text-[9px] text-zinc-500";
-            }
-        }
-
         function applyConsolidation() {
             if (currentRelocation) {
                 const fromId = currentRelocation.from_room;
@@ -692,7 +434,7 @@ def render_cad_sandbox_html():
                 const students = parseInt(document.getElementById(`occ_r${fromIdx}`).value);
                 document.getElementById(`occ_r${fromIdx}`).value = 0;
                 document.getElementById(`occ_r${toIdx}`).value = students;
-                onParamChange();
+                onParamChange(true); // Triggers auto mobile alert on consolidation
             }
         }
 
@@ -706,18 +448,35 @@ def render_cad_sandbox_html():
                 document.getElementById('timeSlider').value = 14.5;
                 document.getElementById('tempSlider').value = 36;
                 document.getElementById('weatherSelect').value = "Sunny / Daylight";
-                for (let i = 1; i <= 8; i++) document.getElementById(`occ_r${i}`).value = (i === 1 || i === 2) ? 50 : 0;
+                for (let i = 1; i <= 8; i++) document.getElementById(`occ_r${i}`).value = (i === 1 || i === 5) ? 50 : 0;
             } else if (type === 'night_waste') {
                 document.getElementById('timeSlider').value = 19.5;
                 document.getElementById('tempSlider').value = 32;
                 document.getElementById('weatherSelect').value = "Night";
                 for (let i = 1; i <= 7; i++) document.getElementById(`occ_r${i}`).value = 0;
-                document.getElementById(`occ_r8`).value = 25;
+                document.getElementById(`occ_r8`).value = 25; // Far room occupied!
             }
-            onParamChange();
+            onParamChange(true);
         }
 
-        function sendTelegramAlert() {
+        function triggerAutoTelegramPing(data) {
+            const token = localStorage.getItem('gs_tg_token') || document.getElementById('tgToken').value.trim();
+            const chatId = localStorage.getItem('gs_tg_chatid') || document.getElementById('tgChatId').value.trim();
+            if (!token || !chatId) return;
+
+            let msg = `GridSense [JIT Block B]: Optimized State Updated at ${data.time}. Baseline: ${data.total_baseline_kw}kW | GridSense: ${data.total_optimized_kw}kW | Saving: ${data.kw_saved}kW (INR ${data.inr_per_hour_saved}/hr).`;
+            if (data.relocations && data.relocations.length > 0) {
+                msg += ` Alert: Class in ${data.relocations[0].from_room} relocated to ${data.relocations[0].to_room}.`;
+            }
+
+            fetch('/api/sandbox/notify-telegram', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token: token, chat_id: chatId, message: msg })
+            }).catch(e => console.error("Auto Telegram failed", e));
+        }
+
+        function saveAndTestTelegram() {
             const token = document.getElementById('tgToken').value.trim();
             const chatId = document.getElementById('tgChatId').value.trim();
             const statusDiv = document.getElementById('tgStatus');
@@ -728,7 +487,10 @@ def render_cad_sandbox_html():
                 return;
             }
 
-            statusDiv.innerText = "Dispatching alert to mobile...";
+            localStorage.setItem('gs_tg_token', token);
+            localStorage.setItem('gs_tg_chatid', chatId);
+
+            statusDiv.innerText = "Dispatching test ping to mobile...";
             statusDiv.className = "text-[10px] font-mono-code text-yellow-400 text-center";
 
             fetch('/api/sandbox/notify-telegram', {
@@ -737,13 +499,13 @@ def render_cad_sandbox_html():
                 body: JSON.stringify({
                     token: token,
                     chat_id: chatId,
-                    message: "GridSense Alert [JIT Campus]: Spatial Consolidation Triggered. Isolated class in far hallway relocated near entrance. 40m corridor darkened. Instant savings: 22.15 kW (INR 199.35/hr)."
+                    message: "GridSense Test Alert [JIT Block B]: Auto-ping successfully connected to your mobile phone."
                 })
             })
             .then(res => res.json())
             .then(data => {
                 if (data.status === "success") {
-                    statusDiv.innerText = "Alert delivered to phone successfully.";
+                    statusDiv.innerText = "Alert delivered. Auto-ping active for all future changes.";
                     statusDiv.className = "text-[10px] font-mono-code text-emerald-400 text-center";
                 } else {
                     statusDiv.innerText = `Error: ${data.message}`;
@@ -756,7 +518,13 @@ def render_cad_sandbox_html():
             });
         }
 
-        window.onload = () => onParamChange();
+        window.onload = () => {
+            const savedToken = localStorage.getItem('gs_tg_token');
+            const savedChat = localStorage.getItem('gs_tg_chatid');
+            if (savedToken) document.getElementById('tgToken').value = savedToken;
+            if (savedChat) document.getElementById('tgChatId').value = savedChat;
+            onParamChange(false);
+        };
     </script>
 </body>
 </html>

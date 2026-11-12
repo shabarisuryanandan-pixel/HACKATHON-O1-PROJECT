@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
 import os
 import json
 import urllib.request
@@ -13,6 +14,10 @@ load_dotenv()
 SUPABASE_URL = os.getenv("SUPABASE_URL", "https://rzdrqgwmmfliyksuiknx.supabase.co")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY", "sb_publishable_LPVQ_Mzxl8AK8c_JLhMNAw_CoumpNyK")
 
+# Telegram credentials (auto-ping)
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
+TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "")
+
 app = FastAPI(title="GridSense: Campus Intelligent Energy Optimization")
 
 TELEMETRY_DATA = {}
@@ -22,6 +27,12 @@ if os.path.exists("synthetic_telemetry.json"):
             TELEMETRY_DATA = json.load(f)
     except Exception as e:
         print("Error loading telemetry:", e)
+
+@app.get("/block_b_floorplan.png")
+def get_floorplan_image():
+    if os.path.exists("block_b_floorplan.png"):
+        return FileResponse("block_b_floorplan.png")
+    return JSONResponse(status_code=404, content={"error": "Image not found"})
 
 @app.get("/api/telemetry")
 def get_telemetry():
@@ -44,6 +55,39 @@ def health():
         "telemetry_intervals": len(TELEMETRY_DATA.get("telemetry", [])),
         "savings_kwh_7day": TELEMETRY_DATA.get("summary", {}).get("total_saved_kwh", 0)
     }
+
+@app.post("/api/sandbox/evaluate")
+async def api_sandbox_eval(request: Request):
+    try:
+        body = await request.json()
+    except Exception:
+        body = {}
+    result = evaluate_sandbox_state(body)
+    return result
+
+@app.post("/api/sandbox/notify-telegram")
+async def api_notify_telegram(request: Request):
+    try:
+        body = await request.json()
+        token = body.get("token", "").strip() or TELEGRAM_BOT_TOKEN
+        chat_id = body.get("chat_id", "").strip() or TELEGRAM_CHAT_ID
+        message = body.get("message", "GridSense Automation Alert")
+
+        if not token or not chat_id:
+            return {"status": "error", "message": "Bot token or Chat ID not configured. Please supply once to store."}
+
+        url = f"https://api.telegram.org/bot{token}/sendMessage"
+        payload = json.dumps({"chat_id": chat_id, "text": message}).encode("utf-8")
+        req = urllib.request.Request(url, data=payload, headers={"Content-Type": "application/json"})
+        
+        with urllib.request.urlopen(req, timeout=5) as response:
+            res_data = json.loads(response.read().decode())
+            if res_data.get("ok"):
+                return {"status": "success", "message": "Alert dispatched automatically to your mobile phone."}
+            else:
+                return {"status": "error", "message": "Telegram API returned failure."}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
 
 @app.get("/", response_class=HTMLResponse)
 def home():
@@ -72,23 +116,18 @@ def home():
         }}
         .font-mono-code {{ font-family: 'JetBrains Mono', monospace; }}
 
-        /* Neumorphic Extruded Surface (Cards & Buttons) */
         .neu-card {{
             background: #191b22;
             border-radius: 16px;
             box-shadow: 8px 8px 18px #0f1014, -8px -8px 18px #232630;
             border: 1px solid rgba(255, 255, 255, 0.03);
         }}
-
-        /* Neumorphic Inset Well (Meters, Display Panels, Input Wells) */
         .neu-inset {{
             background: #14151a;
             border-radius: 14px;
             box-shadow: inset 5px 5px 12px #0c0d10, inset -5px -5px 12px #1c1d24;
             border: 1px solid rgba(255, 255, 255, 0.02);
         }}
-
-        /* Neumorphic Raised Button */
         .neu-btn {{
             background: #191b22;
             border-radius: 12px;
@@ -100,11 +139,6 @@ def home():
             box-shadow: 2px 2px 6px #0f1014, -2px -2px 6px #232630;
             color: #10b981;
         }}
-        .neu-btn:active {{
-            box-shadow: inset 4px 4px 8px #0c0d10, inset -4px -4px 8px #1c1d24;
-        }}
-
-        /* Subtle Glow Accents */
         .glow-emerald {{
             box-shadow: 0 0 12px rgba(16, 185, 129, 0.25);
         }}
@@ -112,7 +146,6 @@ def home():
 </head>
 <body class="min-h-screen flex flex-col justify-between selection:bg-emerald-500 selection:text-black">
 
-    <!-- TOP HEADER -->
     <header class="py-4 px-6 border-b border-white/5 bg-[#16181d]">
         <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
             <div class="flex items-center gap-4">
@@ -140,10 +173,8 @@ def home():
         </div>
     </header>
 
-    <!-- MAIN BODY -->
     <main class="w-full max-w-7xl mx-auto px-4 sm:px-6 py-8 flex-1">
 
-        <!-- STATS ROW -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
             <div class="p-5 neu-card">
                 <div class="text-xs font-mono-code uppercase text-zinc-400">7-Day Energy Saved</div>
@@ -170,7 +201,6 @@ def home():
             </div>
         </div>
 
-        <!-- 7-DAY LOAD CURVE (INSET WELL) -->
         <section class="p-6 neu-card mb-8">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6">
                 <div>
@@ -187,7 +217,6 @@ def home():
             </div>
         </section>
 
-        <!-- MANAGED ZONES GRID -->
         <div class="mb-5 flex justify-between items-end">
             <div>
                 <h2 class="text-xl font-bold text-white tracking-tight">Campus Telemetry Nodes</h2>
@@ -196,8 +225,6 @@ def home():
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-
-            <!-- ZONE 1: LECTURE B101 -->
             <div class="p-5 neu-card flex flex-col justify-between">
                 <div>
                     <div class="flex items-center justify-between pb-3 mb-3 border-b border-white/5">
@@ -228,7 +255,6 @@ def home():
                 </div>
             </div>
 
-            <!-- ZONE 2: LAB C1 -->
             <div class="p-5 neu-card flex flex-col justify-between">
                 <div>
                     <div class="flex items-center justify-between pb-3 mb-3 border-b border-white/5">
@@ -259,7 +285,6 @@ def home():
                 </div>
             </div>
 
-            <!-- ZONE 3: ELEVATORS -->
             <div class="p-5 neu-card flex flex-col justify-between">
                 <div>
                     <div class="flex items-center justify-between pb-3 mb-3 border-b border-white/5">
@@ -290,7 +315,6 @@ def home():
                 </div>
             </div>
 
-            <!-- ZONE 4: HOSTEL RESIDENCE -->
             <div class="p-5 neu-card flex flex-col justify-between">
                 <div>
                     <div class="flex items-center justify-between pb-3 mb-3 border-b border-white/5">
@@ -321,7 +345,6 @@ def home():
                 </div>
             </div>
 
-            <!-- ZONE 5: WATER COOLERS -->
             <div class="p-5 neu-card flex flex-col justify-between">
                 <div>
                     <div class="flex items-center justify-between pb-3 mb-3 border-b border-white/5">
@@ -352,7 +375,6 @@ def home():
                 </div>
             </div>
 
-            <!-- ZONE 6: ENTERPRISE WIFI -->
             <div class="p-5 neu-card flex flex-col justify-between">
                 <div>
                     <div class="flex items-center justify-between pb-3 mb-3 border-b border-white/5">
@@ -382,12 +404,10 @@ def home():
                     <span class="text-emerald-400 font-bold">2,700 kWh</span>
                 </div>
             </div>
-
         </div>
 
     </main>
 
-    <!-- FOOTER -->
     <footer class="py-4 px-6 border-t border-white/5 bg-[#14151a] text-xs font-mono-code text-zinc-400">
         <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
             <span>GridSense v1.0 // JIT Campus Architecture</span>
@@ -465,39 +485,6 @@ def home():
 </body>
 </html>
 """
-
-@app.post("/api/sandbox/evaluate")
-async def api_sandbox_eval(request: Request):
-    try:
-        body = await request.json()
-    except Exception:
-        body = {}
-    result = evaluate_sandbox_state(body)
-    return result
-
-@app.post("/api/sandbox/notify-telegram")
-async def api_notify_telegram(request: Request):
-    try:
-        body = await request.json()
-        token = body.get("token", "").strip()
-        chat_id = body.get("chat_id", "").strip()
-        message = body.get("message", "GridSense Automation Alert")
-
-        if not token or not chat_id:
-            return {"status": "error", "message": "Bot token and Chat ID are required."}
-
-        url = f"https://api.telegram.org/bot{token}/sendMessage"
-        payload = json.dumps({"chat_id": chat_id, "text": message}).encode("utf-8")
-        req = urllib.request.Request(url, data=payload, headers={"Content-Type": "application/json"})
-        
-        with urllib.request.urlopen(req, timeout=5) as response:
-            res_data = json.loads(response.read().decode())
-            if res_data.get("ok"):
-                return {"status": "success", "message": "Alert sent to phone successfully."}
-            else:
-                return {"status": "error", "message": "Telegram API returned failure."}
-    except Exception as e:
-        return {"status": "error", "message": str(e)}
 
 @app.get("/sandbox", response_class=HTMLResponse)
 def view_sandbox():
