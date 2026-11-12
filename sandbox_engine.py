@@ -447,6 +447,14 @@ def evaluate_sandbox_state(payload: dict) -> dict:
         lift_summary = "0 Lifts Active (Complete Building Shutdown - All Breakers OFF)"
     elif total_active_count == 0:
         lift_summary = "0 Lifts Active (All 4 Lifts in Deep Sleep)"
+    elif total_active_count == 1:
+        # Only 1 active class/lab -> 1 lift is enough in that wing
+        if left_people > 0:
+            lifts_state["L1"] = True
+            lift_summary = f"1 Lift Active: L1 ON (Single Class in Left Wing: {left_people} people) | L2, L3 & L4 OFF"
+        else:
+            lifts_state["L3"] = True
+            lift_summary = f"1 Lift Active: L3 ON (Single Class in Right Wing: {right_people} people) | L1, L2 & L4 OFF"
     elif total_active_count <= 3:
         # 2 lifts active near the active wing(s)
         if left_people > 0 and right_people == 0:

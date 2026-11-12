@@ -47,6 +47,26 @@ def test_multi_class_wing_consolidation():
     assert res["elevator_mode"].startswith("2 Lifts Active: L1 & L2 ON")
 
 
+def test_single_active_class_uses_one_lift():
+    res_left = evaluate_sandbox_state({
+        "time": "11:00 AM",
+        "temperature": 30,
+        "weather": "Sunny / Daylight",
+        "rooms": {"B101": 32},
+    })
+    assert res_left["elevator_mode"].startswith("1 Lift Active: L1 ON")
+    assert res_left["simulated_state"]["common"]["lifts"] == {"L1": True, "L2": False, "L3": False, "L4": False}
+
+    res_right = evaluate_sandbox_state({
+        "time": "11:00 AM",
+        "temperature": 30,
+        "weather": "Sunny / Daylight",
+        "rooms": {"LAB3": 40},
+    })
+    assert res_right["elevator_mode"].startswith("1 Lift Active: L3 ON")
+    assert res_right["simulated_state"]["common"]["lifts"] == {"L1": False, "L2": False, "L3": True, "L4": False}
+
+
 def test_curfew_shutdown_after_1030pm():
     res = evaluate_sandbox_state({
         "time": "10:30 PM",
