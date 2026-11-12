@@ -414,33 +414,46 @@ def home():
         @keyframes gsLogoZoomPass {{
             0% {{
                 opacity: 0;
-                transform: scale(0.35);
-                filter: drop-shadow(0 0 18px rgba(107, 251, 206, 0.75));
+                transform: scale(0.72);
+                filter: drop-shadow(0 0 20px rgba(107, 251, 206, 0.30));
             }}
-            32% {{
+            28% {{
                 opacity: 1;
-                transform: scale(1.08);
-                filter: drop-shadow(0 0 42px rgba(107, 251, 206, 0.95)) drop-shadow(0 0 85px rgba(107, 251, 206, 0.55));
+                transform: scale(1.0);
+                filter: drop-shadow(0 0 38px rgba(107, 251, 206, 0.65));
             }}
-            70% {{
-                opacity: 0.95;
-                transform: scale(7);
-                filter: drop-shadow(0 0 65px rgba(107, 251, 206, 0.85));
+            58% {{
+                opacity: 1;
+                transform: scale(1.45);
+                filter: drop-shadow(0 0 52px rgba(107, 251, 206, 0.75));
             }}
             100% {{
                 opacity: 0;
-                transform: scale(22);
-                filter: drop-shadow(0 0 90px rgba(107, 251, 206, 0));
+                transform: scale(8.5);
+                filter: drop-shadow(0 0 70px rgba(107, 251, 206, 0));
             }}
         }}
         @keyframes gsBackdropReveal {{
             0% {{ opacity: 1; }}
-            52% {{ opacity: 1; }}
+            62% {{ opacity: 1; }}
             100% {{ opacity: 0; }}
         }}
-        @keyframes gsMicroDotsGlow {{
-            0%, 100% {{ opacity: 0.55; transform: scale(1); }}
-            45% {{ opacity: 1; transform: scale(1.03); }}
+        @keyframes gsMicroDotsFlow {{
+            0% {{
+                opacity: 0.75;
+                background-position: 0px 0px, 4px 4px, 0% 50%;
+                transform: scale(1);
+            }}
+            50% {{
+                opacity: 1;
+                background-position: 12px -10px, -8px 12px, 100% 50%;
+                transform: scale(1.04);
+            }}
+            100% {{
+                opacity: 0.85;
+                background-position: 24px -20px, -16px 24px, 50% 50%;
+                transform: scale(1.08);
+            }}
         }}
         #gsIntroSplash {{
             position: fixed;
@@ -450,29 +463,37 @@ def home():
             overflow: hidden;
             background-color: #000000;
             background-image:
-                radial-gradient(circle at center, rgba(107, 251, 206, 0.20) 0%, rgba(107, 251, 206, 0.05) 38%, #000000 75%);
-            box-shadow: inset 0 0 140px rgba(107, 251, 206, 0.28);
+                radial-gradient(circle at 50% 50%, rgba(107, 251, 206, 0.24) 0%, rgba(83, 49, 251, 0.10) 36%, #000000 74%);
+            box-shadow: inset 0 0 160px rgba(107, 251, 206, 0.25);
             display: flex;
             align-items: center;
             justify-content: center;
-            animation: gsBackdropReveal 1.45s ease-in-out forwards;
+            animation: gsBackdropReveal 2.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
         }}
         #gsIntroSplash::before {{
             content: "";
             position: absolute;
-            inset: 0;
+            inset: -20px;
             background-image:
-                radial-gradient(rgba(107, 251, 206, 0.85) 1.2px, transparent 1.2px),
-                radial-gradient(rgba(107, 251, 206, 0.45) 1px, transparent 1px);
-            background-size: 26px 26px, 42px 42px;
-            background-position: 0 0, 13px 17px;
-            filter: drop-shadow(0 0 4px rgba(107, 251, 206, 0.9));
-            animation: gsMicroDotsGlow 1.45s ease-in-out forwards;
+                radial-gradient(circle, rgba(107, 251, 206, 0.9) 1.1px, rgba(107, 251, 206, 0.22) 2.2px, transparent 3.2px),
+                radial-gradient(circle, rgba(107, 251, 206, 0.65) 0.9px, rgba(107, 251, 206, 0.15) 2px, transparent 2.8px),
+                radial-gradient(circle at 50% 50%, rgba(107, 251, 206, 0.18), transparent 65%);
+            background-size: 9px 9px, 11px 11px, 100% 100%;
+            background-position: 0 0, 4px 4px, 0 0;
+            filter: drop-shadow(0 0 6px rgba(107, 251, 206, 0.75));
+            animation: gsMicroDotsFlow 2.4s cubic-bezier(0.37, 0, 0.63, 1) forwards;
+        }}
+        #gsSplashCanvas {{
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
         }}
         .gs-splash-logo {{
             position: relative;
             z-index: 2;
-            animation: gsLogoZoomPass 1.45s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+            animation: gsLogoZoomPass 2.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
             will-change: transform, opacity;
         }}
     </style>
@@ -480,13 +501,59 @@ def home():
 <body class="min-h-screen flex flex-col">
 
     <div id="gsIntroSplash">
+        <canvas id="gsSplashCanvas"></canvas>
         <img src="/static/gridsense_logo.png" alt="GridSense" class="gs-splash-logo w-40 h-40 object-contain">
     </div>
     <script>
-        setTimeout(() => {{
+        (function() {{
             const splash = document.getElementById('gsIntroSplash');
-            if (splash) splash.style.display = 'none';
-        }}, 1500);
+            const canvas = document.getElementById('gsSplashCanvas');
+            let animId = null;
+            if (canvas && canvas.getContext) {{
+                const ctx = canvas.getContext('2d');
+                const dpr = Math.min(window.devicePixelRatio || 1, 2);
+                const w = window.innerWidth;
+                const h = window.innerHeight;
+                canvas.width = w * dpr;
+                canvas.height = h * dpr;
+                ctx.scale(dpr, dpr);
+                const spacing = 14;
+                const cols = Math.ceil(w / spacing);
+                const rows = Math.ceil(h / spacing);
+                const t0 = performance.now();
+                function drawFrame(now) {{
+                    const elapsed = (now - t0) * 0.0022;
+                    ctx.clearRect(0, 0, w, h);
+                    const cx = w * 0.5;
+                    const cy = h * 0.5;
+                    const maxDist = Math.hypot(cx, cy) || 1;
+                    for (let r = 0; r < rows; r++) {{
+                        const baseY = r * spacing;
+                        for (let c = 0; c < cols; c++) {{
+                            const baseX = c * spacing;
+                            const dx = baseX - cx;
+                            const dy = baseY - cy;
+                            const dist = Math.hypot(dx, dy);
+                            const wave = Math.sin(c * 0.28 + r * 0.22 - elapsed * 2.4) * 3.2;
+                            const flowX = baseX + Math.cos(r * 0.25 + elapsed * 1.8) * 2.8;
+                            const flowY = baseY + wave;
+                            const radialFade = Math.max(0.18, 1 - (dist / maxDist) * 0.55);
+                            const shimmer = (0.55 + 0.45 * Math.sin(dist * 0.035 - elapsed * 3.0)) * radialFade;
+                            ctx.fillStyle = `rgba(107, 251, 206, ${{(shimmer * 0.72).toFixed(3)}})`;
+                            ctx.beginPath();
+                            ctx.arc(flowX, flowY, 1.35, 0, Math.PI * 2);
+                            ctx.fill();
+                        }}
+                    }}
+                    animId = requestAnimationFrame(drawFrame);
+                }}
+                animId = requestAnimationFrame(drawFrame);
+            }}
+            setTimeout(() => {{
+                if (animId) cancelAnimationFrame(animId);
+                if (splash) splash.style.display = 'none';
+            }}, 2450);
+        }})();
     </script>
 
     <header class="border-b" style="border-color: rgba(255,255,255,0.06); background: #01010D;">
