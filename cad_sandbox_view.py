@@ -285,6 +285,7 @@ def render_cad_sandbox_html():
             <nav class="flex items-center gap-7">
                 <a href="/" class="nav-link">Dashboard</a>
                 <a href="/sandbox" class="nav-link active">Sandbox</a>
+                <a href="/systems" class="nav-link">Campus Systems</a>
                 <a href="/blueprint" class="nav-link">Blueprint</a>
             </nav>
         </div>

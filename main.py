@@ -12,6 +12,7 @@ from dotenv import load_dotenv
 from campus_blueprint import CAMPUS_BLUEPRINT, CAMPUS_METADATA
 from sandbox_engine import evaluate_sandbox_state, generate_random_timetable, format_12h
 from cad_sandbox_view import render_cad_sandbox_html
+from campus_systems_view import render_campus_systems_html
 import random
 
 load_dotenv()
@@ -314,6 +315,12 @@ async def api_notify_telegram(request: Request):
     except Exception as e:
         return {"status": "error", "message": str(e)}
 
+@app.get("/systems", response_class=HTMLResponse)
+@app.get("/modules", response_class=HTMLResponse)
+def campus_systems():
+    return render_campus_systems_html()
+
+
 @app.get("/", response_class=HTMLResponse)
 def home():
     summary = TELEMETRY_DATA.get("summary", {
@@ -399,6 +406,7 @@ def home():
             <nav class="flex items-center gap-8">
                 <a href="/" class="nav-link active">Dashboard</a>
                 <a href="/sandbox" class="nav-link">Sandbox</a>
+                <a href="/systems" class="nav-link">Campus Systems</a>
                 <a href="/blueprint" class="nav-link">Blueprint</a>
             </nav>
         </div>
@@ -917,6 +925,7 @@ def view_blueprint():
             <nav class="flex items-center gap-8">
                 <a href="/" class="nav-link">Dashboard</a>
                 <a href="/sandbox" class="nav-link">Sandbox</a>
+                <a href="/systems" class="nav-link">Campus Systems</a>
                 <a href="/blueprint" class="nav-link active">Blueprint</a>
             </nav>
         </div>
