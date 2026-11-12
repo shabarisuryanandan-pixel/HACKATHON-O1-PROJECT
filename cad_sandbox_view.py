@@ -434,29 +434,9 @@ def render_cad_sandbox_html():
                         </button>
                     </div>
                     <div id="autoPingStatus" class="text-[11px] font-data text-center" style="color: #8E9297;">
-                        Clicking Simulate optimizes floor, logs suggestions &amp; auto-dispatches alert.
+                        Clicking Simulate optimizes floor &amp; logs suggestions to Dashboard.
                     </div>
                 </div>
-
-                <!-- 5. ONE-TIME SERVER AUTO-PING SETUP (COLLAPSIBLE, NEVER NAGS) -->
-                <details class="card p-3.5 text-xs">
-                    <summary class="cursor-pointer font-semibold flex items-center justify-between" style="color: #D9DAD0;">
-                        <span>Auto-Webhook / Mobile Alert Setup</span>
-                        <span class="text-[10px] font-data px-2 py-0.5 rounded" style="background: #2B2D31; color: #FFC93C;">Telegram Active</span>
-                    </summary>
-                    <div class="mt-3 space-y-2 pt-2" style="border-top: 1px solid rgba(255,255,255,0.06);">
-                        <p class="text-[11px]" style="color: #8E9297;">
-                            Telegram Auto-Ping is pre-configured on the server (Chat ID: <b>7308787759</b>). Every click on <b>Simulate</b> pushes automatically without prompting.
-                        </p>
-                        <input type="text" id="cfgWebhook" placeholder="n8n or Power Automate Webhook URL (Optional)" class="w-full p-2 rounded text-xs font-data outline-none" style="background: #2B2D31; color: #FFFFFF; border: 1px solid rgba(255,255,255,0.07);">
-                        <input type="text" id="cfgTgToken" placeholder="Telegram Bot Token (Optional)" class="w-full p-2 rounded text-xs font-data outline-none" style="background: #2B2D31; color: #FFFFFF; border: 1px solid rgba(255,255,255,0.07);">
-                        <input type="text" id="cfgTgChat" placeholder="Telegram Chat ID (Optional)" class="w-full p-2 rounded text-xs font-data outline-none" style="background: #2B2D31; color: #FFFFFF; border: 1px solid rgba(255,255,255,0.07);">
-                        <button onclick="saveServerNotifyConfig()" class="w-full py-2 rounded-lg font-semibold text-xs" style="background: #2B2D31; color: #FFC93C; border: 1px solid rgba(255,201,60,0.35);">
-                            Save Permanently &amp; Send Test Ping
-                        </button>
-                        <div id="cfgSaveMsg" class="text-[10px] font-data text-center" style="color: #8E9297;"></div>
-                    </div>
-                </details>
 
             </div>
 
@@ -492,7 +472,7 @@ def render_cad_sandbox_html():
                             <span id="reportTimeHeader" class="text-sm font-bold text-white">JIT Block B @ 02:00 PM</span>
                         </div>
                         <span id="reportDispatchBadge" class="text-xs font-data px-2.5 py-0.5 rounded" style="background: #2B2D31; color: #FFC93C;">
-                            Auto-Logged &amp; Dispatched
+                            Auto-Logged to Dashboard
                         </span>
                     </div>
 
@@ -880,20 +860,13 @@ def render_cad_sandbox_html():
                 roomsPayload[r.id] = roomState[r.id].active ? roomState[r.id].count : 0;
             }});
 
-            const localNotifyCfg = {{
-                webhook_url: localStorage.getItem('gs_webhook_url') || '',
-                telegram_bot_token: localStorage.getItem('gs_tg_token') || '',
-                telegram_chat_id: localStorage.getItem('gs_tg_chat') || ''
-            }};
-
             return {{
                 time: time12h,
                 temperature: temp,
                 weather: weather,
                 rooms: roomsPayload,
                 simulate: isSimulate,
-                mode: currentMode === 'timetable' ? 'Set Timetable Mode' : 'Variable Mode',
-                notify_config: localNotifyCfg
+                mode: currentMode === 'timetable' ? 'Set Timetable Mode' : 'Variable Mode'
             }};
         }}
 
@@ -930,7 +903,7 @@ def render_cad_sandbox_html():
         function runSimulation() {{
             const payload = buildPayload(true);
             const statusEl = document.getElementById('autoPingStatus');
-            statusEl.innerText = 'Running Python optimization engine & dispatching report...';
+            statusEl.innerText = 'Running Python optimization engine...';
             statusEl.style.color = '#FFC93C';
 
             fetch('/api/sandbox/evaluate', {{
@@ -943,10 +916,7 @@ def render_cad_sandbox_html():
                 latestEvalData = data;
                 renderFloorPlanState(data, 'simulated', true);
                 loadSuggestionsLog();
-                const ch = (data.dispatch && data.dispatch.channels && data.dispatch.channels.length > 0)
-                    ? `Dispatched to ${{data.dispatch.channels.join(', ')}}`
-                    : 'Logged to Session Suggestions & Dashboard';
-                statusEl.innerText = `Simulation Complete (${{data.time_12h}}) // ${{ch}}`;
+                statusEl.innerText = `Simulation Complete (${{data.time_12h}}) // Logged to Session Suggestions & Dashboard`;
                 statusEl.style.color = '#FFC93C';
             }})
             .catch(err => {{
@@ -1268,42 +1238,7 @@ def render_cad_sandbox_html():
                 }});
         }}
 
-        function saveServerNotifyConfig() {{
-            const webhook = document.getElementById('cfgWebhook').value.trim();
-            const token = document.getElementById('cfgTgToken').value.trim();
-            const chat = document.getElementById('cfgTgChat').value.trim();
-
-            if (webhook) localStorage.setItem('gs_webhook_url', webhook);
-            if (token) localStorage.setItem('gs_tg_token', token);
-            if (chat) localStorage.setItem('gs_tg_chat', chat);
-
-            const msgEl = document.getElementById('cfgSaveMsg');
-            msgEl.innerText = 'Saving to server & sending test ping...';
-
-            fetch('/api/sandbox/notify-telegram', {{
-                method: 'POST',
-                headers: {{ 'Content-Type': 'application/json' }},
-                body: JSON.stringify({{
-                    webhook_url: webhook,
-                    token: token,
-                    chat_id: chat,
-                    message: '[GridSense JIT Block B] Connected! Simulations will now push automatically in 12-hour AM/PM format.'
-                }})
-            }})
-            .then(res => res.json())
-            .then(data => {{
-                msgEl.innerText = data.message || 'Saved permanently!';
-                msgEl.style.color = '#FFC93C';
-            }})
-            .catch(() => {{
-                msgEl.innerText = 'Saved in local storage.';
-            }});
-        }}
-
         window.addEventListener('DOMContentLoaded', () => {{
-            document.getElementById('cfgWebhook').value = localStorage.getItem('gs_webhook_url') || '';
-            document.getElementById('cfgTgToken').value = localStorage.getItem('gs_tg_token') || '9222503668:AAER9GfSgmqEQ3s-maK9Ljx1eTfBXM5NRg8';
-            document.getElementById('cfgTgChat').value = localStorage.getItem('gs_tg_chat') || '7308787759';
             renderVariableControls();
             onVariableInputChanged();
             loadSuggestionsLog();

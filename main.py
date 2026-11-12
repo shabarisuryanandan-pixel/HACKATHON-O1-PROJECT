@@ -19,8 +19,8 @@ SUPABASE_KEY = os.getenv("SUPABASE_KEY", "sb_publishable_LPVQ_Mzxl8AK8c_JLhMNAw_
 # Pre-configured / server-persisted notification credentials (zero-prompt auto-dispatch)
 CONFIG_FILE = "notification_config.json"
 DEFAULT_NOTIFY_CONFIG = {
-    "telegram_bot_token": os.getenv("TELEGRAM_BOT_TOKEN", "9222503668:AAER9GfSgmqEQ3s-maK9Ljx1eTfBXM5NRg8"),
-    "telegram_chat_id": os.getenv("TELEGRAM_CHAT_ID", "7308787759"),
+    "telegram_bot_token": os.getenv("TELEGRAM_BOT_TOKEN", ""),
+    "telegram_chat_id": os.getenv("TELEGRAM_CHAT_ID", ""),
     "webhook_url": os.getenv("WEBHOOK_URL", ""),  # For n8n / Power Automate / Make
     "whatsapp_phone": os.getenv("WHATSAPP_PHONE", ""),
     "whatsapp_apikey": os.getenv("WHATSAPP_APIKEY", "")
@@ -225,10 +225,6 @@ async def api_sandbox_eval(request: Request):
         }
         SESSION_SUGGESTIONS.insert(0, entry)
         del SESSION_SUGGESTIONS[15:]  # Keep latest 15 entries
-
-        inline_cfg = body.get("notify_config", {})
-        dispatch_info = dispatch_auto_notification(result["report"], result["time_12h"], inline_cfg)
-        result["dispatch"] = dispatch_info
 
     return result
 

@@ -96,6 +96,8 @@ def generate_random_timetable(seed=None) -> dict:
         {"time_float": 16.0, "label": "04:00 PM", "temp": 31, "weather": "Sunny / Daylight", "profile": "late_afternoon"},
         {"time_float": 18.0, "label": "06:00 PM", "temp": 29, "weather": "Night", "profile": "evening"},
         {"time_float": 19.5, "label": "07:30 PM", "temp": 28, "weather": "Night", "profile": "evening_isolated"},
+        {"time_float": 21.5, "label": "09:30 PM", "temp": 27, "weather": "Night", "profile": "curfew_shutdown"},
+        {"time_float": 22.0, "label": "10:00 PM", "temp": 26, "weather": "Night", "profile": "curfew_shutdown"},
     ]
 
     schedule = []
@@ -152,8 +154,14 @@ def generate_random_timetable(seed=None) -> dict:
         elif prof == "evening_isolated":
             # 1 isolated evening class in B108
             rooms["B108"] = rng.randint(20, 30)
+        elif prof == "curfew_shutdown":
+            # No classes after 9:30 PM / 10:00 PM -> complete building shutdown
+            pass
 
         active_list = [f"{ROOM_META[k]['label']} ({v})" for k, v in rooms.items() if v > 0]
+        summary_text = ", ".join(active_list) if active_list else (
+            "Building Shutdown (No Classes After 9:30 PM)" if prof == "curfew_shutdown" else "All Rooms Vacant"
+        )
         schedule.append({
             "time_float": slot["time_float"],
             "time_12h": slot["label"],
@@ -162,7 +170,7 @@ def generate_random_timetable(seed=None) -> dict:
             "rooms": rooms,
             "active_count": sum(1 for v in rooms.values() if v > 0),
             "total_students": sum(rooms.values()),
-            "summary": ", ".join(active_list) if active_list else "All Rooms Vacant"
+            "summary": summary_text
         })
 
     return {"schedule": schedule}
@@ -178,6 +186,7 @@ def evaluate_sandbox_state(payload: dict) -> dict:
     is_daylight = (7.0 <= time_float <= 17.5) and ("Night" not in weather_cond)
     is_working_hours = (7.0 <= time_float <= 17.5)
     is_afternoon_sun = (11.5 <= time_float <= 15.5) and is_daylight
+    is_curfew_shutdown = (time_float >= 21.5) or (time_float < 6.0)
 
     # Clean occupancy map for all 11 spaces
     raw_occ = {}
@@ -270,7 +279,7 @@ def evaluate_sandbox_state(payload: dict) -> dict:
     # =========================================================================
     # 2. SPATIAL CONSOLIDATION & RELOCATION ENGINE (Simulated State)
     # =========================================================================
-    sim_occ = dict(raw_occ)
+    sim_occ = {rid: 0 for rid in ALL_LIBS_AND_ROOMS} if is_curfew_shutdown else dict(raw_occ)
     relocations = []
 
     left_active_crs = [r for r in LEFT_CLASSROOMS if sim_occ[r] > 0]
@@ -282,7 +291,9 @@ def evaluate_sandbox_state(payload: dict) -> dict:
     right_labs_active = (sim_occ["LAB2"] > 0 or sim_occ["LAB3"] > 0)
 
     # Case A: 3 classes in Left Wing + 1 in Right Wing, OR >=1 in Left Wing + 1 isolated in far Right Wing (B106-B108)
-    if (
+    if is_curfew_shutdown:
+        pass
+    elif (
         len(right_active_crs) == 1
         and len(left_free_crs) >= 1
         and not right_labs_active
@@ -357,7 +368,7 @@ def evaluate_sandbox_state(payload: dict) -> dict:
         if not is_occ:
             s_lights = [False, False, False, False]
             s_ac_setpoint = "OFF"
-            s_kw = 0.02
+            s_kw = 0.0 if is_curfew_shutdown else 0.02
         else:
             # Smart Luminaire Control:
             # If daytime sunny & <= 25 students, or low headcount (<= 18), turn on 2 of 4 lights
@@ -418,7 +429,9 @@ def evaluate_sandbox_state(payload: dict) -> dict:
 
     lifts_state = {"L1": False, "L2": False, "L3": False, "L4": False}
 
-    if total_active_count == 0:
+    if is_curfew_shutdown:
+        lift_summary = "0 Lifts Active (Complete Building Shutdown - All Breakers OFF)"
+    elif total_active_count == 0:
         lift_summary = "0 Lifts Active (All 4 Lifts in Deep Sleep)"
     elif total_active_count <= 3:
         # 2 lifts active near the active wing(s)
@@ -460,7 +473,7 @@ def evaluate_sandbox_state(payload: dict) -> dict:
         lift_summary = f"4 Lifts Active: L1, L2, L3, L4 ON (Peak Load: {total_active_count} rooms, {total_people} people)"
 
     active_lifts_count = sum(1 for v in lifts_state.values() if v)
-    opt_lifts_kw = round(active_lifts_count * 1.85 + (4 - active_lifts_count) * 0.10, 2)
+    opt_lifts_kw = 0.0 if is_curfew_shutdown else round(active_lifts_count * 1.85 + (4 - active_lifts_count) * 0.10, 2)
 
     # =========================================================================
     # 5. CORRIDORS, STAIRS & FACULTY LOUNGE
@@ -473,15 +486,19 @@ def evaluate_sandbox_state(payload: dict) -> dict:
     se_stairs_on = (sim_occ["B107"] > 0 or sim_occ["B108"] > 0 or sim_occ["LAB3"] > 0)
     faculty_lounge_on = is_working_hours and (total_active_count > 0)
 
-    opt_corridors_kw = (
-        (1.4 if left_corridor_on else 0.0) +
-        (1.4 if right_corridor_on else 0.0) +
-        (0.45 if main_stairs_on else 0.05) +
-        (0.35 if sw_stairs_on else 0.0) +
-        (0.35 if se_stairs_on else 0.0) +
-        (0.65 if faculty_lounge_on else 0.0)
-    )
-    total_optimized_kw = round(total_optimized_kw + opt_lifts_kw + opt_corridors_kw, 2)
+    if is_curfew_shutdown:
+        opt_corridors_kw = 0.0
+        total_optimized_kw = 0.0
+    else:
+        opt_corridors_kw = (
+            (1.4 if left_corridor_on else 0.0) +
+            (1.4 if right_corridor_on else 0.0) +
+            (0.45 if main_stairs_on else 0.05) +
+            (0.35 if sw_stairs_on else 0.0) +
+            (0.35 if se_stairs_on else 0.0) +
+            (0.65 if faculty_lounge_on else 0.0)
+        )
+        total_optimized_kw = round(total_optimized_kw + opt_lifts_kw + opt_corridors_kw, 2)
 
     simulated_common = {
         "lifts": lifts_state,
@@ -501,63 +518,67 @@ def evaluate_sandbox_state(payload: dict) -> dict:
     savings_pct = round((kw_saved / max(0.1, total_baseline_kw)) * 100, 1)
     inr_saved = round(kw_saved * 9.00, 2)
 
-    # Part 1: Suggestion (Relocation + Daylight Block C Advisory)
-    suggestion_parts = []
-    if relocations:
-        for rel in relocations:
-            suggestion_parts.append(rel["reason"])
+    # Part 1 & 2: Suggestion + Actions Taken
+    if is_curfew_shutdown:
+        part1_suggestion = f"Campus Curfew ({time_12h}): No classes permitted after 09:30 PM. Complete Block B building shutdown enforced."
+        part2_actions = "Main building breakers tripped OFF: all 11 classrooms & labs, all 4 lifts (L1-L4), corridors, staircases, and Faculty Lounge completely shut down (0.0 kW)."
     else:
-        if total_active_count == 0:
-            suggestion_parts.append("No active classes scheduled. Maintain full floor deep-sleep lockdown.")
-        elif left_people > 0 and right_people == 0:
-            suggestion_parts.append(f"All {total_active_count} active sessions ({left_people} students) are already consolidated in the Left Wing. Keep Right Wing isolated.")
-        elif right_people > 0 and left_people == 0:
-            suggestion_parts.append(f"All {total_active_count} active sessions ({right_people} students) are already consolidated in the Right Wing. Keep Left Wing isolated.")
+        suggestion_parts = []
+        if relocations:
+            for rel in relocations:
+                suggestion_parts.append(rel["reason"])
         else:
-            suggestion_parts.append(f"Balanced multi-wing load ({left_people} in Left Wing, {right_people} in Right Wing). No cross-wing relocation required.")
+            if total_active_count == 0:
+                suggestion_parts.append("No active classes scheduled. Maintain full floor deep-sleep lockdown.")
+            elif left_people > 0 and right_people == 0:
+                suggestion_parts.append(f"All {total_active_count} active sessions ({left_people} students) are already consolidated in the Left Wing. Keep Right Wing isolated.")
+            elif right_people > 0 and left_people == 0:
+                suggestion_parts.append(f"All {total_active_count} active sessions ({right_people} students) are already consolidated in the Right Wing. Keep Left Wing isolated.")
+            else:
+                suggestion_parts.append(f"Balanced multi-wing load ({left_people} in Left Wing, {right_people} in Right Wing). No cross-wing relocation required.")
 
-    if is_afternoon_sun and 1 <= total_active_count <= 3:
-        suggestion_parts.append(
-            f"Daylight Advisory ({time_12h}): Shift the {total_active_count} active class(es) to Block C sun-facing studios to use natural sunlight and eliminate daytime artificial lighting load."
-        )
-    elif time_float >= 18.0 and 1 <= total_active_count <= 3:
-        suggestion_parts.append(
-            f"Evening Advisory ({time_12h}): Consolidate after-hours study groups to Ground Floor near Main Security Gate to power down upper floor risers."
-        )
+        if is_afternoon_sun and 1 <= total_active_count <= 3:
+            suggestion_parts.append(
+                f"Daylight Advisory ({time_12h}): Shift the {total_active_count} active class(es) to Block C sun-facing studios to use natural sunlight and eliminate daytime artificial lighting load."
+            )
+        elif time_float >= 18.0 and 1 <= total_active_count <= 3:
+            suggestion_parts.append(
+                f"Evening Advisory ({time_12h}): Consolidate after-hours study groups to Ground Floor near Main Security Gate to power down upper floor risers."
+            )
 
-    part1_suggestion = " ".join(suggestion_parts)
+        part1_suggestion = " ".join(suggestion_parts)
 
-    # Part 2: Actions Taken (Lifts, Lights, Corridors, ACs)
-    active_lifts_list = [k for k, v in lifts_state.items() if v]
-    off_lifts_list = [k for k, v in lifts_state.items() if not v]
-    off_rooms_count = sum(1 for r in simulated_rooms.values() if not r["is_occupied"])
-    half_lit_rooms = [r["label"] for r in simulated_rooms.values() if r["is_occupied"] and r["lights_on_count"] == 2]
+        # Part 2: Actions Taken (Lifts, Lights, Corridors, ACs)
+        active_lifts_list = [k for k, v in lifts_state.items() if v]
+        off_lifts_list = [k for k, v in lifts_state.items() if not v]
+        off_rooms_count = sum(1 for r in simulated_rooms.values() if not r["is_occupied"])
+        half_lit_rooms = [r["label"] for r in simulated_rooms.values() if r["is_occupied"] and r["lights_on_count"] == 2]
 
-    corridors_off = []
-    if not left_corridor_on:
-        corridors_off.append("Left Wing Corridor")
-    if not right_corridor_on:
-        corridors_off.append("Right Wing Corridor")
-    if not sw_stairs_on:
-        corridors_off.append("SW Stairs")
-    if not se_stairs_on:
-        corridors_off.append("SE Stairs")
-    if not faculty_lounge_on:
-        corridors_off.append("Faculty Lounge")
+        corridors_off = []
+        if not left_corridor_on:
+            corridors_off.append("Left Wing Corridor")
+        if not right_corridor_on:
+            corridors_off.append("Right Wing Corridor")
+        if not sw_stairs_on:
+            corridors_off.append("SW Stairs")
+        if not se_stairs_on:
+            corridors_off.append("SE Stairs")
+        if not faculty_lounge_on:
+            corridors_off.append("Faculty Lounge")
 
-    actions_list = []
-    if active_lifts_list:
-        actions_list.append(f"Lifts {', '.join(active_lifts_list)} ON; {', '.join(off_lifts_list) if off_lifts_list else 'none'} switched OFF.")
-    else:
-        actions_list.append("All 4 Lifts (L1-L4) switched to Deep Sleep.")
+        actions_list = []
+        if active_lifts_list:
+            actions_list.append(f"Lifts {', '.join(active_lifts_list)} ON; {', '.join(off_lifts_list) if off_lifts_list else 'none'} switched OFF.")
+        else:
+            actions_list.append("All 4 Lifts (L1-L4) switched to Deep Sleep.")
 
-    actions_list.append(f"Cut power to {off_rooms_count} vacant rooms.")
-    if half_lit_rooms:
-        actions_list.append(f"Dimmed {', '.join(half_lit_rooms)} to 2/4 luminaires (daylight/occupancy harvest).")
-    if corridors_off:
-        actions_list.append(f"Isolated {', '.join(corridors_off)}.")
+        actions_list.append(f"Cut power to {off_rooms_count} vacant rooms.")
+        if half_lit_rooms:
+            actions_list.append(f"Dimmed {', '.join(half_lit_rooms)} to 2/4 luminaires (daylight/occupancy harvest).")
+        if corridors_off:
+            actions_list.append(f"Isolated {', '.join(corridors_off)}.")
 
-    part2_actions = " ".join(actions_list)
+        part2_actions = " ".join(actions_list)
 
     # Part 3: Energy & Financial Savings
     part3_savings = (
