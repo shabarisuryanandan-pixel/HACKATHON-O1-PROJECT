@@ -12,7 +12,6 @@ SUPABASE_KEY = os.getenv("SUPABASE_KEY", "sb_publishable_LPVQ_Mzxl8AK8c_JLhMNAw_
 
 app = FastAPI(title="GridSense: Campus Intelligent Energy Optimization")
 
-# Load synthetic telemetry into memory if file exists
 TELEMETRY_DATA = {}
 if os.path.exists("synthetic_telemetry.json"):
     try:
@@ -21,118 +20,24 @@ if os.path.exists("synthetic_telemetry.json"):
     except Exception as e:
         print("Error loading telemetry:", e)
 
-@app.get("/blueprint", response_class=HTMLResponse)
-def view_blueprint():
-    blocks_html = ""
-    for b_name, b_data in CAMPUS_BLUEPRINT.items():
-        zones_html = ""
-        # Zones
-        for z in b_data.get("zones", []):
-            zones_html += f"""
-            <div class='p-3 bg-zinc-900 border border-zinc-800 rounded font-mono-code text-xs mb-2'>
-                <div class='font-bold text-cyan-400'>{z.get('name', '')} (ID: {z.get('id', '')})</div>
-                <div class='text-zinc-400 text-[11px] mt-1'>Capacity: {z.get('capacity', 'N/A')} | Solutions: {', '.join(z.get('solution_mapping', []))}</div>
-            </div>"""
-        # Labs
-        for lab in b_data.get("labs", []):
-            zones_html += f"""
-            <div class='p-3 bg-zinc-900 border border-zinc-800 rounded font-mono-code text-xs mb-2'>
-                <div class='font-bold text-purple-400'>{lab.get('name', '')} (ID: {lab.get('id', '')})</div>
-                <div class='text-zinc-400 text-[11px] mt-1'>PCs: {lab.get('pc_count', '')} (Active: {lab.get('pc_active_watts', '')}W, Sleep: {lab.get('pc_sleep_watts', '')}W) | Solutions: {', '.join(lab.get('solution_mapping', []))}</div>
-            </div>"""
-        # Wings
-        for w in b_data.get("wings", []):
-            stagger = w.get("geyser_bank", {}).get("stagger_slot", "")
-            zones_html += f"""
-            <div class='p-3 bg-zinc-900 border border-zinc-800 rounded font-mono-code text-xs mb-2'>
-                <div class='font-bold text-red-400'>{w.get('name', '')} (ID: {w.get('id', '')})</div>
-                <div class='text-zinc-400 text-[11px] mt-1'>Rooms: {w.get('rooms_count', '')} | Presence Sensing: {w.get('room_occupancy_sensors', '')}</div>
-                <div class='text-emerald-400 text-[11px] mt-1'>Control Policy: Vacant = 100% Auto Kill | Occupied = 100% Manual User Mode</div>
-                <div class='text-zinc-400 text-[11px] mt-1'>Geyser Stagger Window: {stagger}</div>
-            </div>"""
-        # Water Coolers
-        for wc in b_data.get("water_coolers", []):
-            zones_html += f"""
-            <div class='p-2 bg-zinc-900/60 border border-zinc-800 rounded font-mono-code text-[11px] text-zinc-400 mb-1 flex justify-between'>
-                <span>Commercial Water Cooler {wc.get('id', '')} (Floor {wc.get('floor', '')})</span>
-                <span class='text-yellow-400 font-bold'>{wc.get('compressor_kw', '')} kW | Interlocked 19:00-07:00</span>
-            </div>"""
-        # Heavy Motors
-        for hm in b_data.get("heavy_motors", []):
-            zones_html += f"""
-            <div class='p-2 bg-zinc-900/60 border border-zinc-800 rounded font-mono-code text-[11px] text-zinc-400 mb-1 flex justify-between'>
-                <span>{hm.get('name', '')}</span>
-                <span class='text-cyan-400 font-bold'>{hm.get('kw', '')} kW | Shifted to Solar Window</span>
-            </div>"""
-
-        elev_info = ""
-        if "elevator_bank" in b_data:
-            eb = b_data["elevator_bank"]
-            elev_info = f"""
-            <div class='p-3 bg-zinc-900 border border-zinc-800 rounded font-mono-code text-xs mb-2'>
-                <div class='font-bold text-yellow-400'>4-Lift Elevator Bank (ID: {eb.get('id', '')})</div>
-                <div class='text-zinc-400 text-[11px] mt-1'>Total Cars: {eb.get('total_cars')} | Mandatory Active Safety Floor: {eb.get('mandatory_safety_floor')} Cars</div>
-                <div class='text-zinc-400 text-[11px]'>Motor Rating: {eb.get('car_rating_motor_kw')} kW | Standby Parasitic: {eb.get('standby_parasitic_kw')} kW</div>
-            </div>"""
-
-        blocks_html += f"""
-        <div class='bg-zinc-950 border-2 border-zinc-800 p-6 rounded-none mb-6' style='box-shadow: 6px 6px 0px #030407;'>
-            <div class='flex items-center justify-between pb-3 mb-3 border-b border-zinc-800'>
-                <h3 class='text-xl font-bold uppercase text-white'>{b_name}</h3>
-                <span class='text-xs font-mono-code text-emerald-400'>{len(b_data.get('zones', [])) + len(b_data.get('labs', [])) + len(b_data.get('wings', []))} Primary Managed Assets</span>
-            </div>
-            <p class='text-xs font-mono-code text-zinc-400 mb-4'>{b_data.get('description', '')}</p>
-            {elev_info}
-            {zones_html}
-        </div>
-        """
-
-    return f"""<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Campus Physical Blueprint // Jain Institute of Technology</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;800&family=Space+Grotesk:wght@500;700;900&display=swap" rel="stylesheet">
-    <style>
-        body {{ font-family: 'Space Grotesk', sans-serif; background-color: #08090d; }}
-        .font-mono-code {{ font-family: 'JetBrains Mono', monospace; }}
-    </style>
-</head>
-<body class="text-zinc-100 min-h-screen p-6 sm:p-10 max-w-6xl mx-auto">
-    <div class="flex items-center justify-between mb-8 pb-4 border-b-2 border-zinc-800">
-        <div>
-            <div class="text-xs font-mono-code font-bold text-emerald-400 uppercase tracking-widest">Physical Asset Hierarchy // Digital Twin</div>
-            <h1 class="text-3xl sm:text-5xl font-black uppercase text-white">Campus Blueprint</h1>
-            <p class="text-xs font-mono-code text-zinc-400 mt-1">Institution: Jain Institute of Technology (JIT) | Tariff: INR 9.00/kWh | Max Demand: 250 kVA</p>
-        </div>
-        <a href="/" class="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-black font-mono-code text-xs font-bold uppercase border-2 border-black" style="box-shadow: 4px 4px 0px #000;">
-            Back to Dashboard
-        </a>
-    </div>
-
-    {blocks_html}
-</body>
-</html>
-"""
+@app.get("/api/telemetry")
+def get_telemetry():
+    return TELEMETRY_DATA
 
 @app.get("/api/blueprint")
 def get_blueprint():
     return {
+        "institution": "JIT",
         "metadata": CAMPUS_METADATA,
         "blueprint": CAMPUS_BLUEPRINT
     }
-
-@app.get("/api/telemetry")
-def get_telemetry():
-    return TELEMETRY_DATA
 
 @app.get("/api/health")
 def health():
     return {
         "status": "ok",
         "system": "GridSense v1.0",
-        "institution": "Jain Institute of Technology",
+        "institution": "JIT",
         "telemetry_intervals": len(TELEMETRY_DATA.get("telemetry", [])),
         "savings_kwh_7day": TELEMETRY_DATA.get("summary", {}).get("total_saved_kwh", 0)
     }
@@ -152,357 +57,346 @@ def home():
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GridSense // Campus Energy Intelligence Platform</title>
+    <title>GridSense // JIT Campus Energy Intelligence</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;800&family=Space+Grotesk:wght@500;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
     <style>
         body {{
-            font-family: 'Space Grotesk', sans-serif;
-            background-color: #08090d;
-            background-image: 
-                radial-gradient(circle at 15% 15%, rgba(34, 197, 94, 0.08) 0%, transparent 40%),
-                radial-gradient(circle at 85% 85%, rgba(59, 130, 246, 0.08) 0%, transparent 40%),
-                linear-gradient(to right, rgba(255,255,255,0.02) 1px, transparent 1px),
-                linear-gradient(to bottom, rgba(255,255,255,0.02) 1px, transparent 1px);
-            background-size: 100% 100%, 100% 100%, 28px 28px, 28px 28px;
+            font-family: 'Inter', sans-serif;
+            background-color: #16181d;
+            color: #d1d5db;
         }}
         .font-mono-code {{ font-family: 'JetBrains Mono', monospace; }}
-        .brutal-border {{
-            border: 2px solid #1e2433;
-            box-shadow: 6px 6px 0px #030407;
+
+        /* Neumorphic Extruded Surface (Cards & Buttons) */
+        .neu-card {{
+            background: #191b22;
+            border-radius: 16px;
+            box-shadow: 8px 8px 18px #0f1014, -8px -8px 18px #232630;
+            border: 1px solid rgba(255, 255, 255, 0.03);
         }}
-        .brutal-btn {{
-            box-shadow: 4px 4px 0px #000;
-            transition: all 0.15s ease;
+
+        /* Neumorphic Inset Well (Meters, Display Panels, Input Wells) */
+        .neu-inset {{
+            background: #14151a;
+            border-radius: 14px;
+            box-shadow: inset 5px 5px 12px #0c0d10, inset -5px -5px 12px #1c1d24;
+            border: 1px solid rgba(255, 255, 255, 0.02);
         }}
-        .brutal-btn:hover {{
-            transform: translate(-2px, -2px);
-            box-shadow: 6px 6px 0px #000;
+
+        /* Neumorphic Raised Button */
+        .neu-btn {{
+            background: #191b22;
+            border-radius: 12px;
+            box-shadow: 5px 5px 12px #0f1014, -5px -5px 12px #232630;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            transition: all 0.2s ease;
         }}
-        .brutal-btn:active {{
-            transform: translate(2px, 2px);
-            box-shadow: 2px 2px 0px #000;
+        .neu-btn:hover {{
+            box-shadow: 2px 2px 6px #0f1014, -2px -2px 6px #232630;
+            color: #10b981;
         }}
-        @keyframes marquee {{
-            0% {{ transform: translateX(0%); }}
-            100% {{ transform: translateX(-50%); }}
+        .neu-btn:active {{
+            box-shadow: inset 4px 4px 8px #0c0d10, inset -4px -4px 8px #1c1d24;
         }}
-        .animate-marquee {{
-            display: flex;
-            width: 200%;
-            animation: marquee 24s linear infinite;
+
+        /* Subtle Glow Accents */
+        .glow-emerald {{
+            box-shadow: 0 0 12px rgba(16, 185, 129, 0.25);
         }}
     </style>
 </head>
-<body class="text-zinc-100 min-h-screen flex flex-col justify-between selection:bg-emerald-400 selection:text-black">
+<body class="min-h-screen flex flex-col justify-between selection:bg-emerald-500 selection:text-black">
 
-    <!-- TOP TELEMETRY TICKER -->
-    <header class="bg-zinc-950 border-b-2 border-zinc-800 text-xs font-mono-code font-bold py-2 overflow-hidden">
-        <div class="animate-marquee whitespace-nowrap text-zinc-400">
-            <span class="text-emerald-400">[SYSTEM: ACTIVE]</span> /// INSTITUTION: JAIN INSTITUTE OF TECHNOLOGY /// 7-DAY SYNTHETIC CYCLE LOADED (672 STEPS) /// BASELINE: 3,394.8 kWh /// GRIDSENSE: 1,769.1 kWh /// SAVINGS: 47.9% (INR 14,631.37/WK) /// MODULES A THROUGH H VERIFIED /// 
-            <span class="text-emerald-400">[SYSTEM: ACTIVE]</span> /// INSTITUTION: JAIN INSTITUTE OF TECHNOLOGY /// 7-DAY SYNTHETIC CYCLE LOADED (672 STEPS) /// BASELINE: 3,394.8 kWh /// GRIDSENSE: 1,769.1 kWh /// SAVINGS: 47.9% (INR 14,631.37/WK) /// MODULES A THROUGH H VERIFIED /// 
+    <!-- TOP HEADER -->
+    <header class="py-4 px-6 border-b border-white/5 bg-[#16181d]">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-4">
+                <div class="w-10 h-10 rounded-xl neu-card flex items-center justify-center font-mono-code font-bold text-emerald-400">
+                    GS
+                </div>
+                <div>
+                    <div class="text-xs font-mono-code tracking-wider text-zinc-400 uppercase">JIT Campus Network</div>
+                    <div class="text-xl font-bold text-white tracking-tight">GridSense Intelligence</div>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3 text-xs font-mono-code">
+                <div class="px-3 py-1.5 neu-inset rounded-lg flex items-center gap-2 text-zinc-400">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                    <span>System Active</span>
+                </div>
+                <a href="/blueprint" class="px-4 py-1.5 neu-btn text-zinc-300 font-semibold">
+                    Campus Blueprint
+                </a>
+            </div>
         </div>
     </header>
 
-    <!-- MAIN DASHBOARD -->
-    <main class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1">
+    <!-- MAIN BODY -->
+    <main class="w-full max-w-7xl mx-auto px-4 sm:px-6 py-8 flex-1">
 
-        <!-- HEADER TITLE & STATS ROW -->
-        <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8 pb-6 border-b-2 border-zinc-800">
-            <div>
-                <div class="flex items-center gap-3 font-mono-code text-xs font-bold text-zinc-400 uppercase tracking-widest mb-2">
-                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
-                    <span>Team: Quantum Minds | Jain CMS | Challenge 12</span>
-                </div>
-                <h1 class="text-4xl sm:text-6xl font-black tracking-tight text-white uppercase">
-                    Grid<span class="text-emerald-400">Sense</span>
-                </h1>
-                <p class="text-zinc-400 font-mono-code text-xs sm:text-sm mt-1 uppercase">
-                    Campus Digital Twin // Real-Time Waste Index Scoring (WIS) & Optimization Engine
-                </p>
+        <!-- STATS ROW -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+            <div class="p-5 neu-card">
+                <div class="text-xs font-mono-code uppercase text-zinc-400">7-Day Energy Saved</div>
+                <div class="text-2xl font-bold text-emerald-400 mt-2">{summary['total_saved_kwh']} <span class="text-sm font-normal text-zinc-400">kWh</span></div>
+                <div class="text-xs text-zinc-400 mt-1">47.9% reduction vs baseline</div>
             </div>
-            
-            <div class="flex flex-wrap gap-3">
-                <div class="bg-zinc-900 border border-zinc-800 px-4 py-2 font-mono-code brutal-border">
-                    <div class="text-[10px] text-zinc-500 uppercase">7-Day Energy Saved</div>
-                    <div class="text-xl font-black text-emerald-400">{summary['total_saved_kwh']} kWh</div>
-                </div>
-                <div class="bg-zinc-900 border border-zinc-800 px-4 py-2 font-mono-code brutal-border">
-                    <div class="text-[10px] text-zinc-500 uppercase">Weekly Financial Savings</div>
-                    <div class="text-xl font-black text-yellow-400">INR {summary['total_saved_inr']}</div>
-                </div>
-                <div class="bg-zinc-900 border border-zinc-800 px-4 py-2 font-mono-code brutal-border">
-                    <div class="text-[10px] text-zinc-500 uppercase">Waste Reduction</div>
-                    <div class="text-xl font-black text-cyan-400">{summary['savings_percentage']}%</div>
-                </div>
+
+            <div class="p-5 neu-card">
+                <div class="text-xs font-mono-code uppercase text-zinc-400">Weekly Savings</div>
+                <div class="text-2xl font-bold text-amber-400 mt-2">INR {summary['total_saved_inr']}</div>
+                <div class="text-xs text-zinc-400 mt-1">Direct utility cost offset</div>
+            </div>
+
+            <div class="p-5 neu-card">
+                <div class="text-xs font-mono-code uppercase text-zinc-400">Max Demand Status</div>
+                <div class="text-2xl font-bold text-blue-400 mt-2">142 <span class="text-sm font-normal text-zinc-400">kVA</span></div>
+                <div class="text-xs text-zinc-400 mt-1">250 kVA limit (0 penalties)</div>
+            </div>
+
+            <div class="p-5 neu-card">
+                <div class="text-xs font-mono-code uppercase text-zinc-400">Managed Zones</div>
+                <div class="text-2xl font-bold text-zinc-200 mt-2">14 Assets</div>
+                <div class="text-xs text-zinc-400 mt-1">Across Blocks A, B, C & Hostel</div>
             </div>
         </div>
 
-        <!-- 7-DAY TIME-SERIES VISUALIZER -->
-        <section class="bg-zinc-950 border-2 border-zinc-800 p-6 brutal-border mb-8">
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+        <!-- 7-DAY LOAD CURVE (INSET WELL) -->
+        <section class="p-6 neu-card mb-8">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6">
                 <div>
-                    <h2 class="text-lg font-bold uppercase tracking-wide text-white">
-                        7-Day Energy Load Curve (Baseline vs GridSense)
-                    </h2>
-                    <p class="text-xs font-mono-code text-zinc-500">
-                        15-minute telemetry intervals showing daytime peaks and after-hours phantom load elimination
-                    </p>
+                    <h2 class="text-lg font-bold text-white tracking-tight">7-Day Campus Power Profile (Baseline vs GridSense)</h2>
+                    <p class="text-xs text-zinc-400 font-mono-code mt-0.5">672 intervals at 15-minute resolution across JIT infrastructure</p>
                 </div>
                 <div class="flex items-center gap-4 text-xs font-mono-code">
-                    <span class="flex items-center gap-1.5"><span class="w-3 h-3 bg-red-500/80 inline-block"></span> Unmanaged Baseline</span>
-                    <span class="flex items-center gap-1.5"><span class="w-3 h-3 bg-emerald-400 inline-block"></span> GridSense Optimized</span>
-                    <a href="/blueprint" target="_blank" class="px-2.5 py-1 bg-zinc-800 hover:bg-zinc-700 text-yellow-400 border border-zinc-700 rounded brutal-btn text-[11px] font-bold">
-                        VIEW FULL BLUEPRINT TREE
-                    </a>
+                    <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-red-400"></span> Baseline Draw</span>
+                    <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span> GridSense Optimized</span>
                 </div>
             </div>
-            <div class="w-full h-72">
+            <div class="w-full h-72 neu-inset p-4">
                 <canvas id="energyChart"></canvas>
             </div>
         </section>
 
-        <!-- DIGITAL TWIN CAMPUS BLUEPRINT & ZONE CARDS -->
-        <div class="mb-6">
-            <h2 class="text-2xl font-black uppercase text-white tracking-wide">
-                Digital Campus Blueprint // Managed Zones
-            </h2>
-            <p class="text-xs font-mono-code text-zinc-400 mt-1 uppercase">
-                Real-time Waste Index Score (WIS), telemetry readings, and active optimization modules
-            </p>
+        <!-- MANAGED ZONES GRID -->
+        <div class="mb-5 flex justify-between items-end">
+            <div>
+                <h2 class="text-xl font-bold text-white tracking-tight">Campus Telemetry Nodes</h2>
+                <p class="text-xs text-zinc-400 font-mono-code mt-0.5">Live Waste Index Score (WIS) & active automated interventions</p>
+            </div>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
 
-            <!-- ZONE 1: B101 CLASSROOM -->
-            <div class="bg-zinc-900 border-2 border-zinc-800 p-5 brutal-border flex flex-col justify-between">
+            <!-- ZONE 1: LECTURE B101 -->
+            <div class="p-5 neu-card flex flex-col justify-between">
                 <div>
-                    <div class="flex items-center justify-between pb-3 mb-3 border-b border-zinc-800">
-                        <span class="font-mono-code text-xs font-extrabold text-cyan-400">BLOCK B // LECTURE B101</span>
-                        <span class="px-2 py-0.5 text-[10px] font-mono-code font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">WIS: 18 / OPTIMAL</span>
+                    <div class="flex items-center justify-between pb-3 mb-3 border-b border-white/5">
+                        <span class="text-xs font-mono-code font-bold text-blue-400">BLOCK B // B101</span>
+                        <span class="px-2.5 py-1 text-[11px] font-mono-code font-bold rounded-md neu-inset text-emerald-400">WIS: 18 / OPTIMAL</span>
                     </div>
-                    <h3 class="text-lg font-bold text-white">East-Facing Lecture Hall</h3>
-                    <p class="text-xs font-mono-code text-zinc-400 mt-1">Capacity: 60 | Daylight-First Priority Zone</p>
+                    <div class="text-base font-semibold text-white">Lecture Room B101 (East)</div>
+                    <div class="text-xs text-zinc-400 mt-0.5">Capacity: 60 Seats | Module A Bio-Climatic</div>
 
-                    <div class="mt-4 space-y-2 text-xs font-mono-code">
+                    <div class="mt-4 space-y-2 text-xs font-mono-code neu-inset p-3">
                         <div class="flex justify-between text-zinc-400">
-                            <span>Module A1 (Daylight Lighting):</span>
-                            <span class="text-emerald-400 font-bold">Zone A Locked OFF</span>
+                            <span>Window Lighting:</span>
+                            <span class="text-emerald-400">Zone A Locked OFF</span>
                         </div>
                         <div class="flex justify-between text-zinc-400">
-                            <span>Module A2 (Adaptive HVAC):</span>
-                            <span class="text-white font-bold">Setpoint 26°C (35 Occ)</span>
+                            <span>Dynamic HVAC:</span>
+                            <span class="text-zinc-200">26°C Setpoint (35 Occ)</span>
                         </div>
                         <div class="flex justify-between text-zinc-400">
-                            <span>Module A4 (Smartboard):</span>
-                            <span class="text-yellow-400 font-bold">Sleep (7m Timeout)</span>
+                            <span>Smartboard State:</span>
+                            <span class="text-amber-400">Sleep (7m Timeout)</span>
                         </div>
                     </div>
                 </div>
-                <div class="mt-4 pt-3 border-t border-zinc-800 flex justify-between items-center text-xs font-mono-code">
-                    <span class="text-zinc-500">POWER DRAW</span>
-                    <span class="text-emerald-400 font-bold">1.8 kW <span class="text-zinc-600 line-through">4.9 kW</span></span>
+                <div class="mt-4 pt-3 border-t border-white/5 flex justify-between items-center text-xs font-mono-code text-zinc-400">
+                    <span>Power Reading</span>
+                    <span class="text-emerald-400 font-bold">1.8 kW <span class="text-zinc-500 line-through">4.9 kW</span></span>
                 </div>
             </div>
 
-            <!-- ZONE 2: COMPUTER LAB C1 -->
-            <div class="bg-zinc-900 border-2 border-zinc-800 p-5 brutal-border flex flex-col justify-between">
+            <!-- ZONE 2: LAB C1 -->
+            <div class="p-5 neu-card flex flex-col justify-between">
                 <div>
-                    <div class="flex items-center justify-between pb-3 mb-3 border-b border-zinc-800">
-                        <span class="font-mono-code text-xs font-extrabold text-purple-400">BLOCK C // LAB C1</span>
-                        <span class="px-2 py-0.5 text-[10px] font-mono-code font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">WIS: 12 / SECURED</span>
+                    <div class="flex items-center justify-between pb-3 mb-3 border-b border-white/5">
+                        <span class="text-xs font-mono-code font-bold text-purple-400">BLOCK C // LAB C1</span>
+                        <span class="px-2.5 py-1 text-[11px] font-mono-code font-bold rounded-md neu-inset text-emerald-400">WIS: 12 / SECURED</span>
                     </div>
-                    <h3 class="text-lg font-bold text-white">Advanced Computing Lab</h3>
-                    <p class="text-xs font-mono-code text-zinc-400 mt-1">60 Systems | Department of CSE</p>
+                    <div class="text-base font-semibold text-white">Advanced Computing Lab</div>
+                    <div class="text-xs text-zinc-400 mt-0.5">60 Workstations | Module C Power Policy</div>
 
-                    <div class="mt-4 space-y-2 text-xs font-mono-code">
+                    <div class="mt-4 space-y-2 text-xs font-mono-code neu-inset p-3">
                         <div class="flex justify-between text-zinc-400">
-                            <span>Module C (Inactivity Agent):</span>
-                            <span class="text-emerald-400 font-bold">60 PCs in S3 Sleep</span>
+                            <span>PC Power State:</span>
+                            <span class="text-emerald-400">60 Systems in S3 Sleep</span>
                         </div>
                         <div class="flex justify-between text-zinc-400">
                             <span>Thermal Load Cut:</span>
-                            <span class="text-cyan-400 font-bold">-6.0 kW Heat Load</span>
+                            <span class="text-blue-400">-6.0 kW Heat Removed</span>
                         </div>
                         <div class="flex justify-between text-zinc-400">
                             <span>Lab AC Compressors:</span>
-                            <span class="text-emerald-400 font-bold">De-energized</span>
+                            <span class="text-emerald-400">Isolated</span>
                         </div>
                     </div>
                 </div>
-                <div class="mt-4 pt-3 border-t border-zinc-800 flex justify-between items-center text-xs font-mono-code">
-                    <span class="text-zinc-500">POWER DRAW</span>
-                    <span class="text-emerald-400 font-bold">0.18 kW <span class="text-zinc-600 line-through">12.8 kW</span></span>
-                </div>
-            </div>
-
-            <!-- ZONE 3: ELEVATOR BANK B -->
-            <div class="bg-zinc-900 border-2 border-zinc-800 p-5 brutal-border flex flex-col justify-between">
-                <div>
-                    <div class="flex items-center justify-between pb-3 mb-3 border-b border-zinc-800">
-                        <span class="font-mono-code text-xs font-extrabold text-yellow-400">BLOCK B // ELEVATORS</span>
-                        <span class="px-2 py-0.5 text-[10px] font-mono-code font-bold bg-blue-500/20 text-blue-400 border border-blue-500/40">WIS: 22 / THROTTLED</span>
-                    </div>
-                    <h3 class="text-lg font-bold text-white">4-Lift Elevator Bank</h3>
-                    <p class="text-xs font-mono-code text-zinc-400 mt-1">Dynamic Staging with Redundant Safety</p>
-
-                    <div class="mt-4 space-y-2 text-xs font-mono-code">
-                        <div class="flex justify-between text-zinc-400">
-                            <span>Module D (Mandatory Floor):</span>
-                            <span class="text-yellow-400 font-bold">2 Lifts Active</span>
-                        </div>
-                        <div class="flex justify-between text-zinc-400">
-                            <span>Deep Sleep Cars:</span>
-                            <span class="text-zinc-400 font-bold">Car 3 & Car 4</span>
-                        </div>
-                        <div class="flex justify-between text-zinc-400">
-                            <span>Safety & Accessibility:</span>
-                            <span class="text-emerald-400 font-bold">100% Compliant</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="mt-4 pt-3 border-t border-zinc-800 flex justify-between items-center text-xs font-mono-code">
-                    <span class="text-zinc-500">SAVINGS RATE</span>
-                    <span class="text-emerald-400 font-bold">22 kWh/day (Rounded Up)</span>
+                <div class="mt-4 pt-3 border-t border-white/5 flex justify-between items-center text-xs font-mono-code text-zinc-400">
+                    <span>Power Reading</span>
+                    <span class="text-emerald-400 font-bold">0.18 kW <span class="text-zinc-500 line-through">12.8 kW</span></span>
                 </div>
             </div>
 
-            <!-- ZONE 4: HOSTEL GEYSERS & ROOM SENSORS -->
-            <div class="bg-zinc-900 border-2 border-zinc-800 p-5 brutal-border flex flex-col justify-between">
+            <!-- ZONE 3: ELEVATORS -->
+            <div class="p-5 neu-card flex flex-col justify-between">
                 <div>
-                    <div class="flex items-center justify-between pb-3 mb-3 border-b border-zinc-800">
-                        <span class="font-mono-code text-xs font-extrabold text-red-400">HOSTEL // 120 ROOMS + WINGS</span>
-                        <span class="px-2 py-0.5 text-[10px] font-mono-code font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">WIS: 15 / PEAK SHAVED</span>
+                    <div class="flex items-center justify-between pb-3 mb-3 border-b border-white/5">
+                        <span class="text-xs font-mono-code font-bold text-amber-400">BLOCK B // ELEVATORS</span>
+                        <span class="px-2.5 py-1 text-[11px] font-mono-code font-bold rounded-md neu-inset text-blue-400">WIS: 22 / THROTTLED</span>
                     </div>
-                    <h3 class="text-lg font-bold text-white">Residential Block & Room Matrix</h3>
-                    <p class="text-xs font-mono-code text-zinc-400 mt-1">120 Individual Rooms | 16 Geysers (2.5 kW)</p>
+                    <div class="text-base font-semibold text-white">4-Lift Elevator Bank</div>
+                    <div class="text-xs text-zinc-400 mt-0.5">Module D Dynamic Staging</div>
 
-                    <div class="mt-4 space-y-2 text-xs font-mono-code">
+                    <div class="mt-4 space-y-2 text-xs font-mono-code neu-inset p-3">
                         <div class="flex justify-between text-zinc-400">
-                            <span>Room Presence Sensors:</span>
-                            <span class="text-emerald-400 font-bold">Auto-Kill Vacant Rooms</span>
+                            <span>Active Safety Floor:</span>
+                            <span class="text-amber-400">2 Lifts Active Minimum</span>
                         </div>
                         <div class="flex justify-between text-zinc-400">
-                            <span>Occupied Room Control:</span>
-                            <span class="text-cyan-400 font-bold">100% Manual User Mode</span>
+                            <span>Deep Sleep Lifts:</span>
+                            <span class="text-zinc-400">Cars 3 & 4 Parked</span>
                         </div>
                         <div class="flex justify-between text-zinc-400">
-                            <span>Module E (Staggered Geysers):</span>
-                            <span class="text-white font-bold">Wing 1 (5:30) / Wing 2 (6:30)</span>
-                        </div>
-                        <div class="flex justify-between text-zinc-400">
-                            <span>Max Demand (kVA) Breach:</span>
-                            <span class="text-emerald-400 font-bold">0 Violations</span>
+                            <span>Accessibility Status:</span>
+                            <span class="text-emerald-400">100% Compliant</span>
                         </div>
                     </div>
                 </div>
-                <div class="mt-4 pt-3 border-t border-zinc-800 flex justify-between items-center text-xs font-mono-code">
-                    <span class="text-zinc-500">PENALTY CHARGES</span>
-                    <span class="text-emerald-400 font-bold">INR 0.00 (Prevented)</span>
+                <div class="mt-4 pt-3 border-t border-white/5 flex justify-between items-center text-xs font-mono-code text-zinc-400">
+                    <span>Standby Savings</span>
+                    <span class="text-emerald-400 font-bold">22 kWh/day</span>
+                </div>
+            </div>
+
+            <!-- ZONE 4: HOSTEL RESIDENCE -->
+            <div class="p-5 neu-card flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between pb-3 mb-3 border-b border-white/5">
+                        <span class="text-xs font-mono-code font-bold text-red-400">HOSTEL // 120 ROOMS</span>
+                        <span class="px-2.5 py-1 text-[11px] font-mono-code font-bold rounded-md neu-inset text-emerald-400">WIS: 15 / BALANCED</span>
+                    </div>
+                    <div class="text-base font-semibold text-white">Hostel Block & Geyser Grid</div>
+                    <div class="text-xs text-zinc-400 mt-0.5">Module E Staggering & Presence Sensing</div>
+
+                    <div class="mt-4 space-y-2 text-xs font-mono-code neu-inset p-3">
+                        <div class="flex justify-between text-zinc-400">
+                            <span>Vacant Room Mode:</span>
+                            <span class="text-emerald-400">100% Sensor Auto-Kill</span>
+                        </div>
+                        <div class="flex justify-between text-zinc-400">
+                            <span>Occupied Room Mode:</span>
+                            <span class="text-blue-400">100% Manual User Control</span>
+                        </div>
+                        <div class="flex justify-between text-zinc-400">
+                            <span>Geyser Staggering:</span>
+                            <span class="text-zinc-200">Wing 1 (5:30) / Wing 2 (6:30)</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-4 pt-3 border-t border-white/5 flex justify-between items-center text-xs font-mono-code text-zinc-400">
+                    <span>Demand Breach</span>
+                    <span class="text-emerald-400 font-bold">Zero Violations</span>
                 </div>
             </div>
 
             <!-- ZONE 5: WATER COOLERS -->
-            <div class="bg-zinc-900 border-2 border-zinc-800 p-5 brutal-border flex flex-col justify-between">
+            <div class="p-5 neu-card flex flex-col justify-between">
                 <div>
-                    <div class="flex items-center justify-between pb-3 mb-3 border-b border-zinc-800">
-                        <span class="font-mono-code text-xs font-extrabold text-cyan-400">CAMPUS // 15 WATER COOLERS</span>
-                        <span class="px-2 py-0.5 text-[10px] font-mono-code font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">WIS: 05 / ISOLATED</span>
+                    <div class="flex items-center justify-between pb-3 mb-3 border-b border-white/5">
+                        <span class="text-xs font-mono-code font-bold text-cyan-400">CAMPUS // 15 COOLERS</span>
+                        <span class="px-2.5 py-1 text-[11px] font-mono-code font-bold rounded-md neu-inset text-emerald-400">WIS: 05 / ISOLATED</span>
                     </div>
-                    <h3 class="text-lg font-bold text-white">Commercial Cooling Loops</h3>
-                    <p class="text-xs font-mono-code text-zinc-400 mt-1">Blocks A, B, C Commercial Compressors</p>
+                    <div class="text-base font-semibold text-white">Commercial Cooling Units</div>
+                    <div class="text-xs text-zinc-400 mt-0.5">Module F Interlocked Timers</div>
 
-                    <div class="mt-4 space-y-2 text-xs font-mono-code">
+                    <div class="mt-4 space-y-2 text-xs font-mono-code neu-inset p-3">
                         <div class="flex justify-between text-zinc-400">
-                            <span>Module F (Cutoff Schedule):</span>
-                            <span class="text-white font-bold">19:00 - 07:00 Daily</span>
+                            <span>Night Cut-off:</span>
+                            <span class="text-zinc-200">19:00 - 07:00 Daily</span>
                         </div>
                         <div class="flex justify-between text-zinc-400">
-                            <span>Weekend Lockout:</span>
-                            <span class="text-emerald-400 font-bold">100% Sundays Off</span>
+                            <span>Sunday Policy:</span>
+                            <span class="text-emerald-400">100% Locked OFF</span>
                         </div>
                         <div class="flex justify-between text-zinc-400">
                             <span>Thermal Buffer:</span>
-                            <span class="text-cyan-400 font-bold">2+ Hrs Chill Retention</span>
+                            <span class="text-blue-400">2+ Hours Chill Retention</span>
                         </div>
                     </div>
                 </div>
-                <div class="mt-4 pt-3 border-t border-zinc-800 flex justify-between items-center text-xs font-mono-code">
-                    <span class="text-zinc-500">MONTHLY SAVINGS</span>
-                    <span class="text-emerald-400 font-bold">1,620 kWh (INR 14,580)</span>
+                <div class="mt-4 pt-3 border-t border-white/5 flex justify-between items-center text-xs font-mono-code text-zinc-400">
+                    <span>Monthly Savings</span>
+                    <span class="text-emerald-400 font-bold">1,620 kWh (INR 14.5K)</span>
                 </div>
             </div>
 
             <!-- ZONE 6: ENTERPRISE WIFI -->
-            <div class="bg-zinc-900 border-2 border-zinc-800 p-5 brutal-border flex flex-col justify-between">
+            <div class="p-5 neu-card flex flex-col justify-between">
                 <div>
-                    <div class="flex items-center justify-between pb-3 mb-3 border-b border-zinc-800">
-                        <span class="font-mono-code text-xs font-extrabold text-emerald-400">NETWORK // 150 APs</span>
-                        <span class="px-2 py-0.5 text-[10px] font-mono-code font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">WIS: 10 / GREEN MODE</span>
+                    <div class="flex items-center justify-between pb-3 mb-3 border-b border-white/5">
+                        <span class="text-xs font-mono-code font-bold text-emerald-400">NETWORK // 150 APs</span>
+                        <span class="px-2.5 py-1 text-[11px] font-mono-code font-bold rounded-md neu-inset text-emerald-400">WIS: 10 / GREEN</span>
                     </div>
-                    <h3 class="text-lg font-bold text-white">Enterprise PoE Network</h3>
-                    <p class="text-xs font-mono-code text-zinc-400 mt-1">Aruba / UniFi SNMP Infrastructure</p>
+                    <div class="text-base font-semibold text-white">Enterprise PoE WiFi Grid</div>
+                    <div class="text-xs text-zinc-400 mt-0.5">Module H Radio Throttling</div>
 
-                    <div class="mt-4 space-y-2 text-xs font-mono-code">
+                    <div class="mt-4 space-y-2 text-xs font-mono-code neu-inset p-3">
                         <div class="flex justify-between text-zinc-400">
-                            <span>Module H (Off-Hours Radio):</span>
-                            <span class="text-yellow-400 font-bold">5 GHz Radio Disabled</span>
+                            <span>Academic APs:</span>
+                            <span class="text-amber-400">5 GHz Radios Disabled</span>
                         </div>
                         <div class="flex justify-between text-zinc-400">
-                            <span>Low-Power Beacon:</span>
-                            <span class="text-emerald-400 font-bold">2.4 GHz Only (&lt;5W)</span>
+                            <span>Off-Hours Mode:</span>
+                            <span class="text-emerald-400">2.4 GHz Only (&lt;5W)</span>
                         </div>
                         <div class="flex justify-between text-zinc-400">
-                            <span>Hostel Connectivity:</span>
-                            <span class="text-white font-bold">Full Bandwidth (24/7)</span>
+                            <span>Hostel APs:</span>
+                            <span class="text-zinc-200">Full 24/7 Bandwidth</span>
                         </div>
                     </div>
                 </div>
-                <div class="mt-4 pt-3 border-t border-zinc-800 flex justify-between items-center text-xs font-mono-code">
-                    <span class="text-zinc-500">SAVINGS POTENTIAL</span>
-                    <span class="text-emerald-400 font-bold">2,700 kWh/month</span>
+                <div class="mt-4 pt-3 border-t border-white/5 flex justify-between items-center text-xs font-mono-code text-zinc-400">
+                    <span>Monthly Potential</span>
+                    <span class="text-emerald-400 font-bold">2,700 kWh</span>
                 </div>
             </div>
 
         </div>
-
-        <!-- LIVE AUDIT / CONSOLE FEED -->
-        <section class="bg-black border-2 border-zinc-800 p-6 brutal-border font-mono-code text-xs">
-            <div class="flex items-center justify-between pb-3 mb-4 border-b border-zinc-800">
-                <span class="text-zinc-300 font-bold uppercase tracking-wider">Live System Engine Event Feed</span>
-                <span class="text-emerald-400 font-bold">TELEMETRY SYNCED</span>
-            </div>
-            <div class="space-y-1 text-zinc-400">
-                <div>[04:00 PM] <span class="text-cyan-400">Spatial Consolidation:</span> Evaluated 24 lecture schedules. Relocated 1 stray class from Block A to Block C. Block A Wing 2 contactors scheduled for de-energization at 05:00 PM.</div>
-                <div>[05:30 PM] <span class="text-yellow-400">Elevator Bank B:</span> Call frequency dropped below threshold. Cars 3 & 4 transitioned to deep sleep. Cars 1 & 2 operational (Mandatory safety baseline enforced).</div>
-                <div>[06:00 PM] <span class="text-purple-400">Lab Power Manager:</span> Broadcast shutdown signal sent to 180 idle PCs across Labs C1, C2, and C3. AC units isolated.</div>
-                <div>[07:00 PM] <span class="text-emerald-400">Water Cooler Interlock:</span> 15 commercial coolers powered down across academic blocks.</div>
-                <div>[11:00 PM] <span class="text-blue-400">WiFi Controller:</span> Academic block PoE switches toggled to 2.4 GHz low-power beacon mode.</div>
-            </div>
-        </section>
 
     </main>
 
     <!-- FOOTER -->
-    <footer class="bg-zinc-950 border-t-2 border-zinc-800 py-4 px-4 sm:px-8 font-mono-code text-xs text-zinc-500">
+    <footer class="py-4 px-6 border-t border-white/5 bg-[#14151a] text-xs font-mono-code text-zinc-400">
         <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
-            <span>GridSense v1.0 // Hackathon O1 Solution</span>
-            <span>Jain CMS // Jain Institute of Technology Reference Blueprint</span>
+            <span>GridSense v1.0 // JIT Campus Architecture</span>
+            <span>Zero Watermarks // Neumorphic Protocol</span>
         </div>
     </footer>
 
     <script>
-        // Render 7-day comparison chart
         fetch('/api/telemetry')
             .then(res => res.json())
             .then(data => {{
                 const telemetry = data.telemetry || [];
-                // Sample every 4th point (1 hour intervals) for a clean chart
                 const sampled = telemetry.filter((_, idx) => idx % 4 === 0);
                 const labels = sampled.map(p => p.day.substring(0,3) + ' ' + p.timestamp.split(' ')[1]);
                 
-                // Aggregate baseline and gridsense total across sample zones
                 const baselineData = sampled.map(p => {{
                     let sum = 0;
                     for (let z in p.zones) sum += p.zones[z].baseline_kw;
@@ -524,22 +418,21 @@ def home():
                             {{
                                 label: 'Baseline Load (kW)',
                                 data: baselineData,
-                                borderColor: 'rgba(239, 68, 68, 0.85)',
-                                backgroundColor: 'rgba(239, 68, 68, 0.05)',
-                                fill: true,
-                                tension: 0.2,
+                                borderColor: 'rgba(239, 68, 68, 0.75)',
+                                backgroundColor: 'transparent',
                                 borderWidth: 2,
-                                pointRadius: 0
+                                pointRadius: 0,
+                                tension: 0.2
                             }},
                             {{
-                                label: 'GridSense Optimized (kW)',
+                                label: 'GridSense (kW)',
                                 data: gridsenseData,
-                                borderColor: 'rgba(34, 197, 94, 0.95)',
-                                backgroundColor: 'rgba(34, 197, 94, 0.15)',
+                                borderColor: 'rgba(16, 185, 129, 0.9)',
+                                backgroundColor: 'rgba(16, 185, 129, 0.08)',
                                 fill: true,
-                                tension: 0.2,
                                 borderWidth: 2,
-                                pointRadius: 0
+                                pointRadius: 0,
+                                tension: 0.2
                             }}
                         ]
                     }},
@@ -547,24 +440,138 @@ def home():
                         responsive: true,
                         maintainAspectRatio: false,
                         interaction: {{ intersect: false, mode: 'index' }},
-                        plugins: {{
-                            legend: {{ display: false }}
-                        }},
+                        plugins: {{ legend: {{ display: false }} }},
                         scales: {{
                             x: {{
-                                grid: {{ color: 'rgba(255, 255, 255, 0.05)' }},
+                                grid: {{ color: 'rgba(255, 255, 255, 0.03)' }},
                                 ticks: {{ color: '#71717a', font: {{ family: 'JetBrains Mono', size: 10 }}, maxTicksLimit: 14 }}
                             }},
                             y: {{
-                                title: {{ display: true, text: 'Total Zone Power (kW)', color: '#a1a1aa', font: {{ family: 'Space Grotesk' }} }},
-                                grid: {{ color: 'rgba(255, 255, 255, 0.05)' }},
+                                title: {{ display: true, text: 'Total kW Draw', color: '#71717a', font: {{ family: 'Inter', size: 11 }} }},
+                                grid: {{ color: 'rgba(255, 255, 255, 0.03)' }},
                                 ticks: {{ color: '#71717a', font: {{ family: 'JetBrains Mono', size: 10 }} }}
                             }}
                         }}
                     }});
             }})
-            .catch(err => console.error("Could not load chart telemetry:", err));
+            .catch(err => console.error("Telemetry error:", err));
     </script>
+</body>
+</html>
+"""
+
+@app.get("/blueprint", response_class=HTMLResponse)
+def view_blueprint():
+    blocks_html = ""
+    for b_name, b_data in CAMPUS_BLUEPRINT.items():
+        zones_html = ""
+        for z in b_data.get("zones", []):
+            zones_html += f"""
+            <div class='p-3 neu-inset rounded-lg text-xs font-mono-code mb-2'>
+                <div class='font-bold text-blue-400'>{z.get('name', '')} (ID: {z.get('id', '')})</div>
+                <div class='text-zinc-400 text-[11px] mt-1'>Capacity: {z.get('capacity', 'N/A')} | Solutions: {', '.join(z.get('solution_mapping', []))}</div>
+            </div>"""
+        for lab in b_data.get("labs", []):
+            zones_html += f"""
+            <div class='p-3 neu-inset rounded-lg text-xs font-mono-code mb-2'>
+                <div class='font-bold text-purple-400'>{lab.get('name', '')} (ID: {lab.get('id', '')})</div>
+                <div class='text-zinc-400 text-[11px] mt-1'>PCs: {lab.get('pc_count', '')} (Active: {lab.get('pc_active_watts', '')}W, Sleep: {lab.get('pc_sleep_watts', '')}W) | Solutions: {', '.join(lab.get('solution_mapping', []))}</div>
+            </div>"""
+        for w in b_data.get("wings", []):
+            stagger = w.get("geyser_bank", {}).get("stagger_slot", "")
+            zones_html += f"""
+            <div class='p-3 neu-inset rounded-lg text-xs font-mono-code mb-2'>
+                <div class='font-bold text-red-400'>{w.get('name', '')} (ID: {w.get('id', '')})</div>
+                <div class='text-zinc-400 text-[11px] mt-1'>Rooms: {w.get('rooms_count', '')} | Presence Sensing: Dual-Tech PIR</div>
+                <div class='text-emerald-400 text-[11px] mt-1'>Policy: Vacant = Auto-Kill | Occupied = 100% Manual User Control</div>
+                <div class='text-zinc-400 text-[11px] mt-1'>Geyser Slot: {stagger}</div>
+            </div>"""
+        for wc in b_data.get("water_coolers", []):
+            zones_html += f"""
+            <div class='p-2 neu-inset rounded text-[11px] font-mono-code text-zinc-400 mb-1 flex justify-between'>
+                <span>Commercial Water Cooler {wc.get('id', '')} (Floor {wc.get('floor', '')})</span>
+                <span class='text-amber-400 font-bold'>{wc.get('compressor_kw', '')} kW | Interlocked 19:00 - 07:00</span>
+            </div>"""
+        for hm in b_data.get("heavy_motors", []):
+            zones_html += f"""
+            <div class='p-2 neu-inset rounded text-[11px] font-mono-code text-zinc-400 mb-1 flex justify-between'>
+                <span>{hm.get('name', '')}</span>
+                <span class='text-cyan-400 font-bold'>{hm.get('kw', '')} kW | Shifted to Solar Window</span>
+            </div>"""
+
+        elev_info = ""
+        if "elevator_bank" in b_data:
+            eb = b_data["elevator_bank"]
+            elev_info = f"""
+            <div class='p-3 neu-inset rounded-lg text-xs font-mono-code mb-2'>
+                <div class='font-bold text-amber-400'>4-Lift Elevator Bank (ID: {eb.get('id', '')})</div>
+                <div class='text-zinc-400 text-[11px] mt-1'>Total Cars: {eb.get('total_cars')} | Mandatory Active Safety Floor: {eb.get('mandatory_safety_floor')} Cars</div>
+                <div class='text-zinc-400 text-[11px]'>Motor Rating: {eb.get('car_rating_motor_kw')} kW | Standby Parasitic: {eb.get('standby_parasitic_kw')} kW</div>
+            </div>"""
+
+        blocks_html += f"""
+        <div class='p-6 neu-card mb-6'>
+            <div class='flex items-center justify-between pb-3 mb-3 border-b border-white/5'>
+                <h3 class='text-lg font-bold text-white'>{b_name}</h3>
+                <span class='text-xs font-mono-code text-emerald-400'>{len(b_data.get('zones', [])) + len(b_data.get('labs', [])) + len(b_data.get('wings', []))} Managed Asset Groups</span>
+            </div>
+            <p class='text-xs text-zinc-400 mb-4'>{b_data.get('description', '')}</p>
+            {elev_info}
+            {zones_html}
+        </div>
+        """
+
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>JIT Campus Physical Blueprint // GridSense</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        body {{
+            font-family: 'Inter', sans-serif;
+            background-color: #16181d;
+            color: #d1d5db;
+        }}
+        .font-mono-code {{ font-family: 'JetBrains Mono', monospace; }}
+        .neu-card {{
+            background: #191b22;
+            border-radius: 16px;
+            box-shadow: 8px 8px 18px #0f1014, -8px -8px 18px #232630;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+        }}
+        .neu-inset {{
+            background: #14151a;
+            border-radius: 12px;
+            box-shadow: inset 4px 4px 10px #0c0d10, inset -4px -4px 10px #1c1d24;
+            border: 1px solid rgba(255, 255, 255, 0.02);
+        }}
+        .neu-btn {{
+            background: #191b22;
+            border-radius: 10px;
+            box-shadow: 4px 4px 10px #0f1014, -4px -4px 10px #232630;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            transition: all 0.2s ease;
+        }}
+        .neu-btn:hover {{
+            color: #10b981;
+        }}
+    </style>
+</head>
+<body class="min-h-screen p-6 sm:p-10 max-w-5xl mx-auto">
+    <div class="flex items-center justify-between mb-8 pb-4 border-b border-white/5">
+        <div>
+            <div class="text-xs font-mono-code font-bold text-emerald-400 uppercase tracking-widest">Physical Asset Hierarchy // Digital Twin</div>
+            <h1 class="text-2xl sm:text-4xl font-bold text-white tracking-tight mt-1">JIT Campus Blueprint</h1>
+            <p class="text-xs text-zinc-400 font-mono-code mt-1">Institution: JIT | Commercial Tariff: INR 9.00/kWh | Max Demand Limit: 250 kVA</p>
+        </div>
+        <a href="/" class="px-4 py-2 neu-btn font-mono-code text-xs font-semibold text-zinc-300">
+            Back to Dashboard
+        </a>
+    </div>
+
+    {blocks_html}
 </body>
 </html>
 """
