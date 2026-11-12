@@ -339,7 +339,7 @@ def home():
     <title>GridSense - JIT Campus Energy Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
     <style>
         * {{ box-sizing: border-box; }}
         body {{
@@ -348,7 +348,8 @@ def home():
             color: #D9DAD0;
             margin: 0;
         }}
-        .font-data {{ font-family: 'JetBrains Mono', monospace; }}
+        h1, h2, h3, .font-heading {{ font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: -0.015em; }}
+        .font-data {{ font-family: 'Inter', sans-serif; font-variant-numeric: tabular-nums; }}
         .card {{
             background: #36393F;
             border-radius: 12px;
@@ -770,7 +771,7 @@ def home():
                                 borderColor: 'rgba(255,255,255,0.06)',
                                 borderWidth: 1,
                                 titleFont: {{ family: 'Inter', size: 12, weight: '600' }},
-                                bodyFont: {{ family: 'JetBrains Mono', size: 11 }},
+                                bodyFont: {{ family: 'Inter', size: 11 }},
                                 padding: 10,
                                 cornerRadius: 8,
                                 displayColors: true
@@ -779,12 +780,12 @@ def home():
                         scales: {{
                             x: {{
                                 grid: {{ color: 'rgba(255, 255, 255, 0.03)', drawBorder: false }},
-                                ticks: {{ color: '#8E9297', font: {{ family: 'JetBrains Mono', size: 10 }}, maxTicksLimit: 14 }}
+                                ticks: {{ color: '#8E9297', font: {{ family: 'Inter', size: 10 }}, maxTicksLimit: 14 }}
                             }},
                             y: {{
                                 title: {{ display: true, text: 'Total kW', color: '#8E9297', font: {{ family: 'Inter', size: 11, weight: '500' }} }},
                                 grid: {{ color: 'rgba(255, 255, 255, 0.03)', drawBorder: false }},
-                                ticks: {{ color: '#8E9297', font: {{ family: 'JetBrains Mono', size: 10 }} }}
+                                ticks: {{ color: '#8E9297', font: {{ family: 'Inter', size: 10 }} }}
                             }}
                         }}
                     }}
@@ -868,7 +869,7 @@ def view_blueprint():
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>JIT Campus Blueprint - GridSense</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
     <style>
         * {{ box-sizing: border-box; }}
         body {{
@@ -877,7 +878,8 @@ def view_blueprint():
             color: #D9DAD0;
             margin: 0;
         }}
-        .font-data {{ font-family: 'JetBrains Mono', monospace; }}
+        h1, h2, h3, .font-heading {{ font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: -0.015em; }}
+        .font-data {{ font-family: 'Inter', sans-serif; font-variant-numeric: tabular-nums; }}
         .card {{
             background: #36393F;
             border-radius: 12px;
