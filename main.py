@@ -3,6 +3,7 @@ from fastapi.responses import HTMLResponse, JSONResponse
 import os
 import json
 from dotenv import load_dotenv
+from campus_blueprint import CAMPUS_BLUEPRINT, CAMPUS_METADATA
 
 load_dotenv()
 
@@ -19,6 +20,108 @@ if os.path.exists("synthetic_telemetry.json"):
             TELEMETRY_DATA = json.load(f)
     except Exception as e:
         print("Error loading telemetry:", e)
+
+@app.get("/blueprint", response_class=HTMLResponse)
+def view_blueprint():
+    blocks_html = ""
+    for b_name, b_data in CAMPUS_BLUEPRINT.items():
+        zones_html = ""
+        # Zones
+        for z in b_data.get("zones", []):
+            zones_html += f"""
+            <div class='p-3 bg-zinc-900 border border-zinc-800 rounded font-mono-code text-xs mb-2'>
+                <div class='font-bold text-cyan-400'>{z.get('name', '')} (ID: {z.get('id', '')})</div>
+                <div class='text-zinc-400 text-[11px] mt-1'>Capacity: {z.get('capacity', 'N/A')} | Solutions: {', '.join(z.get('solution_mapping', []))}</div>
+            </div>"""
+        # Labs
+        for lab in b_data.get("labs", []):
+            zones_html += f"""
+            <div class='p-3 bg-zinc-900 border border-zinc-800 rounded font-mono-code text-xs mb-2'>
+                <div class='font-bold text-purple-400'>{lab.get('name', '')} (ID: {lab.get('id', '')})</div>
+                <div class='text-zinc-400 text-[11px] mt-1'>PCs: {lab.get('pc_count', '')} (Active: {lab.get('pc_active_watts', '')}W, Sleep: {lab.get('pc_sleep_watts', '')}W) | Solutions: {', '.join(lab.get('solution_mapping', []))}</div>
+            </div>"""
+        # Wings
+        for w in b_data.get("wings", []):
+            policy = b_data.get("room_level_control_policy", {})
+            zones_html += f"""
+            <div class='p-3 bg-zinc-900 border border-zinc-800 rounded font-mono-code text-xs mb-2'>
+                <div class='font-bold text-red-400'>{w.get('name', '')} (ID: {w.get('id', '')})</div>
+                <div class='text-zinc-400 text-[11px] mt-1'>Rooms: {w.get('rooms_count', '')} | Presence Sensing: {w.get('room_occupancy_sensors', '')}</div>
+                <div class='text-emerald-400 text-[11px] mt-1'>Control Policy: Vacant = 100% Auto Kill | Occupied = 100% Manual User Mode</div>
+                <div class='text-zinc-400 text-[11px] mt-1'>Geyser Stagger Window: {w.get('geyser_bank', {{}}).get('stagger_slot', '')}</div>
+            </div>"""
+        # Water Coolers
+        for wc in b_data.get("water_coolers", []):
+            zones_html += f"""
+            <div class='p-2 bg-zinc-900/60 border border-zinc-800 rounded font-mono-code text-[11px] text-zinc-400 mb-1 flex justify-between'>
+                <span>Commercial Water Cooler {wc.get('id', '')} (Floor {wc.get('floor', '')})</span>
+                <span class='text-yellow-400 font-bold'>{wc.get('compressor_kw', '')} kW | Interlocked 19:00-07:00</span>
+            </div>"""
+        # Heavy Motors
+        for hm in b_data.get("heavy_motors", []):
+            zones_html += f"""
+            <div class='p-2 bg-zinc-900/60 border border-zinc-800 rounded font-mono-code text-[11px] text-zinc-400 mb-1 flex justify-between'>
+                <span>{hm.get('name', '')}</span>
+                <span class='text-cyan-400 font-bold'>{hm.get('kw', '')} kW | Shifted to Solar Window</span>
+            </div>"""
+
+        elev_info = ""
+        if "elevator_bank" in b_data:
+            eb = b_data["elevator_bank"]
+            elev_info = f"""
+            <div class='p-3 bg-zinc-900 border border-zinc-800 rounded font-mono-code text-xs mb-2'>
+                <div class='font-bold text-yellow-400'>4-Lift Elevator Bank (ID: {eb.get('id', '')})</div>
+                <div class='text-zinc-400 text-[11px] mt-1'>Total Cars: {eb.get('total_cars')} | Mandatory Active Safety Floor: {eb.get('mandatory_safety_floor')} Cars</div>
+                <div class='text-zinc-400 text-[11px]'>Motor Rating: {eb.get('car_rating_motor_kw')} kW | Standby Parasitic: {eb.get('standby_parasitic_kw')} kW</div>
+            </div>"""
+
+        blocks_html += f"""
+        <div class='bg-zinc-950 border-2 border-zinc-800 p-6 rounded-none mb-6' style='box-shadow: 6px 6px 0px #030407;'>
+            <div class='flex items-center justify-between pb-3 mb-3 border-b border-zinc-800'>
+                <h3 class='text-xl font-bold uppercase text-white'>{b_name}</h3>
+                <span class='text-xs font-mono-code text-emerald-400'>{len(b_data.get('zones', [])) + len(b_data.get('labs', [])) + len(b_data.get('wings', []))} Primary Managed Assets</span>
+            </div>
+            <p class='text-xs font-mono-code text-zinc-400 mb-4'>{b_data.get('description', '')}</p>
+            {elev_info}
+            {zones_html}
+        </div>
+        """
+
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Campus Physical Blueprint // Jain Institute of Technology</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;800&family=Space+Grotesk:wght@500;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {{ font-family: 'Space Grotesk', sans-serif; background-color: #08090d; }}
+        .font-mono-code {{ font-family: 'JetBrains Mono', monospace; }}
+    </style>
+</head>
+<body class="text-zinc-100 min-h-screen p-6 sm:p-10 max-w-6xl mx-auto">
+    <div class="flex items-center justify-between mb-8 pb-4 border-b-2 border-zinc-800">
+        <div>
+            <div class="text-xs font-mono-code font-bold text-emerald-400 uppercase tracking-widest">Physical Asset Hierarchy // Digital Twin</div>
+            <h1 class="text-3xl sm:text-5xl font-black uppercase text-white">Campus Blueprint</h1>
+            <p class="text-xs font-mono-code text-zinc-400 mt-1">Institution: Jain Institute of Technology (JIT) | Tariff: INR 9.00/kWh | Max Demand: 250 kVA</p>
+        </div>
+        <a href="/" class="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-black font-mono-code text-xs font-bold uppercase border-2 border-black" style="box-shadow: 4px 4px 0px #000;">
+            Back to Dashboard
+        </a>
+    </div>
+
+    {blocks_html}
+</body>
+</html>
+"""
+
+@app.get("/api/blueprint")
+def get_blueprint():
+    return {
+        "metadata": CAMPUS_METADATA,
+        "blueprint": CAMPUS_BLUEPRINT
+    }
 
 @app.get("/api/telemetry")
 def get_telemetry():
@@ -150,6 +253,9 @@ def home():
                 <div class="flex items-center gap-4 text-xs font-mono-code">
                     <span class="flex items-center gap-1.5"><span class="w-3 h-3 bg-red-500/80 inline-block"></span> Unmanaged Baseline</span>
                     <span class="flex items-center gap-1.5"><span class="w-3 h-3 bg-emerald-400 inline-block"></span> GridSense Optimized</span>
+                    <a href="/blueprint" target="_blank" class="px-2.5 py-1 bg-zinc-800 hover:bg-zinc-700 text-yellow-400 border border-zinc-700 rounded brutal-btn text-[11px] font-bold">
+                        VIEW FULL BLUEPRINT TREE
+                    </a>
                 </div>
             </div>
             <div class="w-full h-72">
@@ -262,24 +368,28 @@ def home():
                 </div>
             </div>
 
-            <!-- ZONE 4: HOSTEL GEYSERS -->
+            <!-- ZONE 4: HOSTEL GEYSERS & ROOM SENSORS -->
             <div class="bg-zinc-900 border-2 border-zinc-800 p-5 brutal-border flex flex-col justify-between">
                 <div>
                     <div class="flex items-center justify-between pb-3 mb-3 border-b border-zinc-800">
-                        <span class="font-mono-code text-xs font-extrabold text-red-400">HOSTEL // WINGS 1 & 2</span>
+                        <span class="font-mono-code text-xs font-extrabold text-red-400">HOSTEL // 120 ROOMS + WINGS</span>
                         <span class="px-2 py-0.5 text-[10px] font-mono-code font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">WIS: 15 / PEAK SHAVED</span>
                     </div>
-                    <h3 class="text-lg font-bold text-white">Residential Geyser Matrix</h3>
-                    <p class="text-xs font-mono-code text-zinc-400 mt-1">16 High-Draw Units (2.5 kW each)</p>
+                    <h3 class="text-lg font-bold text-white">Residential Block & Room Matrix</h3>
+                    <p class="text-xs font-mono-code text-zinc-400 mt-1">120 Individual Rooms | 16 Geysers (2.5 kW)</p>
 
                     <div class="mt-4 space-y-2 text-xs font-mono-code">
                         <div class="flex justify-between text-zinc-400">
-                            <span>Module E (Stagger Slot 1):</span>
-                            <span class="text-white font-bold">Wing 1 (05:30 - 06:30)</span>
+                            <span>Room Presence Sensors:</span>
+                            <span class="text-emerald-400 font-bold">Auto-Kill Vacant Rooms</span>
                         </div>
                         <div class="flex justify-between text-zinc-400">
-                            <span>Module E (Stagger Slot 2):</span>
-                            <span class="text-white font-bold">Wing 2 (06:30 - 07:30)</span>
+                            <span>Occupied Room Control:</span>
+                            <span class="text-cyan-400 font-bold">100% Manual User Mode</span>
+                        </div>
+                        <div class="flex justify-between text-zinc-400">
+                            <span>Module E (Staggered Geysers):</span>
+                            <span class="text-white font-bold">Wing 1 (5:30) / Wing 2 (6:30)</span>
                         </div>
                         <div class="flex justify-between text-zinc-400">
                             <span>Max Demand (kVA) Breach:</span>

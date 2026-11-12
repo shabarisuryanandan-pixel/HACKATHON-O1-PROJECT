@@ -159,16 +159,24 @@ CAMPUS_BLUEPRINT = {
 
     "Hostel Block": {
         "description": "Student residential wings, dining hall, common laundry, and residential washroom blocks",
+        "room_level_control_policy": {
+            "mode": "sensor_kill_switch_manual_override",
+            "description": "Every single hostel room equipped with presence sensing. When vacant, all room loads (fans, lights, charging points) automatically shut off completely. When an occupant enters, control returns 100% to manual user operation for full student freedom and comfort."
+        },
         "wings": [
             {
                 "id": "HOSTEL_W1", "name": "Hostel Wing 1 (Ground & 1st Floor)",
                 "resident_capacity": 180,
+                "rooms_count": 60,
+                "room_occupancy_sensors": "PIR + Ultrasonic dual-tech per room",
                 "geyser_bank": {"geysers_count": 8, "kw_each": 2.5, "stagger_slot": "05:30 - 06:30"},
                 "solution_mapping": ["E"]
             },
             {
                 "id": "HOSTEL_W2", "name": "Hostel Wing 2 (2nd & 3rd Floor)",
                 "resident_capacity": 180,
+                "rooms_count": 60,
+                "room_occupancy_sensors": "PIR + Ultrasonic dual-tech per room",
                 "geyser_bank": {"geysers_count": 8, "kw_each": 2.5, "stagger_slot": "06:30 - 07:30"},
                 "solution_mapping": ["E"]
             }
