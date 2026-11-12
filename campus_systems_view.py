@@ -14,16 +14,16 @@ def render_campus_systems_html() -> str:
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GridSense // Campus Systems</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Jost:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
     <style>
         body {
             background-color: #2B2D31;
             color: #D9DAD0;
-            font-family: 'Futura', 'Jost', sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             margin: 0;
         }
-        h1, h2, h3, .font-heading { font-family: 'Abril Fatface', serif; letter-spacing: 0.01em; font-weight: 400; }
-        .font-data { font-family: 'Futura', 'Jost', sans-serif; font-variant-numeric: tabular-nums; }
+        h1, h2, h3, .font-heading { font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: -0.015em; }
+        .font-data { font-family: 'Inter', sans-serif; font-variant-numeric: tabular-nums; }
         .card {
             background-color: #36393F;
             border: 1px solid rgba(255, 255, 255, 0.06);
@@ -315,7 +315,7 @@ def render_campus_systems_html() -> str:
 
                         <!-- COL 1: INPUT SIGNALS -->
                         <rect x="15" y="25" width="205" height="290" rx="12" fill="#36393F" stroke="rgba(255,255,255,0.12)" stroke-width="1.5"/>
-                        <text x="117" y="50" text-anchor="middle" fill="#FFC93C" font-size="11" font-weight="700" font-family="Futura, Jost, sans-serif">1. CAMPUS INPUTS</text>
+                        <text x="117" y="50" text-anchor="middle" fill="#FFC93C" font-size="11" font-weight="700" font-family="Inter, sans-serif">1. CAMPUS INPUTS</text>
 
                         <rect x="30" y="68" width="175" height="44" rx="8" fill="#2B2D31" stroke="rgba(255,255,255,0.08)"/>
                         <text x="117" y="88" text-anchor="middle" fill="#FFFFFF" font-size="11" font-weight="600">Class Timetable + WiFi</text>
@@ -338,9 +338,9 @@ def render_campus_systems_html() -> str:
 
                         <!-- COL 2: WIS ENGINE + SAFETY VETO -->
                         <rect x="270" y="65" width="210" height="140" rx="12" fill="#36393F" stroke="#FFC93C" stroke-width="1.5"/>
-                        <text x="375" y="92" text-anchor="middle" fill="#FFC93C" font-size="11" font-weight="700" font-family="Futura, Jost, sans-serif">2. GRIDSENSE ENGINE</text>
+                        <text x="375" y="92" text-anchor="middle" fill="#FFC93C" font-size="11" font-weight="700" font-family="Inter, sans-serif">2. GRIDSENSE ENGINE</text>
                         <text x="375" y="118" text-anchor="middle" fill="#FFFFFF" font-size="13" font-weight="700">Waste Index Score</text>
-                        <text x="375" y="138" text-anchor="middle" fill="#D9DAD0" font-size="11" font-family="Futura, Jost, sans-serif">Score = 0 to 100 / zone</text>
+                        <text x="375" y="138" text-anchor="middle" fill="#D9DAD0" font-size="11" font-family="Inter, sans-serif">Score = 0 to 100 / zone</text>
                         <rect x="290" y="154" width="170" height="36" rx="7" fill="#2B2D31" stroke="rgba(255,201,60,0.35)"/>
                         <text x="375" y="176" text-anchor="middle" fill="#FFC93C" font-size="10.5" font-weight="600">Safety Veto: Active Class +20</text>
 
@@ -348,7 +348,7 @@ def render_campus_systems_html() -> str:
                         <rect x="270" y="225" width="210" height="68" rx="10" fill="#36393F" stroke="rgba(255,255,255,0.12)"/>
                         <text x="375" y="250" text-anchor="middle" fill="#FFFFFF" font-size="11.5" font-weight="700">10:30 PM Curfew Rule</text>
                         <text x="375" y="268" text-anchor="middle" fill="#8E9297" font-size="10">No classes after 10:30 PM</text>
-                        <text x="375" y="282" text-anchor="middle" fill="#FFC93C" font-size="10" font-family="Futura, Jost, sans-serif">Full Shutdown -&gt; 0.0 kW</text>
+                        <text x="375" y="282" text-anchor="middle" fill="#FFC93C" font-size="10" font-family="Inter, sans-serif">Full Shutdown -&gt; 0.0 kW</text>
                         <line x1="375" y1="205" x2="375" y2="222" stroke="#8E9297" stroke-width="1.5" marker-end="url(#arrowGray)"/>
 
                         <!-- ARROW COL 2 -> COL 3 -->
@@ -356,7 +356,7 @@ def render_campus_systems_html() -> str:
 
                         <!-- COL 3: SMART ACTIONS -->
                         <rect x="530" y="25" width="210" height="290" rx="12" fill="#36393F" stroke="rgba(255,255,255,0.12)" stroke-width="1.5"/>
-                        <text x="635" y="50" text-anchor="middle" fill="#FFC93C" font-size="11" font-weight="700" font-family="Futura, Jost, sans-serif">3. SMART ACTIONS</text>
+                        <text x="635" y="50" text-anchor="middle" fill="#FFC93C" font-size="11" font-weight="700" font-family="Inter, sans-serif">3. SMART ACTIONS</text>
 
                         <rect x="546" y="68" width="178" height="48" rx="8" fill="#2B2D31"/>
                         <text x="635" y="88" text-anchor="middle" fill="#FFFFFF" font-size="11" font-weight="600">Wing Consolidation</text>
@@ -379,7 +379,7 @@ def render_campus_systems_html() -> str:
 
                         <!-- COL 4: OUTPUTS -->
                         <rect x="785" y="45" width="180" height="250" rx="12" fill="#36393F" stroke="rgba(255,255,255,0.12)" stroke-width="1.5"/>
-                        <text x="875" y="70" text-anchor="middle" fill="#FFC93C" font-size="11" font-weight="700" font-family="Futura, Jost, sans-serif">4. LIVE OUTPUTS</text>
+                        <text x="875" y="70" text-anchor="middle" fill="#FFC93C" font-size="11" font-weight="700" font-family="Inter, sans-serif">4. LIVE OUTPUTS</text>
 
                         <rect x="800" y="88" width="150" height="42" rx="8" fill="#2B2D31"/>
                         <text x="875" y="106" text-anchor="middle" fill="#FFFFFF" font-size="11" font-weight="600">n8n -&gt; Gmail</text>
