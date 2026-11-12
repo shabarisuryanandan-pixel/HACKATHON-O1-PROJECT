@@ -4,6 +4,7 @@ from fastapi.staticfiles import StaticFiles
 import os
 import json
 import urllib.request
+import urllib.parse
 from dotenv import load_dotenv
 from campus_blueprint import CAMPUS_BLUEPRINT, CAMPUS_METADATA
 from sandbox_engine import evaluate_sandbox_state, generate_random_timetable, format_12h
@@ -18,8 +19,8 @@ SUPABASE_KEY = os.getenv("SUPABASE_KEY", "sb_publishable_LPVQ_Mzxl8AK8c_JLhMNAw_
 # Pre-configured / server-persisted notification credentials (zero-prompt auto-dispatch)
 CONFIG_FILE = "notification_config.json"
 DEFAULT_NOTIFY_CONFIG = {
-    "telegram_bot_token": os.getenv("TELEGRAM_BOT_TOKEN", ""),
-    "telegram_chat_id": os.getenv("TELEGRAM_CHAT_ID", ""),
+    "telegram_bot_token": os.getenv("TELEGRAM_BOT_TOKEN", "9222503668:AAER9GfSgmqEQ3s-maK9Ljx1eTfBXM5NRg8"),
+    "telegram_chat_id": os.getenv("TELEGRAM_CHAT_ID", "7308787759"),
     "webhook_url": os.getenv("WEBHOOK_URL", ""),  # For n8n / Power Automate / Make
     "whatsapp_phone": os.getenv("WHATSAPP_PHONE", ""),
     "whatsapp_apikey": os.getenv("WHATSAPP_APIKEY", "")
@@ -101,7 +102,7 @@ def dispatch_auto_notification(report: dict, time_12h: str, inline_cfg: dict = N
                 "text": msg
             }).encode("utf-8")
             req = urllib.request.Request(webhook_url, data=payload, headers={"Content-Type": "application/json"})
-            with urllib.request.urlopen(req, timeout=4) as _:
+            with urllib.request.urlopen(req, timeout=10) as _:
                 channels_sent.append("Webhook (n8n/Power Automate)")
         except Exception:
             pass
@@ -114,7 +115,7 @@ def dispatch_auto_notification(report: dict, time_12h: str, inline_cfg: dict = N
             url = f"https://api.telegram.org/bot{tg_token}/sendMessage"
             payload = json.dumps({"chat_id": tg_chat, "text": msg}).encode("utf-8")
             req = urllib.request.Request(url, data=payload, headers={"Content-Type": "application/json"})
-            with urllib.request.urlopen(req, timeout=4) as resp:
+            with urllib.request.urlopen(req, timeout=10) as resp:
                 res_data = json.loads(resp.read().decode())
                 if res_data.get("ok"):
                     channels_sent.append("Telegram Mobile")
@@ -126,10 +127,9 @@ def dispatch_auto_notification(report: dict, time_12h: str, inline_cfg: dict = N
     wa_key = cfg.get("whatsapp_apikey", "")
     if wa_phone and wa_key:
         try:
-            import urllib.parse
             encoded_msg = urllib.parse.quote(msg)
             url = f"https://api.callmebot.com/whatsapp.php?phone={wa_phone}&text={encoded_msg}&apikey={wa_key}"
-            with urllib.request.urlopen(url, timeout=4) as _:
+            with urllib.request.urlopen(url, timeout=10) as _:
                 channels_sent.append("WhatsApp Mobile")
         except Exception:
             pass

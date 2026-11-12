@@ -441,12 +441,12 @@ def render_cad_sandbox_html():
                 <!-- 5. ONE-TIME SERVER AUTO-PING SETUP (COLLAPSIBLE, NEVER NAGS) -->
                 <details class="card p-3.5 text-xs">
                     <summary class="cursor-pointer font-semibold flex items-center justify-between" style="color: #D9DAD0;">
-                        <span>Auto-Webhook / Mobile Alert Setup (One-Time)</span>
-                        <span class="text-[10px] font-data px-2 py-0.5 rounded" style="background: #2B2D31; color: #FFC93C;">Free n8n / Telegram</span>
+                        <span>Auto-Webhook / Mobile Alert Setup</span>
+                        <span class="text-[10px] font-data px-2 py-0.5 rounded" style="background: #2B2D31; color: #FFC93C;">Telegram Active</span>
                     </summary>
                     <div class="mt-3 space-y-2 pt-2" style="border-top: 1px solid rgba(255,255,255,0.06);">
                         <p class="text-[11px]" style="color: #8E9297;">
-                            Save once on the server. Every click on <b>Simulate</b> will push automatically in the background without asking again.
+                            Telegram Auto-Ping is pre-configured on the server (Chat ID: <b>7308787759</b>). Every click on <b>Simulate</b> pushes automatically without prompting.
                         </p>
                         <input type="text" id="cfgWebhook" placeholder="n8n or Power Automate Webhook URL (Optional)" class="w-full p-2 rounded text-xs font-data outline-none" style="background: #2B2D31; color: #FFFFFF; border: 1px solid rgba(255,255,255,0.07);">
                         <input type="text" id="cfgTgToken" placeholder="Telegram Bot Token (Optional)" class="w-full p-2 rounded text-xs font-data outline-none" style="background: #2B2D31; color: #FFFFFF; border: 1px solid rgba(255,255,255,0.07);">
@@ -1302,8 +1302,8 @@ def render_cad_sandbox_html():
 
         window.addEventListener('DOMContentLoaded', () => {{
             document.getElementById('cfgWebhook').value = localStorage.getItem('gs_webhook_url') || '';
-            document.getElementById('cfgTgToken').value = localStorage.getItem('gs_tg_token') || '';
-            document.getElementById('cfgTgChat').value = localStorage.getItem('gs_tg_chat') || '';
+            document.getElementById('cfgTgToken').value = localStorage.getItem('gs_tg_token') || '9222503668:AAER9GfSgmqEQ3s-maK9Ljx1eTfBXM5NRg8';
+            document.getElementById('cfgTgChat').value = localStorage.getItem('gs_tg_chat') || '7308787759';
             renderVariableControls();
             onVariableInputChanged();
             loadSuggestionsLog();
