@@ -14,12 +14,12 @@ import random
 
 ROOM_META = {
     "B101": {"id": "B101", "label": "CR B-101", "name": "Classroom B-101", "wing": "Left", "type": "classroom", "capacity": 60, "near_stairs": "MAIN"},
-    "B102": {"id": "B102", "label": "CR B-102", "name": "Classroom B-102", "wing": "Left", "type": "classroom", "capacity": 60, "near_stairs": "MAIN"},
-    "B103": {"id": "B103", "label": "CR B-103", "name": "Classroom B-103", "wing": "Left", "type": "classroom", "capacity": 60, "near_stairs": "SW"},
+    "B102": {"id": "B102", "label": "CR B-102", "name": "Classroom B-102", "wing": "Left", "type": "classroom", "capacity": 48, "near_stairs": "MAIN"},
+    "B103": {"id": "B103", "label": "CR B-103", "name": "Classroom B-103", "wing": "Left", "type": "classroom", "capacity": 48, "near_stairs": "SW"},
     "B104": {"id": "B104", "label": "CR B-104", "name": "Classroom B-104", "wing": "Left", "type": "classroom", "capacity": 60, "near_stairs": "SW"},
     "B105": {"id": "B105", "label": "CR B-105", "name": "Classroom B-105", "wing": "Right", "type": "classroom", "capacity": 60, "near_stairs": "MAIN"},
-    "B106": {"id": "B106", "label": "CR B-106", "name": "Classroom B-106", "wing": "Right", "type": "classroom", "capacity": 60, "near_stairs": "MAIN"},
-    "B107": {"id": "B107", "label": "CR B-107", "name": "Classroom B-107", "wing": "Right", "type": "classroom", "capacity": 60, "near_stairs": "SE"},
+    "B106": {"id": "B106", "label": "CR B-106", "name": "Classroom B-106", "wing": "Right", "type": "classroom", "capacity": 48, "near_stairs": "MAIN"},
+    "B107": {"id": "B107", "label": "CR B-107", "name": "Classroom B-107", "wing": "Right", "type": "classroom", "capacity": 48, "near_stairs": "SE"},
     "B108": {"id": "B108", "label": "CR B-108", "name": "Classroom B-108", "wing": "Right", "type": "classroom", "capacity": 60, "near_stairs": "SE"},
     "LAB1": {"id": "LAB1", "label": "Lab B-1", "name": "Lab B-1 (Hardware)", "wing": "Left", "type": "lab", "capacity": 45, "near_stairs": "MAIN"},
     "LAB2": {"id": "LAB2", "label": "Lab B-2", "name": "Lab B-2 (Comm)", "wing": "Right", "type": "lab", "capacity": 45, "near_stairs": "MAIN"},
@@ -216,6 +216,8 @@ def evaluate_sandbox_state(payload: dict) -> dict:
         "LAB3": [True, True, False, False],
     }
 
+    temp_factor = round(min(1.25, 1.0 + max(0.0, (temp_c - 26.0) * 0.025)), 3)
+
     for rid, meta in ROOM_META.items():
         occ = raw_occ[rid]
         is_occ = occ > 0
@@ -224,7 +226,7 @@ def evaluate_sandbox_state(payload: dict) -> dict:
         if is_occ:
             b_lights = [True, True, True, True]
             b_ac_setpoint = "20°C"
-            b_ac_kw = max_ac_kw
+            b_ac_kw = round(max_ac_kw * temp_factor, 2)
             b_light_kw = 0.60
             b_plug_kw = 1.20 if meta["type"] == "lab" else 0.20
         else:
@@ -234,10 +236,10 @@ def evaluate_sandbox_state(payload: dict) -> dict:
             # In unmanaged baseline, rooms with 4 lights left on also often have AC left on at 22°C
             if lit_count == 4:
                 b_ac_setpoint = "22°C (Left ON)"
-                b_ac_kw = round(max_ac_kw * 0.75, 2)
+                b_ac_kw = round(max_ac_kw * 0.75 * temp_factor, 2)
             elif lit_count > 0:
                 b_ac_setpoint = "24°C (Idle)"
-                b_ac_kw = round(max_ac_kw * 0.35, 2)
+                b_ac_kw = round(max_ac_kw * 0.35 * temp_factor, 2)
             else:
                 b_ac_setpoint = "OFF"
                 b_ac_kw = 0.0
@@ -290,49 +292,61 @@ def evaluate_sandbox_state(payload: dict) -> dict:
     left_labs_active = (sim_occ["LAB1"] > 0)
     right_labs_active = (sim_occ["LAB2"] > 0 or sim_occ["LAB3"] > 0)
 
-    # Case A: 3 classes in Left Wing + 1 in Right Wing, OR >=1 in Left Wing + 1 isolated in far Right Wing (B106-B108)
+    def _try_consolidate(src_list, dst_pool, src_wing, dst_wing):
+        """Match all source rooms to capacity-compatible destination rooms."""
+        available = list(dst_pool)
+        planned = []
+        # Sort largest classes first so 60-seat rooms are matched before 48-seat rooms
+        for src in sorted(src_list, key=lambda r: sim_occ[r], reverse=True):
+            needed = sim_occ[src]
+            # Prefer smallest room that still fits the class (or first available)
+            fits = [d for d in available if ROOM_META[d]["capacity"] >= needed]
+            if not fits:
+                return False
+            fits.sort(key=lambda d: ROOM_META[d]["capacity"])
+            dst = fits[0]
+            available.remove(dst)
+            planned.append((src, dst, needed))
+        for src, dst, moved_students in planned:
+            sim_occ[dst] = moved_students
+            sim_occ[src] = 0
+            relocations.append({
+                "from_room": src,
+                "from_label": ROOM_META[src]["label"],
+                "to_room": dst,
+                "to_label": ROOM_META[dst]["label"],
+                "students": moved_students,
+                "reason": f"Relocate {moved_students} students from {ROOM_META[src]['label']} ({src_wing} Wing) to {ROOM_META[dst]['label']} ({dst_wing} Wing) to consolidate classes into the {dst_wing} Wing and shut down the entire {src_wing} Wing."
+            })
+        return True
+
+    # Case A: 1 or 2 classes in Right Wing (no Right labs) consolidating into Left Wing
     if is_curfew_shutdown:
         pass
     elif (
-        len(right_active_crs) == 1
-        and len(left_free_crs) >= 1
+        1 <= len(right_active_crs) <= 2
+        and len(left_free_crs) >= len(right_active_crs)
         and not right_labs_active
-        and (len(left_active_crs) == 3 or (len(left_active_crs) >= 1 and right_active_crs[0] in ["B106", "B107", "B108"]))
+        and (
+            len(left_active_crs) >= len(right_active_crs)
+            and (len(right_active_crs) > 1 or len(left_active_crs) == 3 or right_active_crs[0] in ["B106", "B107", "B108"])
+        )
+        and _try_consolidate(right_active_crs, left_free_crs, "Right", "Left")
     ):
-        src = right_active_crs[0]
-        dst = left_free_crs[0]
-        moved_students = sim_occ[src]
-        sim_occ[dst] = moved_students
-        sim_occ[src] = 0
-        relocations.append({
-            "from_room": src,
-            "from_label": ROOM_META[src]["label"],
-            "to_room": dst,
-            "to_label": ROOM_META[dst]["label"],
-            "students": moved_students,
-            "reason": f"Relocate {moved_students} students from {ROOM_META[src]['label']} (Right Wing) to {ROOM_META[dst]['label']} (Left Wing) to consolidate classes into the Left Wing and shut down the entire Right Wing."
-        })
+        pass
 
-    # Case B: 3 classes in Right Wing + 1 in Left Wing, OR >=1 in Right Wing + 1 isolated in far Left Wing (B102-B104)
+    # Case B: 1 or 2 classes in Left Wing (no Left labs) consolidating into Right Wing
     elif (
-        len(left_active_crs) == 1
-        and len(right_free_crs) >= 1
+        1 <= len(left_active_crs) <= 2
+        and len(right_free_crs) >= len(left_active_crs)
         and not left_labs_active
-        and (len(right_active_crs) == 3 or (len(right_active_crs) >= 1 and left_active_crs[0] in ["B102", "B103", "B104"]))
+        and (
+            len(right_active_crs) >= len(left_active_crs)
+            and (len(left_active_crs) > 1 or len(right_active_crs) == 3 or left_active_crs[0] in ["B102", "B103", "B104"])
+        )
+        and _try_consolidate(left_active_crs, right_free_crs, "Left", "Right")
     ):
-        src = left_active_crs[0]
-        dst = right_free_crs[0]
-        moved_students = sim_occ[src]
-        sim_occ[dst] = moved_students
-        sim_occ[src] = 0
-        relocations.append({
-            "from_room": src,
-            "from_label": ROOM_META[src]["label"],
-            "to_room": dst,
-            "to_label": ROOM_META[dst]["label"],
-            "students": moved_students,
-            "reason": f"Relocate {moved_students} students from {ROOM_META[src]['label']} (Left Wing) to {ROOM_META[dst]['label']} (Right Wing) to consolidate classes into the Right Wing and shut down the entire Left Wing."
-        })
+        pass
 
     # Case C: Single isolated class on the entire floor in a far room (B103, B104, B107, B108)
     elif (len(left_active_crs) + len(right_active_crs)) == 1:
@@ -340,7 +354,7 @@ def evaluate_sandbox_state(payload: dict) -> dict:
         if only_cr in ["B103", "B104", "B107", "B108"]:
             # Move near Main Stairs: B101 if Left or no labs, or B105 if Right labs are active
             dst = "B105" if (right_labs_active and not left_labs_active) else "B101"
-            if sim_occ[dst] == 0:
+            if sim_occ[dst] == 0 and ROOM_META[dst]["capacity"] >= sim_occ[only_cr]:
                 moved_students = sim_occ[only_cr]
                 sim_occ[dst] = moved_students
                 sim_occ[only_cr] = 0

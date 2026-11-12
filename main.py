@@ -1,8 +1,11 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, BackgroundTasks
 from fastapi.responses import HTMLResponse, JSONResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel, Field
+from typing import Dict, Optional, Any
 import os
 import json
+import sqlite3
 import urllib.request
 import urllib.parse
 from dotenv import load_dotenv
@@ -16,12 +19,12 @@ load_dotenv()
 SUPABASE_URL = os.getenv("SUPABASE_URL", "https://rzdrqgwmmfliyksuiknx.supabase.co")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY", "sb_publishable_LPVQ_Mzxl8AK8c_JLhMNAw_CoumpNyK")
 
-# Pre-configured / server-persisted notification credentials (zero-prompt auto-dispatch)
+# Server-persisted / env-backed notification credentials (zero-prompt auto-dispatch)
 CONFIG_FILE = "notification_config.json"
 DEFAULT_NOTIFY_CONFIG = {
-    "telegram_bot_token": os.getenv("TELEGRAM_BOT_TOKEN", "9222503668:AAER9GfSgmqEQ3s-maK9Ljx1eTfBXM5NRg8"),
-    "telegram_chat_id": os.getenv("TELEGRAM_CHAT_ID", "7308787759"),
-    "webhook_url": os.getenv("WEBHOOK_URL", "https://theone14.app.n8n.cloud/webhook/gridsense-alert"),  # For n8n / Power Automate / Make
+    "telegram_bot_token": os.getenv("TELEGRAM_BOT_TOKEN", ""),
+    "telegram_chat_id": os.getenv("TELEGRAM_CHAT_ID", ""),
+    "webhook_url": os.getenv("WEBHOOK_URL", ""),
     "whatsapp_phone": os.getenv("WHATSAPP_PHONE", ""),
     "whatsapp_apikey": os.getenv("WHATSAPP_APIKEY", "")
 }
@@ -51,8 +54,9 @@ def save_notify_config(new_cfg: dict):
         pass
     return cfg
 
-# Time-stamped Session Suggestions Log (shared between Sandbox and Main Dashboard)
-SESSION_SUGGESTIONS = [
+# Time-stamped Session Suggestions Log (SQLite-persisted, shared between Sandbox and Dashboard)
+SUGGESTIONS_DB = "gridsense_logs.db"
+DEFAULT_SUGGESTIONS = [
     {
         "time_12h": "12:00 PM",
         "mode": "Daylight Harvest",
@@ -78,6 +82,66 @@ SESSION_SUGGESTIONS = [
         "energy_saved": "Saved 31.2 kW (74.8% reduction | INR 280.80/hr saved)"
     }
 ]
+
+
+def _init_suggestions_db():
+    with sqlite3.connect(SUGGESTIONS_DB) as conn:
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS session_suggestions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                time_12h TEXT NOT NULL,
+                mode TEXT NOT NULL,
+                title TEXT NOT NULL,
+                suggestion TEXT NOT NULL,
+                actions_taken TEXT NOT NULL,
+                energy_saved TEXT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+            """
+        )
+        count = conn.execute("SELECT COUNT(*) FROM session_suggestions").fetchone()[0]
+        if count == 0:
+            for item in reversed(DEFAULT_SUGGESTIONS):
+                conn.execute(
+                    "INSERT INTO session_suggestions (time_12h, mode, title, suggestion, actions_taken, energy_saved) VALUES (?, ?, ?, ?, ?, ?)",
+                    (item["time_12h"], item["mode"], item["title"], item["suggestion"], item["actions_taken"], item["energy_saved"])
+                )
+        conn.commit()
+
+
+def get_persisted_suggestions(limit: int = 15) -> list:
+    _init_suggestions_db()
+    with sqlite3.connect(SUGGESTIONS_DB) as conn:
+        conn.row_factory = sqlite3.Row
+        rows = conn.execute(
+            "SELECT time_12h, mode, title, suggestion, actions_taken, energy_saved FROM session_suggestions ORDER BY id DESC LIMIT ?",
+            (limit,)
+        ).fetchall()
+    return [dict(r) for r in rows]
+
+
+def save_persisted_suggestion(entry: dict):
+    _init_suggestions_db()
+    with sqlite3.connect(SUGGESTIONS_DB) as conn:
+        conn.execute(
+            "INSERT INTO session_suggestions (time_12h, mode, title, suggestion, actions_taken, energy_saved) VALUES (?, ?, ?, ?, ?, ?)",
+            (entry["time_12h"], entry["mode"], entry["title"], entry["suggestion"], entry["actions_taken"], entry["energy_saved"])
+        )
+        conn.commit()
+
+
+_init_suggestions_db()
+
+
+class SandboxEvalRequest(BaseModel):
+    time: Any = Field(default="07:30 PM", description="Time in 12-hr AM/PM string or 24-hr float")
+    temperature: float = Field(default=32.0, ge=10.0, le=55.0)
+    weather: str = Field(default="Sunny / Daylight")
+    rooms: Dict[str, int] = Field(default_factory=dict)
+    simulate: bool = Field(default=False)
+    mode: str = Field(default="Variable Mode")
+    notify_config: Optional[Dict[str, Any]] = None
 
 def dispatch_auto_notification(report: dict, time_12h: str, inline_cfg: dict = None) -> dict:
     """Automatically dispatch the 3-part simulation message to n8n/Power Automate Webhook, Telegram, or WhatsApp."""
@@ -189,7 +253,7 @@ def api_get_timetable(seed: int = None):
 
 @app.get("/api/suggestions")
 def api_get_suggestions():
-    return {"suggestions": SESSION_SUGGESTIONS}
+    return {"suggestions": get_persisted_suggestions(15)}
 
 @app.get("/api/notification-config")
 def api_get_notify_config():
@@ -211,27 +275,23 @@ async def api_save_notify_config(request: Request):
     return {"status": "saved", "has_webhook": bool(cfg.get("webhook_url")), "has_telegram": bool(cfg.get("telegram_bot_token"))}
 
 @app.post("/api/sandbox/evaluate")
-async def api_sandbox_eval(request: Request):
-    try:
-        body = await request.json()
-    except Exception:
-        body = {}
+async def api_sandbox_eval(payload: SandboxEvalRequest, background_tasks: BackgroundTasks):
+    body = payload.model_dump()
     result = evaluate_sandbox_state(body)
 
-    # When user clicks "Simulate", log to Session Suggestions and auto-dispatch to phone/webhook
-    if body.get("simulate"):
+    # When user clicks "Simulate", persist to SQLite and dispatch alerts non-blocking in background
+    if payload.simulate:
         entry = {
             "time_12h": result["time_12h"],
-            "mode": body.get("mode", "Variable Simulation"),
+            "mode": payload.mode,
             "title": f"{result['active_classes']} Active Space(s) // {result['total_people']} People",
             "suggestion": result["report"]["suggestion"],
             "actions_taken": result["report"]["actions_taken"],
             "energy_saved": result["report"]["energy_saved"]
         }
-        SESSION_SUGGESTIONS.insert(0, entry)
-        del SESSION_SUGGESTIONS[15:]  # Keep latest 15 entries
-
-        result["dispatch"] = dispatch_auto_notification(result["report"], result["time_12h"])
+        save_persisted_suggestion(entry)
+        background_tasks.add_task(dispatch_auto_notification, result["report"], result["time_12h"])
+        result["dispatch"] = {"dispatched": True, "status": "queued_background"}
 
     return result
 

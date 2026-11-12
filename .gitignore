@@ -3,3 +3,5 @@ __pycache__/
 *.pyc
 venv/
 .venv/
+gridsense_logs.db
+notification_config.json
