@@ -339,7 +339,7 @@ def render_campus_systems_html() -> str:
                         <text x="117" y="50" text-anchor="middle" fill="#6BFBCE" font-size="11" font-weight="700" font-family="Inter, sans-serif">1. CAMPUS INPUTS</text>
 
                         <rect x="30" y="68" width="175" height="44" rx="8" fill="#01010D" stroke="rgba(255,255,255,0.08)"/>
-                        <text x="117" y="88" text-anchor="middle" fill="#FFFFFF" font-size="11" font-weight="600">Class Timetable + WiFi</text>
+                        <text x="117" y="88" text-anchor="middle" fill="#FFFFFF" font-size="11" font-weight="600">Class Timetable + ERP + WiFi</text>
                         <text x="117" y="103" text-anchor="middle" fill="#9499B8" font-size="9.5">Occupancy Weight: 0.60</text>
 
                         <rect x="30" y="124" width="175" height="44" rx="8" fill="#01010D" stroke="rgba(255,255,255,0.08)"/>
