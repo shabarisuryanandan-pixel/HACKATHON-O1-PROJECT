@@ -107,7 +107,7 @@ def render_campus_systems_html() -> str:
             <div>
                 <h1 class="text-2xl font-bold text-white tracking-tight">Campus Systems &amp; Total Savings</h1>
                 <p class="text-sm mt-1" style="color: #9499B8;">
-                    Campus-wide automation beyond Block B: Water Purifier Plant, WiFi Routers, Hostel Heaters, Water Coolers, and Computer Labs.
+                    Campus-wide automation across all three academic blocks (Blocks A, B &amp; C) plus Water Purifier Plant, WiFi Routers, Hostel Heaters, Water Coolers, and Computer Labs.
                 </p>
             </div>
             <div class="flex items-center gap-2">
@@ -133,7 +133,7 @@ def render_campus_systems_html() -> str:
                             Total Campus Impact
                         </div>
                         <h2 class="text-lg font-bold text-white mt-0.5">
-                            Combined Monthly &amp; Yearly Savings (Block B + Campus Systems)
+                            Combined Monthly &amp; Yearly Savings (Blocks A, B &amp; C + Campus Systems)
                         </h2>
                     </div>
                     <div class="flex items-center gap-2.5 px-3 py-2 rounded-lg" style="background: #01010D; border: 1px solid rgba(107,251,206,0.35);">
@@ -148,7 +148,7 @@ def render_campus_systems_html() -> str:
                     <div class="p-4 rounded-xl" style="background: #01010D; border: 1px solid rgba(255,255,255,0.06);">
                         <div class="text-[11px] font-semibold uppercase tracking-wider" style="color: #9499B8;">Monthly Electricity Saved</div>
                         <div class="text-2xl font-bold font-data text-white mt-1">15,000 kWh</div>
-                        <div class="text-[11px] mt-1" style="color: #9499B8;">7,660 kWh Block B + 7,340 kWh Campus Systems</div>
+                        <div class="text-[11px] mt-1" style="color: #9499B8;">7,660 kWh Blocks A, B &amp; C + 7,340 kWh Campus Systems</div>
                     </div>
 
                     <div class="p-4 rounded-xl" style="background: #01010D; border: 1px solid rgba(107,251,206,0.35);">
