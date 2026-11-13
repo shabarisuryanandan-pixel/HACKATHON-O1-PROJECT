@@ -128,14 +128,11 @@ def render_campus_systems_html() -> str:
                 <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-5">
                     <div>
                         <div class="text-xs font-semibold uppercase tracking-wider" style="color: #6BFBCE;">
-                            Total Campus Impact &amp; ROI Calculator
+                            Total Campus Impact
                         </div>
                         <h2 class="text-lg font-bold text-white mt-0.5">
                             Combined Monthly &amp; Yearly Savings (Blocks A, B &amp; C + Campus Systems)
                         </h2>
-                        <p class="text-xs mt-1 font-data" style="color: #9499B8;">
-                            Campus Baseline: 1,40,000 kWh / month (1.45 MW Connected Load) &rarr; Optimized: 1,25,000 kWh / month (10.7% Saved)
-                        </p>
                     </div>
                     <div class="flex items-center gap-2.5 px-3 py-2 rounded-lg" style="background: #01010D; border: 1px solid rgba(107,251,206,0.35);">
                         <label for="tariffInput" class="text-xs font-semibold" style="color: #E4E6F5;">Electricity Price (INR per kWh):</label>
@@ -148,14 +145,14 @@ def render_campus_systems_html() -> str:
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div class="p-4 rounded-xl" style="background: #01010D; border: 1px solid rgba(255,255,255,0.06);">
                         <div class="text-[11px] font-semibold uppercase tracking-wider" style="color: #9499B8;">Monthly Electricity Saved</div>
-                        <div class="text-2xl font-bold font-data text-white mt-1">15,000 kWh <span class="text-xs font-semibold" style="color: #6BFBCE;">(10.7%)</span></div>
-                        <div class="text-[11px] mt-1" style="color: #9499B8;">Out of 1,40,000 kWh/mo (7,660 Blocks + 7,340 Systems)</div>
+                        <div class="text-2xl font-bold font-data text-white mt-1">15,000 kWh</div>
+                        <div class="text-[11px] mt-1" style="color: #9499B8;">7,660 kWh Blocks A, B &amp; C + 7,340 kWh Campus Systems</div>
                     </div>
 
                     <div class="p-4 rounded-xl" style="background: #01010D; border: 1px solid rgba(107,251,206,0.35);">
                         <div class="text-[11px] font-semibold uppercase tracking-wider" style="color: #6BFBCE;">Monthly Money Saved</div>
                         <div id="kpiMonthlyInr" class="text-2xl font-bold font-data mt-1" style="color: #6BFBCE;">INR 1,35,000</div>
-                        <div id="kpiAnnualInr" class="text-[11px] font-data mt-1" style="color: #E4E6F5;">INR 16,20,000/yr | Bill: INR 12,60,000 &rarr; INR 11,25,000</div>
+                        <div id="kpiAnnualInr" class="text-[11px] font-data mt-1" style="color: #E4E6F5;">INR 16,20,000 saved per year</div>
                     </div>
 
                     <div class="p-4 rounded-xl" style="background: #01010D; border: 1px solid rgba(255,255,255,0.06);">
@@ -495,16 +492,12 @@ def render_campus_systems_html() -> str:
 
         function recalcCampusROI() {
             const tariff = Math.max(1, parseFloat(document.getElementById('tariffInput').value) || 9);
-            const baselineMonthlyKwh = 140000;
             const totalMonthlyKwh = 15000;
-            const optimizedMonthlyKwh = baselineMonthlyKwh - totalMonthlyKwh;
             const monthlyInr = totalMonthlyKwh * tariff;
             const annualInr = monthlyInr * 12;
-            const baseBillInr = baselineMonthlyKwh * tariff;
-            const optBillInr = optimizedMonthlyKwh * tariff;
 
             document.getElementById('kpiMonthlyInr').innerText = formatINR(monthlyInr);
-            document.getElementById('kpiAnnualInr').innerText = formatINR(annualInr) + '/yr | Bill: ' + formatINR(baseBillInr) + ' -> ' + formatINR(optBillInr);
+            document.getElementById('kpiAnnualInr').innerText = formatINR(annualInr) + ' saved per year';
 
             document.getElementById('cardInrRo').innerText = formatINR(820 * tariff) + ' / mo';
             document.getElementById('cardInrWifi').innerText = formatINR(700 * tariff) + ' / mo';
