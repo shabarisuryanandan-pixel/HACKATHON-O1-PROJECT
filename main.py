@@ -490,12 +490,12 @@ def home():
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
             <div>
                 <h2 class="text-base font-semibold text-white">Telemetry Nodes</h2>
-                <p class="text-xs mt-0.5" style="color: #9499B8;">Auto-cycling live Waste Index Score (WIS) across Block A, Block B, and Block C</p>
+                <p class="text-xs mt-0.5" style="color: #9499B8;">Select Block A, Block B, or Block C to inspect live Waste Index Score (WIS)</p>
             </div>
             <div class="flex items-center gap-2">
-                <button onclick="selectTelemetryBlock(0, true)" id="tabBlock0" class="px-3 py-1 rounded-lg text-xs font-semibold transition-all" style="background: #6BFBCE; color: #01010D;">Block A</button>
-                <button onclick="selectTelemetryBlock(1, true)" id="tabBlock1" class="px-3 py-1 rounded-lg text-xs font-semibold transition-all" style="background: #12102E; color: #E4E6F5;">Block B</button>
-                <button onclick="selectTelemetryBlock(2, true)" id="tabBlock2" class="px-3 py-1 rounded-lg text-xs font-semibold transition-all" style="background: #12102E; color: #E4E6F5;">Block C</button>
+                <button onclick="selectTelemetryBlock(0)" id="tabBlock0" class="px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer" style="background: #6BFBCE; color: #01010D;">Block A</button>
+                <button onclick="selectTelemetryBlock(1)" id="tabBlock1" class="px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer" style="background: #12102E; color: #E4E6F5;">Block B</button>
+                <button onclick="selectTelemetryBlock(2)" id="tabBlock2" class="px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer" style="background: #12102E; color: #E4E6F5;">Block C</button>
             </div>
         </div>
 
@@ -662,7 +662,6 @@ def home():
         ];
 
         let currentTelemetryIdx = 0;
-        let telemetryTimer = null;
 
         function renderTelemetryBlock(idx) {{
             currentTelemetryIdx = idx;
@@ -710,20 +709,11 @@ def home():
             }});
         }}
 
-        function selectTelemetryBlock(idx, restartTimer) {{
+        function selectTelemetryBlock(idx) {{
             renderTelemetryBlock(idx);
-            if (restartTimer) {{
-                clearInterval(telemetryTimer);
-                telemetryTimer = setInterval(() => {{
-                    renderTelemetryBlock((currentTelemetryIdx + 1) % 3);
-                }}, 9000);
-            }}
         }}
 
         renderTelemetryBlock(0);
-        telemetryTimer = setInterval(() => {{
-            renderTelemetryBlock((currentTelemetryIdx + 1) % 3);
-        }}, 9000);
 
         function formatTo12Hour(time24) {{
             if (!time24) return '';
