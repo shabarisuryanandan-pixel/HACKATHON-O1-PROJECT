@@ -276,15 +276,15 @@ def render_campus_systems_html() -> str:
                 <h2 class="text-xl font-bold text-white mt-1">How GridSense Works in 4 Simple Steps</h2>
                 <p class="text-sm mt-2" style="color: #E4E6F5;">
                     Colleges waste 30%-45% of their electricity after hours because buildings stay ON even when students leave.
-                    Instead of buying expensive sensors for 200 rooms, GridSense uses data the campus <b>already has</b> (Class Timetable, WiFi Users, Weather, and Power Meters) to safely turn off empty wings, shift heavy motors, and alert administrators automatically.
+                    Instead of buying expensive new sensors for 200 rooms, GridSense uses infrastructure the campus <b>already has</b> — <b>Class Timetable + ERP + WiFi + Existing Classroom &amp; Corridor CCTV</b> (processed locally for anonymous headcount only) — to safely turn off empty wings, shift heavy motors, and alert administrators automatically.
                 </p>
 
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mt-5">
                     <div class="p-4 rounded-xl" style="background: #01010D;">
                         <div class="text-xs font-data font-bold" style="color: #6BFBCE;">STEP 01 // SENSE</div>
-                        <div class="text-sm font-bold text-white mt-1">Read Existing Signals</div>
+                        <div class="text-sm font-bold text-white mt-1">Read Existing Feeds</div>
                         <p class="text-xs mt-1.5" style="color: #9499B8;">
-                            Checks the Class Timetable, WiFi connected phones, outdoor weather/sunlight, and power meter readings every 15 minutes.
+                            Combines Class Timetable/ERP, WiFi device counts, and existing classroom/corridor CCTV edge headcount (no video stored) with weather &amp; meter kW every 15 minutes.
                         </p>
                     </div>
                     <div class="p-4 rounded-xl" style="background: #01010D;">
@@ -337,7 +337,7 @@ def render_campus_systems_html() -> str:
                         <text x="117" y="50" text-anchor="middle" fill="#6BFBCE" font-size="11" font-weight="700" font-family="Inter, sans-serif">1. CAMPUS INPUTS</text>
 
                         <rect x="30" y="68" width="175" height="44" rx="8" fill="#01010D" stroke="rgba(255,255,255,0.08)"/>
-                        <text x="117" y="88" text-anchor="middle" fill="#FFFFFF" font-size="11" font-weight="600">Class Timetable + ERP + WiFi</text>
+                        <text x="117" y="88" text-anchor="middle" fill="#FFFFFF" font-size="10.5" font-weight="600">ERP + Timetable + WiFi + CCTV</text>
                         <text x="117" y="103" text-anchor="middle" fill="#9499B8" font-size="9.5">Occupancy Weight: 0.60</text>
 
                         <rect x="30" y="124" width="175" height="44" rx="8" fill="#01010D" stroke="rgba(255,255,255,0.08)"/>
@@ -382,7 +382,7 @@ def render_campus_systems_html() -> str:
                         <text x="635" y="104" text-anchor="middle" fill="#9499B8" font-size="9.5">Move lone class, turn off empty wing</text>
 
                         <rect x="546" y="126" width="178" height="48" rx="8" fill="#01010D"/>
-                        <text x="635" y="146" text-anchor="middle" fill="#FFFFFF" font-size="11" font-weight="600">2 / 3 / 4 Lift Staging</text>
+                        <text x="635" y="146" text-anchor="middle" fill="#FFFFFF" font-size="11" font-weight="600">1 / 2 / 3 / 4 Lift Staging</text>
                         <text x="635" y="162" text-anchor="middle" fill="#9499B8" font-size="9.5">Scale lifts by active wing load</text>
 
                         <rect x="546" y="184" width="178" height="48" rx="8" fill="#01010D"/>
@@ -460,6 +460,49 @@ def render_campus_systems_html() -> str:
                             </tr>
                         </tbody>
                     </table>
+                </div>
+            </div>
+
+            <!-- REAL-LIFE IMPLEMENTATION ROADMAP (SIMPLE GUIDE FOR JUDGES & CAMPUS TEAM) -->
+            <div class="card p-6">
+                <div class="text-xs font-semibold uppercase tracking-wider" style="color: #6BFBCE;">From Simulation to Real Campus</div>
+                <h3 class="text-lg font-bold text-white mt-0.5">Real-Life Implementation Plan (4 Simple Parts)</h3>
+                <p class="text-xs mt-1.5 mb-5" style="color: #9499B8;">
+                    No tearing down walls and no new cameras needed. GridSense plugs into what the college already owns and adds low-cost panel relays only where power is switched.
+                </p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="p-4 rounded-xl space-y-1.5" style="background: #01010D; border: 1px solid rgba(255,255,255,0.06);">
+                        <div class="text-xs font-data font-bold" style="color: #6BFBCE;">1. EXISTING CCTV + ERP + WIFI (ZERO NEW SENSORS)</div>
+                        <div class="text-sm font-bold text-white">Local Edge Headcount &amp; Schedule Sync</div>
+                        <p class="text-xs leading-relaxed" style="color: #9499B8;">
+                            Taps the existing classroom &amp; corridor <b>CCTV NVR feed</b> on a local campus computer to count people in RAM (no video recorded or sent to cloud). Cross-checks <b>ERP Timetable</b> + <b>WiFi phone count</b> so empty rooms &amp; empty corridors are confirmed before any shutoff.
+                        </p>
+                    </div>
+
+                    <div class="p-4 rounded-xl space-y-1.5" style="background: #01010D; border: 1px solid rgba(255,255,255,0.06);">
+                        <div class="text-xs font-data font-bold" style="color: #6BFBCE;">2. SMART SUB-METERS IN FLOOR PANELS</div>
+                        <div class="text-sm font-bold text-white">Block &amp; Floor Electrical Visibility</div>
+                        <p class="text-xs leading-relaxed" style="color: #9499B8;">
+                            Clamps non-invasive <b>CT Smart Sub-Meters</b> inside each Block/Floor distribution board (plus RO Plant, Chillers &amp; Hostels) to stream live kW readings over campus WiFi/RS-485 instead of relying on one monthly utility bill.
+                        </p>
+                    </div>
+
+                    <div class="p-4 rounded-xl space-y-1.5" style="background: #01010D; border: 1px solid rgba(255,255,255,0.06);">
+                        <div class="text-xs font-data font-bold" style="color: #6BFBCE;">3. SAFE SWITCHING HARDWARE + MANUAL OVERRIDE</div>
+                        <div class="text-sm font-bold text-white">Relays, AC Controllers, Lab Sleep &amp; Lifts</div>
+                        <p class="text-xs leading-relaxed" style="color: #9499B8;">
+                            Uses <b>DIN-rail Smart Relays</b> in floor breaker boxes for lights/fans (with wall-switch manual override), <b>IR/BACnet controllers</b> for ACs, <b>Wake-on-LAN / OS Sleep</b> for lab PCs, and a <b>lift group-controller hook</b> to keep 1 lift running for 1 active class.
+                        </p>
+                    </div>
+
+                    <div class="p-4 rounded-xl space-y-1.5" style="background: #01010D; border: 1px solid rgba(107,251,206,0.28);">
+                        <div class="text-xs font-data font-bold" style="color: #6BFBCE;">4. SAFETY RULES &amp; 3-PHASE ROLLOUT</div>
+                        <div class="text-sm font-bold text-white">15-Min Grace Window &amp; 4-6 Month Payback</div>
+                        <p class="text-xs leading-relaxed" style="color: #9499B8;">
+                            Emergency lights, fire alarms, and hostel/server WiFi are <b>never</b> auto-cut, and rooms get a 10-15 min grace window. Roll out in 3 steps: <b>Pilot 1 floor of Block B</b> (Month 1) &rarr; <b>Full Block B + Motor Timers</b> (Months 2-3) &rarr; <b>Blocks A, C &amp; Hostels</b> (Months 4-6).
+                        </p>
+                    </div>
                 </div>
             </div>
 
