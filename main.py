@@ -325,11 +325,11 @@ def campus_systems():
 @app.get("/", response_class=HTMLResponse)
 def home():
     summary = TELEMETRY_DATA.get("summary", {
-        "total_baseline_kwh": 3394.8,
-        "total_gridsense_kwh": 1769.1,
-        "total_saved_kwh": 1625.7,
-        "savings_percentage": 47.9,
-        "total_saved_inr": 14631.37
+        "total_baseline_kwh": 32667.0,
+        "total_gridsense_kwh": 29167.0,
+        "total_saved_kwh": 3500.0,
+        "savings_percentage": 10.7,
+        "total_saved_inr": 31500.0
     })
 
     return f"""<!DOCTYPE html>
